@@ -65,7 +65,7 @@ const OrderSummary = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto pt-8">
         {/* Header */}
         <div className="text-center mb-8">

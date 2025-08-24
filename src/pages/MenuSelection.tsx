@@ -93,7 +93,7 @@ const MenuSelection = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-brand-pink/30 p-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">

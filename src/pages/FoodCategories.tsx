@@ -9,6 +9,13 @@ const FoodCategories = () => {
   const [selectedMeals, setSelectedMeals] = useState<string[]>([]);
 
   useEffect(() => {
+    // Load existing orders to show completed meals
+    const existingOrders = JSON.parse(localStorage.getItem('orderItems') || '[]');
+    const completedMeals = existingOrders.map((order: any) => order.categoryId);
+    setSelectedMeals(completedMeals);
+  }, []);
+
+  useEffect(() => {
     // Check if user info exists
     const userInfo = localStorage.getItem('userInfo');
     if (!userInfo) {
@@ -74,23 +81,30 @@ const FoodCategories = () => {
     }
   };
 
+  // Check if all required meals with options are selected
+  const getRequiredMealsCount = () => {
+    return mealCategories.filter(cat => 
+      cat.restaurants.some(rest => rest.hasOptions)
+    ).length;
+  };
+
+  const getCompletedMealsCount = () => {
+    const existingOrders = JSON.parse(localStorage.getItem('orderItems') || '[]');
+    const uniqueCategories = new Set(existingOrders.map((order: any) => order.categoryId));
+    return uniqueCategories.size;
+  };
+
   const handleFinalSubmit = () => {
     // Navigate to order summary
     navigate('/order-summary');
   };
 
   const allRequiredMealsSelected = () => {
-    const requiredMeals = mealCategories.filter(cat => 
-      cat.restaurants.some(rest => rest.hasOptions)
-    );
-    return requiredMeals.every(meal => 
-      selectedMeals.includes(meal.id) || 
-      meal.restaurants.every(rest => !rest.hasOptions)
-    );
+    return getCompletedMealsCount() >= getRequiredMealsCount();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto pt-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -121,13 +135,21 @@ const FoodCategories = () => {
                       </div>
                       
                       {restaurant.hasOptions ? (
-                        <Button
-                          onClick={() => handleRestaurantClick(category.id, restaurant)}
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 p-0"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {/* Show completed status */}
+                          {selectedMeals.includes(category.id) && (
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                              <Circle className="w-3 h-3 text-white fill-current" />
+                            </div>
+                          )}
+                          <Button
+                            onClick={() => handleRestaurantClick(category.id, restaurant)}
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 p-0"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        </div>
                       ) : (
                         <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
                           <Circle className="w-4 h-4 text-gray-500" />
@@ -141,7 +163,13 @@ const FoodCategories = () => {
           ))}
         </div>
 
-        {/* Submit Button */}
+        {/* Progress and Submit Button */}
+        <div className="text-center mb-4">
+          <p className="text-sm text-muted-foreground">
+            เลือกแล้ว {getCompletedMealsCount()} จาก {getRequiredMealsCount()} มื้อ
+          </p>
+        </div>
+
         {allRequiredMealsSelected() && (
           <Button 
             onClick={handleFinalSubmit}
