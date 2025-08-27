@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const Welcome = () => {
   const [formData, setFormData] = useState({
-    name: "",
     nickname: "",
     code: ""
   });
@@ -28,7 +27,7 @@ const Welcome = () => {
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.nickname || !formData.code) {
+    if (!formData.nickname || !formData.code) {
       toast({
         title: "กรุณากรอกข้อมูลให้ครบถ้วน",
         variant: "destructive"
@@ -83,16 +82,6 @@ const Welcome = () => {
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
           <CardContent className="p-6">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">ชื่อ</label>
-                <Input
-                  placeholder="กรอกชื่อของคุณ"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="bg-white border-brand-pink/50 focus:border-primary"
-                />
-              </div>
-              
               <div>
                 <label className="block text-sm font-medium mb-2">ชื่อเล่น</label>
                 <Input
