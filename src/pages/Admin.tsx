@@ -1,10 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ChefHat } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
-
 const Admin = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
       <div className="max-w-6xl mx-auto pt-8 relative">
         {/* Navigation Dropdown */}
         <div className="absolute top-0 right-0">
@@ -18,7 +16,7 @@ const Admin = () => {
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-2">Choose food</h1>
           <p className="text-lg text-muted-foreground mb-1">by GSB</p>
-          <p className="text-base text-foreground font-medium">ระบบจองอาหารล่วงหน้า</p>
+          <p className="text-base text-foreground font-medium">ระบบจองอาหารล่วงหน้า (แอดมิน)</p>
         </div>
 
         {/* Main Admin Container */}
@@ -33,8 +31,6 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Admin;
