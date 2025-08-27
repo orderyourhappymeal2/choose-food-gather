@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Home, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavigationDropdown from "@/components/NavigationDropdown";
 
 const ThankYou = () => {
   const navigate = useNavigate();
@@ -41,7 +42,12 @@ const ThankYou = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
-      <div className="max-w-md mx-auto pt-8">
+      <div className="max-w-md mx-auto pt-8 relative">
+        {/* Navigation Dropdown */}
+        <div className="absolute top-0 right-0">
+          <NavigationDropdown />
+        </div>
+
         {/* Success Icon */}
         <div className="text-center mb-8">
           <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />

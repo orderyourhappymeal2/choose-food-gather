@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Trash2, ShoppingCart } from "lucide-react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import NavigationDropdown from "@/components/NavigationDropdown";
 
 interface MenuItem {
   id: string;
@@ -93,7 +94,12 @@ const MenuSelection = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow">
+    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow relative">
+      {/* Navigation Dropdown */}
+      <div className="absolute top-4 right-4 z-10">
+        <NavigationDropdown />
+      </div>
+
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-brand-pink/30 p-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">

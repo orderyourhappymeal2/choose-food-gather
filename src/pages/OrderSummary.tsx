@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Edit, Check, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavigationDropdown from "@/components/NavigationDropdown";
 
 interface OrderItem {
   restaurantId: string;
@@ -66,7 +67,12 @@ const OrderSummary = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
-      <div className="max-w-2xl mx-auto pt-8">
+      <div className="max-w-2xl mx-auto pt-8 relative">
+        {/* Navigation Dropdown */}
+        <div className="absolute top-0 right-0">
+          <NavigationDropdown />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <Receipt className="w-16 h-16 text-primary mx-auto mb-4" />
