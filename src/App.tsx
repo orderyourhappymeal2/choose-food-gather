@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome";
+import Admin from "./pages/Admin";
 import FoodCategories from "./pages/FoodCategories";
 import MenuSelection from "./pages/MenuSelection";
 import OrderSummary from "./pages/OrderSummary";
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Welcome />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/food-categories" element={<FoodCategories />} />
           <Route path="/menu/:restaurantId" element={<MenuSelection />} />
           <Route path="/order-summary" element={<OrderSummary />} />
