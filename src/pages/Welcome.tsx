@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChefHat, MapPin, Calendar, Clock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import NavigationDropdown from "@/components/NavigationDropdown";
 
 const Welcome = () => {
   const [formData, setFormData] = useState({
@@ -42,7 +43,12 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
-      <div className="max-w-md mx-auto pt-8">
+      <div className="max-w-md mx-auto pt-8 relative">
+        {/* Navigation Dropdown */}
+        <div className="absolute top-0 right-0">
+          <NavigationDropdown />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
