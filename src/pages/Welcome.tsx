@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChefHat, MapPin, Calendar, Clock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+
 const Welcome = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -12,9 +13,7 @@ const Welcome = () => {
     code: ""
   });
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   // Mock event data (would come from admin in real app)
   const eventData = {
@@ -23,12 +22,11 @@ const Welcome = () => {
     date: "15 มกราคม 2567",
     time: "09:00 - 16:00 น."
   };
+
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
+
   const handleSubmit = () => {
     if (!formData.name || !formData.nickname || !formData.code) {
       toast({
@@ -37,12 +35,14 @@ const Welcome = () => {
       });
       return;
     }
-
+    
     // Store user data and navigate to food categories
     localStorage.setItem('userInfo', JSON.stringify(formData));
     navigate('/food-categories');
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
       <div className="max-w-md mx-auto pt-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -83,27 +83,50 @@ const Welcome = () => {
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
           <CardContent className="p-6">
             <div className="space-y-4">
-              
+              <div>
+                <label className="block text-sm font-medium mb-2">ชื่อ</label>
+                <Input
+                  placeholder="กรอกชื่อของคุณ"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className="bg-white border-brand-pink/50 focus:border-primary"
+                />
+              </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2">ชื่อเล่น</label>
-                <Input placeholder="กรอกชื่อเล่นของคุณ" value={formData.nickname} onChange={e => handleInputChange('nickname', e.target.value)} className="bg-white border-brand-pink/50 focus:border-primary" />
+                <Input
+                  placeholder="กรอกชื่อเล่นของคุณ"
+                  value={formData.nickname}
+                  onChange={(e) => handleInputChange('nickname', e.target.value)}
+                  className="bg-white border-brand-pink/50 focus:border-primary"
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2">รหัส</label>
-                <Input placeholder="กรอกรหัสเข้าร่วมงาน" value={formData.code} onChange={e => handleInputChange('code', e.target.value)} className="bg-white border-brand-pink/50 focus:border-primary" />
+                <Input
+                  placeholder="กรอกรหัสเข้าร่วมงาน"
+                  value={formData.code}
+                  onChange={(e) => handleInputChange('code', e.target.value)}
+                  className="bg-white border-brand-pink/50 focus:border-primary"
+                />
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Start Button */}
-        <Button onClick={handleSubmit} className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0">
+        <Button 
+          onClick={handleSubmit}
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
+        >
           <ChefHat className="w-5 h-5 mr-2" />
           เริ่มสั่งอาหารกัน!
         </Button>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Welcome;
