@@ -52,7 +52,7 @@ const Welcome = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <ChefHat className="w-16 h-16 text-primary" />
+            <ChefHat className="w-16 h-16 text-brand-gold" />
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-2">Choose food</h1>
           <p className="text-lg text-muted-foreground mb-1">by GSB</p>
@@ -116,7 +116,7 @@ const Welcome = () => {
           onClick={handleSubmit}
           className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
         >
-          <ChefHat className="w-5 h-5 mr-2" />
+          <ChefHat className="w-5 h-5 mr-2 text-brand-gold" />
           เริ่มสั่งอาหารกัน!
         </Button>
       </div>

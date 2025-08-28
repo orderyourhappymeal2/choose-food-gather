@@ -41,6 +41,7 @@ All colors MUST be HSL.
     --brand-orange: 32 100% 85%;
     --brand-cream: 55 85% 90%;
     --brand-yellow: 0 100% 98%;
+    --brand-gold: 51 100% 50%;  /* hsl ของ #FFD700 */
     --brand-soft1: 330 100% 97%;  /* hsl ของ #FFF0F5 */
     --brand-soft2: 60 100% 97%; /* hsl ของ #FFFFF0 */
   
