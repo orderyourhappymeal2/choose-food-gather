@@ -40,7 +40,7 @@ All colors MUST be HSL.
     --brand-pink: 330 77% 86%;
     --brand-orange: 32 100% 85%;
     --brand-cream: 55 85% 90%;
-    --brand-yellow: 48 100% 85%;
+    --brand-yellow: 0 100% 98%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--brand-pink)), hsl(var(--brand-orange)));
