@@ -18,10 +18,6 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				'kanit': ['Kanit', 'sans-serif'],
-				'sans': ['Kanit', 'sans-serif'],
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -60,8 +56,7 @@ export default {
 					pink: 'hsl(var(--brand-pink))',
 					orange: 'hsl(var(--brand-orange))',
 					cream: 'hsl(var(--brand-cream))',
-					yellow: 'hsl(var(--brand-yellow))',
-					gold: 'hsl(var(--brand-gold))'
+					yellow: 'hsl(var(--brand-yellow))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
