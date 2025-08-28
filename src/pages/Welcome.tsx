@@ -42,7 +42,7 @@ const Welcome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
+    <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
       <div className="max-w-md mx-auto pt-8 relative">
         {/* Navigation Dropdown */}
         <div className="absolute top-0 right-0">
