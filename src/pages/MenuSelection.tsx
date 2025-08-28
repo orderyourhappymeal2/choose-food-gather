@@ -94,7 +94,7 @@ const MenuSelection = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow relative">
+    <div className="min-h-screen bg-[var(--gradient-main)] relative">
       {/* Navigation Dropdown */}
       <div className="absolute top-4 right-4 z-10">
         <NavigationDropdown />

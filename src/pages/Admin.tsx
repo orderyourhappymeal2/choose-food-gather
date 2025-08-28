@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChefHat } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 const Admin = () => {
-  return <div className="min-h-screen bg-gradient-to-br from-background via-brand-cream to-brand-yellow p-4">
+  return <div className="min-h-screen bg-[var(--gradient-main)] p-4">
       <div className="max-w-6xl mx-auto pt-8 relative">
         {/* Navigation Dropdown */}
         <div className="absolute top-0 right-0">

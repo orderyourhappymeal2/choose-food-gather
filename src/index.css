@@ -41,13 +41,13 @@ All colors MUST be HSL.
     --brand-orange: 32 100% 85%;
     --brand-cream: 55 85% 90%;
     --brand-yellow: 0 100% 98%;
-    --brand-soft1: 0 100% 99%;  /* hsl ของ #FFFAFA */
+    --brand-soft1: 330 100% 97%;  /* hsl ของ #FFF0F5 */
     --brand-soft2: 60 100% 97%; /* hsl ของ #FFFFF0 */
   
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--brand-pink)), hsl(var(--brand-orange)));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--brand-cream)), hsl(var(--brand-yellow)));
-    --gradient-welcome: linear-gradient(135deg, hsl(var(--brand-soft1)), hsl(var(--brand-soft2)));
+    --gradient-main: linear-gradient(135deg, hsl(var(--brand-soft1)), hsl(var(--brand-soft2)));
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
