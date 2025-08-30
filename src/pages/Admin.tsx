@@ -57,11 +57,25 @@ const Admin = () => {
                         <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
                       </Button>
                     </div>
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="p-4 text-center text-muted-foreground">
-                        เนื้อหารายชื่อร้านอาหารจะแสดงที่นี่
-                      </div>
-                    </ScrollArea>
+                    <div className="space-y-2">
+                      <Card className="bg-white/60 border border-brand-pink/10">
+                        <CardContent className="p-3">
+                          <h4 className="font-medium text-foreground mb-2">รายการร้านอาหาร</h4>
+                          <ScrollArea className="h-[300px] w-full">
+                            <div className="space-y-2">
+                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 1</div>
+                                <div className="text-xs text-muted-foreground">ประเภท: อาหารไทย</div>
+                              </div>
+                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 2</div>
+                                <div className="text-xs text-muted-foreground">ประเภท: อาหารจีน</div>
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -76,11 +90,25 @@ const Admin = () => {
                         <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
                       </Button>
                     </div>
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="p-4 text-center text-muted-foreground">
-                        เนื้อหาแบบร่างใบจองอาหารจะแสดงที่นี่
-                      </div>
-                    </ScrollArea>
+                    <div className="space-y-2">
+                      <Card className="bg-white/60 border border-brand-pink/10">
+                        <CardContent className="p-3">
+                          <h4 className="font-medium text-foreground mb-2">รายการแบบร่าง</h4>
+                          <ScrollArea className="h-[300px] w-full">
+                            <div className="space-y-2">
+                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">แบบร่างใบจอง #001</div>
+                                <div className="text-xs text-muted-foreground">วันที่สร้าง: 30/08/2025 | สถานะ: รอการอนุมัติ</div>
+                              </div>
+                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">แบบร่างใบจอง #002</div>
+                                <div className="text-xs text-muted-foreground">วันที่สร้าง: 29/08/2025 | สถานะ: รอการแก้ไข</div>
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -89,11 +117,25 @@ const Admin = () => {
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
                     <h3 className="text-xl font-semibold text-foreground mb-4">กำลังดำเนินการ</h3>
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="p-4 text-center text-muted-foreground">
-                        เนื้อหางานที่กำลังดำเนินการจะแสดงที่นี่
-                      </div>
-                    </ScrollArea>
+                    <div className="space-y-2">
+                      <Card className="bg-white/60 border border-brand-pink/10">
+                        <CardContent className="p-3">
+                          <h4 className="font-medium text-foreground mb-2">รายการที่กำลังดำเนินการ</h4>
+                          <ScrollArea className="h-[300px] w-full">
+                            <div className="space-y-2">
+                              <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ใบจอง #101</div>
+                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารไทย | สถานะ: กำลังเตรียม</div>
+                              </div>
+                              <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ใบจอง #102</div>
+                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารจีน | สถานะ: กำลังปรุง</div>
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -102,11 +144,25 @@ const Admin = () => {
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
                     <h3 className="text-xl font-semibold text-foreground mb-4">ดำเนินการเสร็จสิ้น</h3>
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="p-4 text-center text-muted-foreground">
-                        เนื้อหางานที่ดำเนินการเสร็จสิ้นจะแสดงที่นี่
-                      </div>
-                    </ScrollArea>
+                    <div className="space-y-2">
+                      <Card className="bg-white/60 border border-brand-pink/10">
+                        <CardContent className="p-3">
+                          <h4 className="font-medium text-foreground mb-2">รายการที่ดำเนินการเสร็จสิ้น</h4>
+                          <ScrollArea className="h-[300px] w-full">
+                            <div className="space-y-2">
+                              <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ใบจอง #099</div>
+                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารไทย | สถานะ: เสร็จสิ้น | เวลา: 12:30</div>
+                              </div>
+                              <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ใบจอง #098</div>
+                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารจีน | สถานะ: เสร็จสิ้น | เวลา: 12:15</div>
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
