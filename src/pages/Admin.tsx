@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChefHat, Store, UtensilsCrossed, FileText, Clock, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 const Admin = () => {
   return <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
@@ -27,14 +28,10 @@ const Admin = () => {
             <h2 className="text-3xl font-bold text-center text-foreground mb-6">ระบบจัดการ</h2>
             
             <Tabs defaultValue="restaurants" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-brand-pink/20 via-brand-cream/30 to-brand-yellow/20 border border-brand-pink/30">
+              <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-brand-pink/20 via-brand-cream/30 to-brand-yellow/20 border border-brand-pink/30">
                 <TabsTrigger value="restaurants" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
                   <Store className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-xs md:text-sm hidden sm:block">รายชื่อร้านอาหาร</span>
-                </TabsTrigger>
-                <TabsTrigger value="menus" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
-                  <UtensilsCrossed className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-xs md:text-sm hidden sm:block">รายชื่อเมนูอาหาร</span>
                 </TabsTrigger>
                 <TabsTrigger value="drafts" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
                   <FileText className="h-4 w-4 md:h-5 md:w-5" />
@@ -53,7 +50,17 @@ const Admin = () => {
               <TabsContent value="restaurants" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">รายชื่อร้านอาหาร</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">รายชื่อร้านอาหาร</h3>
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        <Plus className="h-4 w-4 md:mr-2" />
+                        <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
+                      </Button>
+                    </div>
                     <ScrollArea className="h-[400px] w-full">
                       <div className="p-4 text-center text-muted-foreground">
                         เนื้อหารายชื่อร้านอาหารจะแสดงที่นี่
@@ -63,23 +70,20 @@ const Admin = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="menus" className="mt-6">
-                <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
-                  <CardContent className="p-4">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">รายชื่อเมนูอาหาร</h3>
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="p-4 text-center text-muted-foreground">
-                        เนื้อหารายชื่อเมนูอาหารจะแสดงที่นี่
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
               <TabsContent value="drafts" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">แบบร่างใบจองอาหาร</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">แบบร่างใบจองอาหาร</h3>
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        <FilePlus className="h-4 w-4 md:mr-2" />
+                        <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
+                      </Button>
+                    </div>
                     <ScrollArea className="h-[400px] w-full">
                       <div className="p-4 text-center text-muted-foreground">
                         เนื้อหาแบบร่างใบจองอาหารจะแสดงที่นี่
