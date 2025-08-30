@@ -43,7 +43,7 @@ const Admin = () => {
                 </TabsTrigger>
                 <TabsTrigger value="completed" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
                   <CheckCircle className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-xs md:text-sm hidden sm:block">ดำเนินการเสร็จสิ้น</span>
+                  <span className="text-xs md:text-sm hidden sm:block">เสร็จสิ้น</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -52,11 +52,7 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">รายชื่อร้านอาหาร</h3>
-                      <Button 
-                        variant="default" 
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90"
-                      >
+                      <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
                         <Plus className="h-4 w-4 md:mr-2" />
                         <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
                       </Button>
@@ -75,11 +71,7 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">แบบร่างใบจองอาหาร</h3>
-                      <Button 
-                        variant="default" 
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90"
-                      >
+                      <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
                         <FilePlus className="h-4 w-4 md:mr-2" />
                         <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
                       </Button>
