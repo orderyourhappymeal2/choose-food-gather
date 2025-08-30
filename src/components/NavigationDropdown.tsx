@@ -25,14 +25,14 @@ const NavigationDropdown = () => {
         <Button 
           variant="outline" 
           size="icon"
-          className="bg-white/80 hover:bg-white border-brand-pink/50 hover:border-primary"
+          className="bg-popover/90 hover:bg-popover border-border hover:border-ring shadow-lg"
         >
           <Menu className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-48 bg-white/95 backdrop-blur-sm border-brand-pink/30"
+        className="w-48 bg-popover/95 backdrop-blur-md border-border shadow-xl z-50"
         sideOffset={5}
       >
         {navigationItems.map((item) => {
@@ -41,7 +41,7 @@ const NavigationDropdown = () => {
             <DropdownMenuItem
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="cursor-pointer hover:bg-brand-cream/50 focus:bg-brand-cream/50"
+              className="cursor-pointer hover:bg-accent focus:bg-accent text-popover-foreground"
             >
               <IconComponent className="mr-2 h-4 w-4" />
               {item.name}
