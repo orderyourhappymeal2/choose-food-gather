@@ -2,9 +2,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { useState } from "react";
 const Admin = () => {
+  const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   return <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
       <div className="max-w-6xl mx-auto pt-8 relative">
         {/* Navigation Dropdown */}
@@ -52,10 +56,45 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">รายชื่อร้านอาหาร</h3>
-                      <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
-                        <Plus className="h-4 w-4 md:mr-2" />
-                        <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
-                      </Button>
+                      <Dialog open={isRestaurantModalOpen} onOpenChange={setIsRestaurantModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
+                            <Plus className="h-4 w-4 md:mr-2" />
+                            <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                              เพิ่มร้านอาหาร
+                            </DialogTitle>
+                          </DialogHeader>
+                          
+                          <div className="flex-1 overflow-auto py-4">
+                            <Card className="bg-white/60 border border-brand-pink/10">
+                              <CardContent className="p-4">
+                                {/* Content will be added here */}
+                              </CardContent>
+                            </Card>
+                          </div>
+                          
+                          <DialogFooter className="flex-row gap-2 justify-end">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsRestaurantModalOpen(false)}
+                              className="flex-1 sm:flex-initial"
+                            >
+                              ยกเลิก
+                            </Button>
+                            <Button 
+                              variant="default" 
+                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-initial"
+                            >
+                              ยืนยัน
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
@@ -85,10 +124,45 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">แบบร่างใบจองอาหาร</h3>
-                      <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
-                        <FilePlus className="h-4 w-4 md:mr-2" />
-                        <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
-                      </Button>
+                      <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
+                            <FilePlus className="h-4 w-4 md:mr-2" />
+                            <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                              เพิ่มใบสั่งอาหาร
+                            </DialogTitle>
+                          </DialogHeader>
+                          
+                          <div className="flex-1 overflow-auto py-4">
+                            <Card className="bg-white/60 border border-brand-pink/10">
+                              <CardContent className="p-4">
+                                {/* Content will be added here */}
+                              </CardContent>
+                            </Card>
+                          </div>
+                          
+                          <DialogFooter className="flex-row gap-2 justify-end">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsOrderModalOpen(false)}
+                              className="flex-1 sm:flex-initial"
+                            >
+                              ยกเลิก
+                            </Button>
+                            <Button 
+                              variant="default" 
+                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-initial"
+                            >
+                              ยืนยัน
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
