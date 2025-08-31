@@ -63,7 +63,7 @@ const Admin = () => {
                             <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden mx-4">
+                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden">
                           <DialogHeader>
                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
                               เพิ่มร้านอาหาร
@@ -131,7 +131,7 @@ const Admin = () => {
                             <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden mx-4">
+                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden">
                           <DialogHeader>
                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
                               เพิ่มใบสั่งอาหาร
