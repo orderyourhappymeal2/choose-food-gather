@@ -78,17 +78,17 @@ const Admin = () => {
                             </Card>
                           </div>
                           
-                          <DialogFooter className="flex-row gap-2 justify-end">
+                          <DialogFooter className="gap-2">
                             <Button 
                               variant="outline" 
                               onClick={() => setIsRestaurantModalOpen(false)}
-                              className="flex-1 sm:flex-initial"
+                              className="flex-1 sm:flex-none"
                             >
                               ยกเลิก
                             </Button>
                             <Button 
                               variant="default" 
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-initial"
+                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
                             >
                               ยืนยัน
                             </Button>
@@ -146,17 +146,17 @@ const Admin = () => {
                             </Card>
                           </div>
                           
-                          <DialogFooter className="flex-row gap-2 justify-end">
+                          <DialogFooter className="gap-2">
                             <Button 
                               variant="outline" 
                               onClick={() => setIsOrderModalOpen(false)}
-                              className="flex-1 sm:flex-initial"
+                              className="flex-1 sm:flex-none"
                             >
                               ยกเลิก
                             </Button>
                             <Button 
                               variant="default" 
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-initial"
+                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
                             >
                               ยืนยัน
                             </Button>
