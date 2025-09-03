@@ -49,6 +49,10 @@ const OrderSummary = () => {
   };
 
   const handleConfirm = () => {
+    console.log('OrderSummary: handleConfirm called');
+    console.log('OrderSummary: userInfo:', userInfo);
+    console.log('OrderSummary: orderItems:', orderItems);
+    
     // Store final order data
     const finalOrder = {
       userInfo,
@@ -57,7 +61,10 @@ const OrderSummary = () => {
       timestamp: new Date().toISOString()
     };
     
+    console.log('OrderSummary: finalOrder created:', finalOrder);
     localStorage.setItem('finalOrder', JSON.stringify(finalOrder));
+    console.log('OrderSummary: finalOrder saved to localStorage');
+    console.log('OrderSummary: navigating to /thank-you');
     navigate('/thank-you');
   };
 

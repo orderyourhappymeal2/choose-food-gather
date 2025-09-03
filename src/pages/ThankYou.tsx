@@ -20,11 +20,17 @@ const ThankYou = () => {
   const thankYouMessage = "รับออร์เดอร์แล้วค่า ขอให้เป็นวันที่ดีนะคะ";
 
   useEffect(() => {
+    console.log('ThankYou: useEffect called');
     const orderData = localStorage.getItem('finalOrder');
+    console.log('ThankYou: orderData from localStorage:', orderData);
+    
     if (!orderData) {
+      console.log('ThankYou: No finalOrder data found, redirecting to home');
       navigate('/');
       return;
     }
+    
+    console.log('ThankYou: Setting finalOrder data');
     setFinalOrder(JSON.parse(orderData));
   }, []);
 
