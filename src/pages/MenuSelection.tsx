@@ -20,7 +20,7 @@ const MenuSelection = () => {
   const { toast } = useToast();
   const [selectedItems, setSelectedItems] = useState<MenuItem[]>([]);
 
-  const { restaurant, category } = location.state || {};
+  const { restaurant, categoryId, categoryName } = location.state || {};
 
   // Mock menu items (would come from API in real app)
   const menuItems: MenuItem[] = [
@@ -33,10 +33,10 @@ const MenuSelection = () => {
   ];
 
   useEffect(() => {
-    if (!restaurant || !category) {
+    if (!restaurant || !categoryId || !categoryName) {
       navigate('/food-categories');
     }
-  }, [restaurant, category]);
+  }, [restaurant, categoryId, categoryName]);
 
   const handleItemSelect = (item: MenuItem) => {
     setSelectedItems(prev => {
@@ -67,8 +67,8 @@ const MenuSelection = () => {
     const orderData = {
       restaurantId: restaurant.id,
       restaurantName: restaurant.name,
-      categoryId: category.id,
-      categoryName: category.name,
+      categoryId,
+      categoryName,
       items: selectedItems,
       timestamp: new Date().toISOString()
     };
@@ -89,7 +89,7 @@ const MenuSelection = () => {
 
   const totalPrice = selectedItems.reduce((sum, item) => sum + item.price, 0);
 
-  if (!restaurant || !category) {
+  if (!restaurant || !categoryId || !categoryName) {
     return null;
   }
 
@@ -114,7 +114,7 @@ const MenuSelection = () => {
             </Button>
             <div>
               <h1 className="text-xl font-bold">{restaurant.name}</h1>
-              <p className="text-sm text-muted-foreground">{category.name}</p>
+              <p className="text-sm text-muted-foreground">{categoryName}</p>
             </div>
           </div>
           

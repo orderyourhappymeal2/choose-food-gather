@@ -65,13 +65,18 @@ const FoodCategories = () => {
 
   const handleRestaurantClick = (categoryId: string, restaurant: any) => {
     if (restaurant.hasOptions) {
-      // Navigate to menu selection
-      navigate(`/menu/${restaurant.id}`, { 
-        state: { 
-          restaurant, 
-          category: mealCategories.find(cat => cat.id === categoryId) 
-        }
-      });
+      try {
+        // Navigate to menu selection with serializable data only
+        navigate(`/menu/${restaurant.id}`, { 
+          state: { 
+            restaurant, 
+            categoryId,
+            categoryName: mealCategories.find(cat => cat.id === categoryId)?.name
+          }
+        });
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
     }
   };
 
