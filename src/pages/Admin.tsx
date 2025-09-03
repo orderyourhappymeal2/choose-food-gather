@@ -3,12 +3,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState } from "react";
 const Admin = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
+  const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
+
+  const toggleProgressSort = () => {
+    setProgressSortOrder(prev => 
+      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
+    );
+  };
+
+  const toggleCompletedSort = () => {
+    setCompletedSortOrder(prev => 
+      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
+    );
+  };
+
+  const getSortIcon = (sortOrder: 'none' | 'asc' | 'desc') => {
+    switch (sortOrder) {
+      case 'asc': return ArrowUp;
+      case 'desc': return ArrowDown;
+      default: return ArrowUpDown;
+    }
+  };
   return <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
       <div className="max-w-6xl mx-auto pt-8 relative">
         {/* Navigation Dropdown */}
@@ -190,7 +212,20 @@ const Admin = () => {
               <TabsContent value="progress" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">กำลังดำเนินการ</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">กำลังดำเนินการ</h3>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={toggleProgressSort}
+                        className="hover:bg-brand-pink/10"
+                      >
+                        {(() => {
+                          const SortIcon = getSortIcon(progressSortOrder);
+                          return <SortIcon className="h-4 w-4" />;
+                        })()}
+                      </Button>
+                    </div>
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
@@ -217,7 +252,20 @@ const Admin = () => {
               <TabsContent value="completed" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">ดำเนินการเสร็จสิ้น</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">ดำเนินการเสร็จสิ้น</h3>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={toggleCompletedSort}
+                        className="hover:bg-brand-pink/10"
+                      >
+                        {(() => {
+                          const SortIcon = getSortIcon(completedSortOrder);
+                          return <SortIcon className="h-4 w-4" />;
+                        })()}
+                      </Button>
+                    </div>
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
