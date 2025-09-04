@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState } from "react";
 const Admin = () => {
@@ -11,6 +12,7 @@ const Admin = () => {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
+  const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
 
   const toggleProgressSort = () => {
     setProgressSortOrder(prev => 
@@ -22,6 +24,13 @@ const Admin = () => {
     setCompletedSortOrder(prev => 
       prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
     );
+  };
+
+  const toggleRestaurantMenu = (restaurantId: string) => {
+    setExpandedRestaurants(prev => ({
+      ...prev,
+      [restaurantId]: !prev[restaurantId]
+    }));
   };
 
   const getSortIcon = (sortOrder: 'none' | 'asc' | 'desc') => {
@@ -118,20 +127,135 @@ const Admin = () => {
                         </DialogContent>
                       </Dialog>
                     </div>
-                    <div className="space-y-2">
+                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
                           <h4 className="font-medium text-foreground mb-2">รายการร้านอาหาร</h4>
                           <ScrollArea className="h-[300px] w-full">
                             <div className="space-y-2">
-                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 1</div>
-                                <div className="text-xs text-muted-foreground">ประเภท: อาหารไทย</div>
-                              </div>
-                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 2</div>
-                                <div className="text-xs text-muted-foreground">ประเภท: อาหารจีน</div>
-                              </div>
+                              {/* Restaurant 1 */}
+                              <Collapsible>
+                                <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                  <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 1</div>
+                                      <div className="text-xs text-muted-foreground">ประเภท: อาหารไทย</div>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                        <span className="hidden md:inline ml-2">เพิ่มอาหาร</span>
+                                      </Button>
+                                      <CollapsibleTrigger asChild>
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
+                                          onClick={() => toggleRestaurantMenu("restaurant1")}
+                                        >
+                                          {expandedRestaurants["restaurant1"] ? (
+                                            <ChevronUp className="h-4 w-4" />
+                                          ) : (
+                                            <ChevronDown className="h-4 w-4" />
+                                          )}
+                                          <span className="hidden md:inline ml-2">
+                                            {expandedRestaurants["restaurant1"] ? "ซ่อนเมนู" : "แสดงเมนู"}
+                                          </span>
+                                        </Button>
+                                      </CollapsibleTrigger>
+                                    </div>
+                                  </div>
+                                  <CollapsibleContent className="mt-3">
+                                    <div className="border-t border-brand-pink/20 pt-2">
+                                      <div className="text-xs font-medium text-muted-foreground mb-2">เมนูอาหาร:</div>
+                                      <div className="space-y-1 pl-2">
+                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
+                                          <span className="text-xs text-foreground">ผัดไทย</span>
+                                          <div className="flex gap-1">
+                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                              <UtensilsCrossed className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
+                                          <span className="text-xs text-foreground">ต้มยำกุ้ง</span>
+                                          <div className="flex gap-1">
+                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                              <UtensilsCrossed className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </CollapsibleContent>
+                                </div>
+                              </Collapsible>
+
+                              {/* Restaurant 2 */}
+                              <Collapsible>
+                                <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                  <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 2</div>
+                                      <div className="text-xs text-muted-foreground">ประเภท: อาหารจีน</div>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                        <span className="hidden md:inline ml-2">เพิ่มอาหาร</span>
+                                      </Button>
+                                      <CollapsibleTrigger asChild>
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
+                                          onClick={() => toggleRestaurantMenu("restaurant2")}
+                                        >
+                                          {expandedRestaurants["restaurant2"] ? (
+                                            <ChevronUp className="h-4 w-4" />
+                                          ) : (
+                                            <ChevronDown className="h-4 w-4" />
+                                          )}
+                                          <span className="hidden md:inline ml-2">
+                                            {expandedRestaurants["restaurant2"] ? "ซ่อนเมนู" : "แสดงเมนู"}
+                                          </span>
+                                        </Button>
+                                      </CollapsibleTrigger>
+                                    </div>
+                                  </div>
+                                  <CollapsibleContent className="mt-3">
+                                    <div className="border-t border-brand-pink/20 pt-2">
+                                      <div className="text-xs font-medium text-muted-foreground mb-2">เมนูอาหาร:</div>
+                                      <div className="space-y-1 pl-2">
+                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
+                                          <span className="text-xs text-foreground">ข้าวผัดปู</span>
+                                          <div className="flex gap-1">
+                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                              <UtensilsCrossed className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
+                                          <span className="text-xs text-foreground">หมูหวานเปรี้ยว</span>
+                                          <div className="flex gap-1">
+                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                              <UtensilsCrossed className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </CollapsibleContent>
+                                </div>
+                              </Collapsible>
                             </div>
                           </ScrollArea>
                         </CardContent>
