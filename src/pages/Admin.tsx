@@ -85,7 +85,8 @@ const Admin = () => {
               <TabsContent value="restaurants" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-end items-center mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">รายชื่อร้านอาหาร</h3>
                       <Dialog open={isRestaurantModalOpen} onOpenChange={setIsRestaurantModalOpen}>
                         <DialogTrigger asChild>
                           <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
@@ -267,7 +268,8 @@ const Admin = () => {
               <TabsContent value="drafts" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-end items-center mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">แบบร่างใบจองอาหาร</h3>
                       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
                         <DialogTrigger asChild>
                           <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
@@ -334,7 +336,8 @@ const Admin = () => {
               <TabsContent value="progress" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-end items-center mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">รายการที่กำลังดำเนินการ</h3>
                       <Button
                         variant="ghost" 
                         size="sm" 
@@ -373,7 +376,8 @@ const Admin = () => {
               <TabsContent value="completed" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-end items-center mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-foreground">รายการที่ดำเนินการเสร็จสิ้น</h3>
                       <Button
                         variant="ghost" 
                         size="sm" 
