@@ -3,8 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState } from "react";
 const Admin = () => {
@@ -12,32 +11,20 @@ const Admin = () => {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
-  const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
-
   const toggleProgressSort = () => {
-    setProgressSortOrder(prev => 
-      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
-    );
+    setProgressSortOrder(prev => prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none');
   };
-
   const toggleCompletedSort = () => {
-    setCompletedSortOrder(prev => 
-      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
-    );
+    setCompletedSortOrder(prev => prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none');
   };
-
-  const toggleRestaurantMenu = (restaurantId: string) => {
-    setExpandedRestaurants(prev => ({
-      ...prev,
-      [restaurantId]: !prev[restaurantId]
-    }));
-  };
-
   const getSortIcon = (sortOrder: 'none' | 'asc' | 'desc') => {
     switch (sortOrder) {
-      case 'asc': return ArrowUp;
-      case 'desc': return ArrowDown;
-      default: return ArrowUpDown;
+      case 'asc':
+        return ArrowUp;
+      case 'desc':
+        return ArrowDown;
+      default:
+        return ArrowUpDown;
     }
   };
   return <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
@@ -110,152 +97,30 @@ const Admin = () => {
                           </div>
                           
                           <DialogFooter className="gap-2">
-                            <Button 
-                              variant="outline" 
-                              onClick={() => setIsRestaurantModalOpen(false)}
-                              className="flex-1 sm:flex-none"
-                            >
+                            <Button variant="outline" onClick={() => setIsRestaurantModalOpen(false)} className="flex-1 sm:flex-none">
                               ยกเลิก
                             </Button>
-                            <Button 
-                              variant="default" 
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                            >
+                            <Button variant="default" className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none">
                               ยืนยัน
                             </Button>
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
                     </div>
-                     <div className="space-y-2">
+                    <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
                           <h4 className="font-medium text-foreground mb-2">รายการร้านอาหาร</h4>
                           <ScrollArea className="h-[300px] w-full">
                             <div className="space-y-2">
-                              {/* Restaurant 1 */}
-                              <Collapsible>
-                                <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                  <div className="flex items-center justify-between gap-2 mb-2">
-                                    <div className="flex-1">
-                                      <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 1</div>
-                                      <div className="text-xs text-muted-foreground">ประเภท: อาหารไทย</div>
-                                    </div>
-                                    <div className="flex gap-1">
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                      >
-                                        <Plus className="h-4 w-4" />
-                                        <span className="hidden md:inline ml-2">เพิ่มอาหาร</span>
-                                      </Button>
-                                      <CollapsibleTrigger asChild>
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm"
-                                          className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                          onClick={() => toggleRestaurantMenu("restaurant1")}
-                                        >
-                                          {expandedRestaurants["restaurant1"] ? (
-                                            <ChevronUp className="h-4 w-4" />
-                                          ) : (
-                                            <ChevronDown className="h-4 w-4" />
-                                          )}
-                                          <span className="hidden md:inline ml-2">
-                                            {expandedRestaurants["restaurant1"] ? "ซ่อนเมนู" : "แสดงเมนู"}
-                                          </span>
-                                        </Button>
-                                      </CollapsibleTrigger>
-                                    </div>
-                                  </div>
-                                  <CollapsibleContent className="mt-3">
-                                    <div className="border-t border-brand-pink/20 pt-2">
-                                      <div className="text-xs font-medium text-muted-foreground mb-2">เมนูอาหาร:</div>
-                                      <div className="space-y-1 pl-2">
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">ผัดไทย</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">ต้มยำกุ้ง</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </CollapsibleContent>
-                                </div>
-                              </Collapsible>
-
-                              {/* Restaurant 2 */}
-                              <Collapsible>
-                                <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                  <div className="flex items-center justify-between gap-2 mb-2">
-                                    <div className="flex-1">
-                                      <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 2</div>
-                                      <div className="text-xs text-muted-foreground">ประเภท: อาหารจีน</div>
-                                    </div>
-                                    <div className="flex gap-1">
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                      >
-                                        <Plus className="h-4 w-4" />
-                                        <span className="hidden md:inline ml-2">เพิ่มอาหาร</span>
-                                      </Button>
-                                      <CollapsibleTrigger asChild>
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm"
-                                          className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                          onClick={() => toggleRestaurantMenu("restaurant2")}
-                                        >
-                                          {expandedRestaurants["restaurant2"] ? (
-                                            <ChevronUp className="h-4 w-4" />
-                                          ) : (
-                                            <ChevronDown className="h-4 w-4" />
-                                          )}
-                                          <span className="hidden md:inline ml-2">
-                                            {expandedRestaurants["restaurant2"] ? "ซ่อนเมนู" : "แสดงเมนู"}
-                                          </span>
-                                        </Button>
-                                      </CollapsibleTrigger>
-                                    </div>
-                                  </div>
-                                  <CollapsibleContent className="mt-3">
-                                    <div className="border-t border-brand-pink/20 pt-2">
-                                      <div className="text-xs font-medium text-muted-foreground mb-2">เมนูอาหาร:</div>
-                                      <div className="space-y-1 pl-2">
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">ข้าวผัดปู</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">หมูหวานเปรี้ยว</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </CollapsibleContent>
-                                </div>
-                              </Collapsible>
+                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 1</div>
+                                <div className="text-xs text-muted-foreground">ประเภท: อาหารไทย</div>
+                              </div>
+                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
+                                <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 2</div>
+                                
+                              </div>
                             </div>
                           </ScrollArea>
                         </CardContent>
@@ -293,17 +158,10 @@ const Admin = () => {
                           </div>
                           
                           <DialogFooter className="gap-2">
-                            <Button 
-                              variant="outline" 
-                              onClick={() => setIsOrderModalOpen(false)}
-                              className="flex-1 sm:flex-none"
-                            >
+                            <Button variant="outline" onClick={() => setIsOrderModalOpen(false)} className="flex-1 sm:flex-none">
                               ยกเลิก
                             </Button>
-                            <Button 
-                              variant="default" 
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                            >
+                            <Button variant="default" className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none">
                               ยืนยัน
                             </Button>
                           </DialogFooter>
@@ -338,16 +196,11 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">กำลังดำเนินการ</h3>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={toggleProgressSort}
-                        className="hover:bg-brand-pink/10"
-                      >
+                      <Button variant="ghost" size="sm" onClick={toggleProgressSort} className="hover:bg-brand-pink/10">
                         {(() => {
-                          const SortIcon = getSortIcon(progressSortOrder);
-                          return <SortIcon className="h-4 w-4" />;
-                        })()}
+                        const SortIcon = getSortIcon(progressSortOrder);
+                        return <SortIcon className="h-4 w-4" />;
+                      })()}
                       </Button>
                     </div>
                     <div className="space-y-2">
@@ -378,16 +231,11 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">ดำเนินการเสร็จสิ้น</h3>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={toggleCompletedSort}
-                        className="hover:bg-brand-pink/10"
-                      >
+                      <Button variant="ghost" size="sm" onClick={toggleCompletedSort} className="hover:bg-brand-pink/10">
                         {(() => {
-                          const SortIcon = getSortIcon(completedSortOrder);
-                          return <SortIcon className="h-4 w-4" />;
-                        })()}
+                        const SortIcon = getSortIcon(completedSortOrder);
+                        return <SortIcon className="h-4 w-4" />;
+                      })()}
                       </Button>
                     </div>
                     <div className="space-y-2">
