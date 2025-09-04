@@ -85,8 +85,7 @@ const Admin = () => {
               <TabsContent value="restaurants" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">รายชื่อร้านอาหาร</h3>
+                    <div className="flex justify-end items-center mb-4">
                       <Dialog open={isRestaurantModalOpen} onOpenChange={setIsRestaurantModalOpen}>
                         <DialogTrigger asChild>
                           <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
@@ -130,7 +129,7 @@ const Admin = () => {
                      <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
-                          <h4 className="font-medium text-foreground mb-2">รายการร้านอาหาร</h4>
+                          
                           <ScrollArea className="h-[300px] w-full">
                             <div className="space-y-2">
                               {/* Restaurant 1 */}
@@ -268,8 +267,7 @@ const Admin = () => {
               <TabsContent value="drafts" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">แบบร่างใบจองอาหาร</h3>
+                    <div className="flex justify-end items-center mb-4">
                       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
                         <DialogTrigger asChild>
                           <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
@@ -313,7 +311,7 @@ const Admin = () => {
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
-                          <h4 className="font-medium text-foreground mb-2">รายการแบบร่าง</h4>
+                          
                           <ScrollArea className="h-[300px] w-full">
                             <div className="space-y-2">
                               <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
@@ -336,9 +334,8 @@ const Admin = () => {
               <TabsContent value="progress" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">กำลังดำเนินการ</h3>
-                      <Button 
+                    <div className="flex justify-end items-center mb-4">
+                      <Button
                         variant="ghost" 
                         size="sm" 
                         onClick={toggleProgressSort}
@@ -353,7 +350,7 @@ const Admin = () => {
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
-                          <h4 className="font-medium text-foreground mb-2">รายการที่กำลังดำเนินการ</h4>
+                          
                           <ScrollArea className="h-[300px] w-full">
                             <div className="space-y-2">
                               <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
@@ -376,9 +373,8 @@ const Admin = () => {
               <TabsContent value="completed" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">ดำเนินการเสร็จสิ้น</h3>
-                      <Button 
+                    <div className="flex justify-end items-center mb-4">
+                      <Button
                         variant="ghost" 
                         size="sm" 
                         onClick={toggleCompletedSort}
@@ -393,7 +389,7 @@ const Admin = () => {
                     <div className="space-y-2">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-3">
-                          <h4 className="font-medium text-foreground mb-2">รายการที่ดำเนินการเสร็จสิ้น</h4>
+                          
                           <ScrollArea className="h-[300px] w-full">
                             <div className="space-y-2">
                               <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
