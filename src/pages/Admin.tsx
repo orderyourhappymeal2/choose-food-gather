@@ -159,10 +159,10 @@ const Admin = () => {
       default: return ArrowUpDown;
     }
   };
-  return <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
+  return <div className="min-h-screen bg-[var(--gradient-welcome)] p-6">
       <div className="max-w-6xl mx-auto pt-8 relative">
         {/* Navigation Dropdown */}
-        <div className="absolute top-0 right-0 p-4 z-50">
+        <div className="absolute top-0 right-0 p-6 z-50">
           <NavigationDropdown />
         </div>
 
@@ -177,9 +177,9 @@ const Admin = () => {
         </div>
 
         {/* Main Admin Container */}
-        <Card className="bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
-          <CardContent className="p-2 md:p-8">
-            <h2 className="text-3xl font-bold text-center text-foreground mb-6">ระบบจัดการ</h2>
+        <Card className="bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30 mx-4">
+          <CardContent className="p-4 md:p-8">
+            <h2 className="text-3xl font-bold text-center text-foreground mb-8">ระบบจัดการ</h2>
             
             <Tabs defaultValue="restaurants" className="w-full">
               <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-brand-pink/20 via-brand-cream/30 to-brand-yellow/20 border border-brand-pink/30">
