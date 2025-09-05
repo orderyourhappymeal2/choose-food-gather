@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      shop: {
+        Row: {
+          created_at: string
+          description: string | null
+          food_type_1: string
+          food_type_2: string | null
+          open_day: string
+          open_time: string
+          shop_id: string
+          shop_name: string
+          url_pic: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          food_type_1: string
+          food_type_2?: string | null
+          open_day: string
+          open_time: string
+          shop_id?: string
+          shop_name: string
+          url_pic?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          food_type_1?: string
+          food_type_2?: string | null
+          open_day?: string
+          open_time?: string
+          shop_id?: string
+          shop_name?: string
+          url_pic?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
