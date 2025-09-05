@@ -310,13 +310,13 @@ const Admin = () => {
                                   </Label>
                                   <Select 
                                     value={formData.food_type_2} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value }))}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
                                   >
                                     <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
                                       <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="">ไม่เลือก</SelectItem>
+                                      <SelectItem value="none">ไม่เลือก</SelectItem>
                                       {foodTypes.map((type) => (
                                         <SelectItem key={type} value={type}>
                                           {type}
