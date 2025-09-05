@@ -8,18 +8,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState, useEffect } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { th } from "date-fns/locale";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { cn } from "@/lib/utils";
+// Plan form schema
+const planFormSchema = z.object({
+  plan_name: z.string().min(1, "กรุณากรอกชื่องาน"),
+  plan_location: z.string().min(1, "กรุณากรอกสถานที่"),
+  plan_date: z.date({ required_error: "กรุณาเลือกวันที่" }),
+  plan_time_start: z.string().min(1, "กรุณาเลือกเวลาเริ่มต้น"),
+  plan_time_end: z.string().min(1, "กรุณาเลือกเวลาสิ้นสุด"),
+  plan_pwd: z.string().min(1, "กรุณากรอกรหัส"),
+  plan_maxp: z.string().min(1, "กรุณากรอกจำนวนผู้เข้าร่วม"),
+  plan_editor: z.string().min(1, "กรุณากรอกชื่อผู้สร้างฟอร์ม"),
+});
+
+type PlanFormData = z.infer<typeof planFormSchema>;
+
 const Admin = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
+  const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
 
   // Restaurant form states
   const [formData, setFormData] = useState({
@@ -44,6 +68,30 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
+
+  // Plan form
+  const planForm = useForm<PlanFormData>({
+    resolver: zodResolver(planFormSchema),
+    defaultValues: {
+      plan_name: '',
+      plan_location: '',
+      plan_time_start: '',
+      plan_time_end: '',
+      plan_pwd: '',
+      plan_maxp: '',
+      plan_editor: '',
+    },
+  });
+
+  // Generate time options (00:00 to 24:00)
+  const timeOptions = [];
+  for (let hour = 0; hour <= 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      if (hour === 24 && minute > 0) break;
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      timeOptions.push(timeString);
+    }
+  }
 
   // Fetch restaurants data
   useEffect(() => {
@@ -280,6 +328,40 @@ const Admin = () => {
       case 'asc': return ArrowUp;
       case 'desc': return ArrowDown;
       default: return ArrowUpDown;
+    }
+  };
+
+  // Handle plan form submission
+  const handlePlanSubmit = async (data: PlanFormData) => {
+    setIsPlanSubmitting(true);
+    try {
+      // Convert Buddhist year to Gregorian year for database storage
+      const buddhistYear = data.plan_date.getFullYear() + 543;
+      const formattedDate = format(data.plan_date, 'dd/MM/') + buddhistYear;
+      const timeRange = `${data.plan_time_start} - ${data.plan_time_end}`;
+
+      const { error } = await (supabase as any)
+        .from('plan')
+        .insert([{
+          plan_name: data.plan_name,
+          plan_location: data.plan_location,
+          plan_date: formattedDate,
+          plan_time: timeRange,
+          plan_pwd: data.plan_pwd,
+          plan_maxp: parseInt(data.plan_maxp),
+          plan_editor: data.plan_editor,
+        }]);
+
+      if (error) throw error;
+
+      toast.success('เพิ่มใบสั่งอาหารสำเร็จ!');
+      planForm.reset();
+      setIsOrderModalOpen(false);
+    } catch (error) {
+      console.error('Error creating plan:', error);
+      toast.error('เกิดข้อผิดพลาดในการเพิ่มใบสั่งอาหาร');
+    } finally {
+      setIsPlanSubmitting(false);
     }
   };
   return <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-6">
@@ -985,27 +1067,263 @@ const Admin = () => {
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <div className="flex-1 overflow-auto py-4">
-                            <Card className="bg-white/60 border border-brand-pink/10">
-                              <CardContent className="p-4">
-                                {/* Content will be added here */}
-                              </CardContent>
-                            </Card>
-                          </div>
+                          <ScrollArea className="flex-1 max-h-[calc(90vh-12rem)] overflow-auto">
+                            <Form {...planForm}>
+                              <form onSubmit={planForm.handleSubmit(handlePlanSubmit)} className="space-y-6 p-4">
+                                
+                                {/* Plan Name */}
+                                <div className="grid grid-cols-1 gap-4">
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_name"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            ชื่องาน *
+                                          </FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              placeholder="กรุณากรอกชื่องาน"
+                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Location */}
+                                <div className="grid grid-cols-1 gap-4">
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_location"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            สถานที่ *
+                                          </FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              placeholder="กรุณากรอกสถานที่"
+                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Date */}
+                                <div className="grid grid-cols-1 gap-4">
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_date"
+                                      render={({ field }) => (
+                                        <FormItem className="flex flex-col">
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            วันที่ *
+                                          </FormLabel>
+                                          <Popover>
+                                            <PopoverTrigger asChild>
+                                              <FormControl>
+                                                <Button
+                                                  variant="outline"
+                                                  className={cn(
+                                                    "w-full pl-3 text-left font-normal bg-white/80 border-brand-pink/20 focus:border-primary",
+                                                    !field.value && "text-muted-foreground"
+                                                  )}
+                                                >
+                                                  {field.value ? (
+                                                    `${format(field.value, "dd MMMM", { locale: th })} ${field.value.getFullYear() + 543}`
+                                                  ) : (
+                                                    <span>เลือกวันที่</span>
+                                                  )}
+                                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                              </FormControl>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start">
+                                              <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) => date < new Date()}
+                                                initialFocus
+                                                className="pointer-events-auto"
+                                              />
+                                            </PopoverContent>
+                                          </Popover>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Time Range */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_time_start"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            เวลาเริ่มต้น *
+                                          </FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                              <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                                                <SelectValue placeholder="เลือกเวลาเริ่มต้น" />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="max-h-[200px]">
+                                              {timeOptions.map((time) => (
+                                                <SelectItem key={time} value={time}>
+                                                  {time}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_time_end"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            เวลาสิ้นสุด *
+                                          </FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                              <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                                                <SelectValue placeholder="เลือกเวลาสิ้นสุด" />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="max-h-[200px]">
+                                              {timeOptions.map((time) => (
+                                                <SelectItem key={time} value={time}>
+                                                  {time}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Password and Max Participants */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_pwd"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            รหัส *
+                                          </FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              placeholder="กรุณากรอกรหัส"
+                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_maxp"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            จำนวนผู้เข้าร่วม *
+                                          </FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              type="number"
+                                              min="1"
+                                              placeholder="จำนวนคน"
+                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Editor Name */}
+                                <div className="grid grid-cols-1 gap-4">
+                                  <div>
+                                    <FormField
+                                      control={planForm.control}
+                                      name="plan_editor"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel className="text-sm font-medium text-foreground">
+                                            ชื่อผู้สร้างฟอร์ม *
+                                          </FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              {...field}
+                                              placeholder="กรุณากรอกชื่อผู้สร้างฟอร์ม"
+                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+
+                              </form>
+                            </Form>
+                          </ScrollArea>
                           
-                          <DialogFooter className="gap-2">
+                          <DialogFooter className="gap-2 p-4 border-t bg-white/90">
                             <Button 
                               variant="outline" 
-                              onClick={() => setIsOrderModalOpen(false)}
-                              className="flex-1 sm:flex-none"
+                              onClick={() => {
+                                planForm.reset();
+                                setIsOrderModalOpen(false);
+                              }}
+                              className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
+                              disabled={isPlanSubmitting}
                             >
                               ยกเลิก
                             </Button>
                             <Button 
-                              variant="default" 
+                              onClick={planForm.handleSubmit(handlePlanSubmit)}
                               className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                              disabled={isPlanSubmitting}
                             >
-                              ยืนยัน
+                              {isPlanSubmitting ? "กำลังบันทึก..." : "ยืนยัน"}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
