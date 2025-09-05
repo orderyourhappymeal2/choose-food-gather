@@ -384,7 +384,7 @@ const Admin = () => {
                             </div>
                           </div>
                           
-                          <DialogFooter className="gap-2">
+                          <DialogFooter className="gap-2 p-6 pt-4">
                             <Button 
                               variant="outline" 
                               onClick={() => {
