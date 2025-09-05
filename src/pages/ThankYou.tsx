@@ -47,8 +47,8 @@ const ThankYou = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
-      <div className="max-w-md mx-auto pt-8 relative">
+    <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
+      <div className="max-w-md mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
         {/* Navigation Dropdown */}
         <div className="absolute top-0 right-0 p-4 z-50">
           <NavigationDropdown />

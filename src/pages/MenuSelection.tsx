@@ -102,7 +102,7 @@ const MenuSelection = () => {
 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-brand-pink/30 p-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="max-w-2xl mx-auto flex items-center justify-between px-2 sm:px-0">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -130,8 +130,8 @@ const MenuSelection = () => {
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="max-w-2xl mx-auto">
+      <div className="px-2 py-4 sm:p-4">
+        <div className="max-w-2xl mx-auto px-0 sm:px-0">
           {/* Menu Grid */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             {menuItems.map((item) => (
