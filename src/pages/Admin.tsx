@@ -4,15 +4,134 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 const Admin = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
+
+  // Restaurant form states
+  const [formData, setFormData] = useState({
+    shop_name: '',
+    description: '',
+    open_day: '',
+    open_time: '',
+    food_type_1: '',
+    food_type_2: '',
+  });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
+
+  const resetForm = () => {
+    setFormData({
+      shop_name: '',
+      description: '',
+      open_day: '',
+      open_time: '',
+      food_type_1: '',
+      food_type_2: '',
+    });
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const validateForm = () => {
+    const requiredFields = ['shop_name', 'description', 'open_day', 'open_time', 'food_type_1'];
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData]) {
+        toast.error(`กรุณากรอก${field === 'shop_name' ? 'ชื่อร้านอาหาร' : 
+          field === 'description' ? 'รายละเอียด' :
+          field === 'open_day' ? 'วันที่เปิด' :
+          field === 'open_time' ? 'เวลาเปิด' :
+          field === 'food_type_1' ? 'ประเภทร้าน' : field}`);
+        return false;
+      }
+    }
+    if (!selectedImage) {
+      toast.error('กรุณาเลือกรูปภาพ');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
+    try {
+      let imageUrl = '';
+      
+      if (selectedImage) {
+        const fileExt = selectedImage.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `shop/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('shop')
+          .upload(filePath, selectedImage);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('shop')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('shop')
+        .insert([{
+          shop_name: formData.shop_name,
+          description: formData.description,
+          open_day: formData.open_day,
+          open_time: formData.open_time,
+          food_type_1: formData.food_type_1,
+          food_type_2: formData.food_type_2 || null,
+          url_pic: imageUrl,
+        }]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('เพิ่มร้านอาหารสำเร็จ!');
+      resetForm();
+      setIsRestaurantModalOpen(false);
+    } catch (error) {
+      console.error('Error adding restaurant:', error);
+      toast.error('เกิดข้อผิดพลาดในการเพิ่มร้านอาหาร');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const toggleProgressSort = () => {
     setProgressSortOrder(prev => 
@@ -102,26 +221,188 @@ const Admin = () => {
                           </DialogHeader>
                           
                           <div className="flex-1 overflow-auto py-4">
-                            <Card className="bg-white/60 border border-brand-pink/10">
-                              <CardContent className="p-4">
-                                {/* Content will be added here */}
-                              </CardContent>
-                            </Card>
+                            <div className="space-y-6">
+                              {/* Shop Name */}
+                              <div>
+                                <Label htmlFor="shop_name" className="text-sm font-medium text-foreground">
+                                  ชื่อร้านอาหาร *
+                                </Label>
+                                <Input
+                                  id="shop_name"
+                                  type="text"
+                                  value={formData.shop_name}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
+                                  placeholder="กรุณากรอกชื่อร้านอาหาร"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                />
+                              </div>
+
+                              {/* Description */}
+                              <div>
+                                <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                                  รายละเอียด *
+                                </Label>
+                                <Textarea
+                                  id="description"
+                                  value={formData.description}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                  placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
+                                  rows={3}
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
+                                />
+                              </div>
+
+                              {/* Open Day and Time */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="open_day" className="text-sm font-medium text-foreground">
+                                    วันที่เปิด *
+                                  </Label>
+                                  <Input
+                                    id="open_day"
+                                    type="text"
+                                    value={formData.open_day}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
+                                    placeholder="เช่น จันทร์-ศุกร์"
+                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="open_time" className="text-sm font-medium text-foreground">
+                                    เวลาเปิด *
+                                  </Label>
+                                  <Input
+                                    id="open_time"
+                                    type="text"
+                                    value={formData.open_time}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
+                                    placeholder="เช่น 08:00-17:00"
+                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Food Types */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="food_type_1" className="text-sm font-medium text-foreground">
+                                    ประเภทร้าน *
+                                  </Label>
+                                  <Select 
+                                    value={formData.food_type_1} 
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
+                                  >
+                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
+                                      <SelectValue placeholder="เลือกประเภทร้าน" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {foodTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                          {type}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label htmlFor="food_type_2" className="text-sm font-medium text-foreground">
+                                    ประเภทร้าน (ถ้ามี)
+                                  </Label>
+                                  <Select 
+                                    value={formData.food_type_2} 
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value }))}
+                                  >
+                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
+                                      <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="">ไม่เลือก</SelectItem>
+                                      {foodTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                          {type}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+
+                              {/* Image Upload */}
+                              <div>
+                                <Label htmlFor="image" className="text-sm font-medium text-foreground">
+                                  รูปภาพ *
+                                </Label>
+                                <div className="mt-1">
+                                  <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
+                                    <input
+                                      id="image"
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleImageChange}
+                                      className="hidden"
+                                    />
+                                    <label
+                                      htmlFor="image"
+                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
+                                    >
+                                      {imagePreview ? (
+                                        <div className="relative">
+                                          <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
+                                          />
+                                          <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              setSelectedImage(null);
+                                              setImagePreview(null);
+                                            }}
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <Upload className="h-8 w-8 text-muted-foreground" />
+                                          <div className="text-center">
+                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพ</span>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                              รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
+                                            </p>
+                                          </div>
+                                        </>
+                                      )}
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           
                           <DialogFooter className="gap-2">
                             <Button 
                               variant="outline" 
-                              onClick={() => setIsRestaurantModalOpen(false)}
+                              onClick={() => {
+                                resetForm();
+                                setIsRestaurantModalOpen(false);
+                              }}
                               className="flex-1 sm:flex-none"
+                              disabled={isSubmitting}
                             >
                               ยกเลิก
                             </Button>
                             <Button 
                               variant="default" 
+                              onClick={handleSubmit}
                               className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                              disabled={isSubmitting}
                             >
-                              ยืนยัน
+                              {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
