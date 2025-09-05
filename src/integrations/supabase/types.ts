@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      plan: {
+        Row: {
+          created_at: string
+          plan_date: string
+          plan_editor: string
+          plan_id: string
+          plan_location: string
+          plan_maxp: number
+          plan_name: string
+          plan_pwd: string
+          plan_state: string
+          plan_time: string
+          url_portal: string | null
+        }
+        Insert: {
+          created_at?: string
+          plan_date: string
+          plan_editor: string
+          plan_id?: string
+          plan_location: string
+          plan_maxp: number
+          plan_name: string
+          plan_pwd: string
+          plan_state?: string
+          plan_time: string
+          url_portal?: string | null
+        }
+        Update: {
+          created_at?: string
+          plan_date?: string
+          plan_editor?: string
+          plan_id?: string
+          plan_location?: string
+          plan_maxp?: number
+          plan_name?: string
+          plan_pwd?: string
+          plan_state?: string
+          plan_time?: string
+          url_portal?: string | null
+        }
+        Relationships: []
+      }
       shop: {
         Row: {
           created_at: string

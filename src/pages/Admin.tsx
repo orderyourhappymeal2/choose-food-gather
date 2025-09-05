@@ -83,11 +83,10 @@ const Admin = () => {
     },
   });
 
-  // Generate time options (00:00 to 24:00)
+  // Generate time options (06:00 to 21:00)
   const timeOptions = [];
-  for (let hour = 0; hour <= 24; hour++) {
+  for (let hour = 6; hour <= 21; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
-      if (hour === 24 && minute > 0) break;
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       timeOptions.push(timeString);
     }
@@ -1152,14 +1151,13 @@ const Admin = () => {
                                               </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0" align="start">
-                                              <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                disabled={(date) => date < new Date()}
-                                                initialFocus
-                                                className="pointer-events-auto"
-                                              />
+                                               <Calendar
+                                                 mode="single"
+                                                 selected={field.value}
+                                                 onSelect={field.onChange}
+                                                 initialFocus
+                                                 className="pointer-events-auto"
+                                               />
                                             </PopoverContent>
                                           </Popover>
                                           <FormMessage />
