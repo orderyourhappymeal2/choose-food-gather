@@ -213,15 +213,15 @@ const Admin = () => {
                             <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden">
-                          <DialogHeader>
+                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
+                          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
                               เพิ่มร้านอาหาร
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <div className="flex-1 overflow-auto py-4">
-                            <div className="space-y-6">
+                          <ScrollArea className="flex-1 max-h-[calc(90vh-10rem)] px-4">
+                            <div className="py-4 space-y-6">
                               {/* Shop Name */}
                               <div>
                                 <Label htmlFor="shop_name" className="text-sm font-medium text-foreground">
@@ -382,28 +382,30 @@ const Admin = () => {
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </ScrollArea>
                           
-                          <DialogFooter className="gap-2 p-6 pt-4">
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                resetForm();
-                                setIsRestaurantModalOpen(false);
-                              }}
-                              className="flex-1 sm:flex-none"
-                              disabled={isSubmitting}
-                            >
-                              ยกเลิก
-                            </Button>
-                            <Button 
-                              variant="default" 
-                              onClick={handleSubmit}
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                              disabled={isSubmitting}
-                            >
-                              {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
-                            </Button>
+                          <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                  resetForm();
+                                  setIsRestaurantModalOpen(false);
+                                }}
+                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
+                                disabled={isSubmitting}
+                              >
+                                ยกเลิก
+                              </Button>
+                              <Button 
+                                variant="default" 
+                                onClick={handleSubmit}
+                                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                                disabled={isSubmitting}
+                              >
+                                {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
+                              </Button>
+                            </div>
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
