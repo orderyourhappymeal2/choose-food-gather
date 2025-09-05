@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2 } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 const Admin = () => {
@@ -33,7 +34,129 @@ const Admin = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Restaurant data and modals
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isViewMenuModalOpen, setIsViewMenuModalOpen] = useState(false);
+  const [isAddMenuModalOpen, setIsAddMenuModalOpen] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
+
+  // Fetch restaurants data
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  const fetchRestaurants = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('shop')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setRestaurants(data || []);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลร้านอาหาร');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditRestaurant = (restaurant: any) => {
+    setSelectedRestaurant(restaurant);
+    setFormData({
+      shop_name: restaurant.shop_name,
+      description: restaurant.description,
+      open_day: restaurant.open_day,
+      open_time: restaurant.open_time,
+      food_type_1: restaurant.food_type_1,
+      food_type_2: restaurant.food_type_2 || '',
+    });
+    if (restaurant.url_pic) {
+      setImagePreview(restaurant.url_pic);
+    }
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateRestaurant = async () => {
+    if (!selectedRestaurant || !validateForm()) return;
+    
+    setIsSubmitting(true);
+    try {
+      let imageUrl = selectedRestaurant.url_pic;
+      
+      if (selectedImage) {
+        const fileExt = selectedImage.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `shop/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('shop')
+          .upload(filePath, selectedImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('shop')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('shop')
+        .update({
+          shop_name: formData.shop_name,
+          description: formData.description,
+          open_day: formData.open_day,
+          open_time: formData.open_time,
+          food_type_1: formData.food_type_1,
+          food_type_2: formData.food_type_2 || null,
+          url_pic: imageUrl,
+        })
+        .eq('shop_id', selectedRestaurant.shop_id);
+
+      if (error) throw error;
+
+      toast.success('แก้ไขร้านอาหารสำเร็จ!');
+      resetForm();
+      setIsEditModalOpen(false);
+      setSelectedRestaurant(null);
+      fetchRestaurants();
+    } catch (error) {
+      console.error('Error updating restaurant:', error);
+      toast.error('เกิดข้อผิดพลาดในการแก้ไขร้านอาหาร');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteRestaurant = async () => {
+    if (!selectedRestaurant) return;
+    
+    try {
+      const { error } = await supabase
+        .from('shop')
+        .delete()
+        .eq('shop_id', selectedRestaurant.shop_id);
+
+      if (error) throw error;
+
+      toast.success('ลบร้านอาหารสำเร็จ!');
+      setIsDeleteConfirmOpen(false);
+      setSelectedRestaurant(null);
+      fetchRestaurants();
+    } catch (error) {
+      console.error('Error deleting restaurant:', error);
+      toast.error('เกิดข้อผิดพลาดในการลบร้านอาหาร');
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -410,139 +533,434 @@ const Admin = () => {
                         </DialogContent>
                       </Dialog>
                     </div>
-                     <div className="space-y-2">
-                      <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-3">
-                          
-                          <ScrollArea className="h-[300px] w-full">
-                            <div className="space-y-2">
-                              {/* Restaurant 1 */}
-                              <Collapsible>
-                                <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                  <div className="flex items-center justify-between gap-2 mb-2">
-                                    <div className="flex-1">
-                                      <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 1</div>
-                                      <div className="text-xs text-muted-foreground">ประเภท: อาหารไทย</div>
-                                    </div>
-                                    <div className="flex gap-1">
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                      >
-                                        <Plus className="h-4 w-4" />
-                                        <span className="hidden md:inline ml-2">เพิ่มอาหาร</span>
-                                      </Button>
-                                      <CollapsibleTrigger asChild>
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm"
-                                          className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                          onClick={() => toggleRestaurantMenu("restaurant1")}
-                                        >
-                                          {expandedRestaurants["restaurant1"] ? (
-                                            <ChevronUp className="h-4 w-4" />
-                                          ) : (
-                                            <ChevronDown className="h-4 w-4" />
-                                          )}
-                                          <span className="hidden md:inline ml-2">
-                                            {expandedRestaurants["restaurant1"] ? "ซ่อนเมนู" : "แสดงเมนู"}
-                                          </span>
-                                        </Button>
-                                      </CollapsibleTrigger>
-                                    </div>
-                                  </div>
-                                  <CollapsibleContent className="mt-3">
-                                    <div className="border-t border-brand-pink/20 pt-2">
-                                      <div className="text-xs font-medium text-muted-foreground mb-2">เมนูอาหาร:</div>
-                                      <div className="space-y-1 pl-2">
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">ผัดไทย</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">ต้มยำกุ้ง</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
+                    <div className="space-y-4">
+                      {/* Restaurant Grid */}
+                      {isLoading ? (
+                        <Card className="bg-white/60 border border-brand-pink/10">
+                          <CardContent className="p-6 text-center">
+                            <div className="text-muted-foreground">กำลังโหลดข้อมูล...</div>
+                          </CardContent>
+                        </Card>
+                      ) : restaurants.length === 0 ? (
+                        <Card className="bg-white/60 border border-brand-pink/10">
+                          <CardContent className="p-6 text-center">
+                            <div className="text-muted-foreground">ยังไม่มีร้านอาหาร</div>
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {restaurants.map((restaurant) => (
+                            <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10 overflow-hidden">
+                              <CardContent className="p-0">
+                                <div className="flex flex-col">
+                                  {/* Restaurant Image */}
+                                  <div className="w-full h-48 bg-gradient-to-br from-brand-cream/20 to-brand-pink/10 relative overflow-hidden">
+                                    {restaurant.url_pic ? (
+                                      <img
+                                        src={restaurant.url_pic}
+                                        alt={restaurant.shop_name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center">
+                                        <Store className="h-16 w-16 text-muted-foreground/40" />
                                       </div>
-                                    </div>
-                                  </CollapsibleContent>
-                                </div>
-                              </Collapsible>
+                                    )}
+                                  </div>
 
-                              {/* Restaurant 2 */}
-                              <Collapsible>
-                                <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                  <div className="flex items-center justify-between gap-2 mb-2">
-                                    <div className="flex-1">
-                                      <div className="text-sm font-medium text-foreground">ร้านอาหารตัวอย่าง 2</div>
-                                      <div className="text-xs text-muted-foreground">ประเภท: อาหารจีน</div>
+                                  {/* Restaurant Info */}
+                                  <div className="p-4 space-y-3">
+                                    {/* Name and Description Container */}
+                                    <div className="space-y-2">
+                                      <h4 className="text-lg font-bold text-foreground line-clamp-2">
+                                        {restaurant.shop_name}
+                                      </h4>
+                                      <p className="text-sm text-muted-foreground line-clamp-3">
+                                        {restaurant.description}
+                                      </p>
                                     </div>
-                                    <div className="flex gap-1">
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                      >
-                                        <Plus className="h-4 w-4" />
-                                        <span className="hidden md:inline ml-2">เพิ่มอาหาร</span>
-                                      </Button>
-                                      <CollapsibleTrigger asChild>
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm"
-                                          className="p-1 h-8 w-8 md:h-9 md:w-auto md:px-3"
-                                          onClick={() => toggleRestaurantMenu("restaurant2")}
-                                        >
-                                          {expandedRestaurants["restaurant2"] ? (
-                                            <ChevronUp className="h-4 w-4" />
-                                          ) : (
-                                            <ChevronDown className="h-4 w-4" />
-                                          )}
-                                          <span className="hidden md:inline ml-2">
-                                            {expandedRestaurants["restaurant2"] ? "ซ่อนเมนู" : "แสดงเมนู"}
-                                          </span>
-                                        </Button>
-                                      </CollapsibleTrigger>
-                                    </div>
-                                  </div>
-                                  <CollapsibleContent className="mt-3">
-                                    <div className="border-t border-brand-pink/20 pt-2">
-                                      <div className="text-xs font-medium text-muted-foreground mb-2">เมนูอาหาร:</div>
-                                      <div className="space-y-1 pl-2">
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">ข้าวผัดปู</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
+
+                                    {/* Details Container */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                      <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                          <Clock className="h-4 w-4 text-primary" />
+                                          <span className="font-medium text-foreground">วันเปิด:</span>
                                         </div>
-                                        <div className="flex items-center justify-between p-2 bg-white/40 rounded border border-brand-pink/5">
-                                          <span className="text-xs text-foreground">หมูหวานเปรี้ยว</span>
-                                          <div className="flex gap-1">
-                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                              <UtensilsCrossed className="h-3 w-3" />
-                                            </Button>
-                                          </div>
+                                        <p className="text-muted-foreground ml-6">{restaurant.open_day}</p>
+                                      </div>
+                                      
+                                      <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                          <Clock className="h-4 w-4 text-primary" />
+                                          <span className="font-medium text-foreground">เวลา:</span>
                                         </div>
+                                        <p className="text-muted-foreground ml-6">{restaurant.open_time}</p>
                                       </div>
                                     </div>
-                                  </CollapsibleContent>
+
+                                    {/* Food Types Container */}
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <UtensilsCrossed className="h-4 w-4 text-primary" />
+                                        <span className="font-medium text-foreground text-sm">ประเภทอาหาร:</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2 ml-6">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                          {restaurant.food_type_1}
+                                        </span>
+                                        {restaurant.food_type_2 && (
+                                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                            {restaurant.food_type_2}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Action Buttons Container */}
+                                    <div className="flex justify-center pt-3 border-t border-brand-pink/10">
+                                      <div className="flex gap-2">
+                                        {/* Add Menu Button */}
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-9 w-9 p-0 border-brand-pink/30 hover:bg-brand-pink/10"
+                                          onClick={() => {
+                                            setSelectedRestaurant(restaurant);
+                                            setIsAddMenuModalOpen(true);
+                                          }}
+                                        >
+                                          <Plus className="h-4 w-4 text-primary" />
+                                        </Button>
+
+                                        {/* Edit Button */}
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-9 w-9 p-0 border-brand-pink/30 hover:bg-brand-pink/10"
+                                          onClick={() => handleEditRestaurant(restaurant)}
+                                        >
+                                          <Edit className="h-4 w-4 text-primary" />
+                                        </Button>
+
+                                        {/* View Menu Button */}
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-9 w-9 p-0 border-brand-pink/30 hover:bg-brand-pink/10"
+                                          onClick={() => {
+                                            setSelectedRestaurant(restaurant);
+                                            setIsViewMenuModalOpen(true);
+                                          }}
+                                        >
+                                          <Eye className="h-4 w-4 text-primary" />
+                                        </Button>
+
+                                        {/* Delete Button */}
+                                        <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
+                                          <AlertDialogTrigger asChild>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400"
+                                              onClick={() => {
+                                                setSelectedRestaurant(restaurant);
+                                                setIsDeleteConfirmOpen(true);
+                                              }}
+                                            >
+                                              <Trash2 className="h-4 w-4 text-red-600" />
+                                            </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                คุณแน่ใจหรือไม่ที่จะลบร้าน "{restaurant.shop_name}"? 
+                                                <br />
+                                                <span className="text-red-600 font-medium">
+                                                  หากลบร้านอาหาร รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
+                                                </span>
+                                                <br />
+                                                การกระทำนี้ไม่สามารถย้อนกลับได้
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel 
+                                                onClick={() => {
+                                                  setIsDeleteConfirmOpen(false);
+                                                  setSelectedRestaurant(null);
+                                                }}
+                                              >
+                                                ยกเลิก
+                                              </AlertDialogCancel>
+                                              <AlertDialogAction
+                                                onClick={handleDeleteRestaurant}
+                                                className="bg-red-600 hover:bg-red-700"
+                                              >
+                                                ลบร้านอาหาร
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                              </Collapsible>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Edit Restaurant Modal */}
+                      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
+                          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
+                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                              แก้ไขร้านอาหาร
+                            </DialogTitle>
+                          </DialogHeader>
+                          
+                          <ScrollArea className="flex-1 max-h-[calc(90vh-10rem)] px-4">
+                            <div className="py-4 space-y-6">
+                              {/* Shop Name */}
+                              <div>
+                                <Label htmlFor="edit_shop_name" className="text-sm font-medium text-foreground">
+                                  ชื่อร้านอาหาร *
+                                </Label>
+                                <Input
+                                  id="edit_shop_name"
+                                  type="text"
+                                  value={formData.shop_name}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
+                                  placeholder="กรุณากรอกชื่อร้านอาหาร"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                />
+                              </div>
+
+                              {/* Description */}
+                              <div>
+                                <Label htmlFor="edit_description" className="text-sm font-medium text-foreground">
+                                  รายละเอียด *
+                                </Label>
+                                <Textarea
+                                  id="edit_description"
+                                  value={formData.description}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                  placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
+                                  rows={3}
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
+                                />
+                              </div>
+
+                              {/* Open Day and Time */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="edit_open_day" className="text-sm font-medium text-foreground">
+                                    วันที่เปิด *
+                                  </Label>
+                                  <Input
+                                    id="edit_open_day"
+                                    type="text"
+                                    value={formData.open_day}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
+                                    placeholder="เช่น จันทร์-ศุกร์"
+                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit_open_time" className="text-sm font-medium text-foreground">
+                                    เวลาเปิด *
+                                  </Label>
+                                  <Input
+                                    id="edit_open_time"
+                                    type="text"
+                                    value={formData.open_time}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
+                                    placeholder="เช่น 08:00-17:00"
+                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Food Types */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="edit_food_type_1" className="text-sm font-medium text-foreground">
+                                    ประเภทร้าน *
+                                  </Label>
+                                  <Select 
+                                    value={formData.food_type_1} 
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
+                                  >
+                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
+                                      <SelectValue placeholder="เลือกประเภทร้าน" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {foodTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                          {type}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit_food_type_2" className="text-sm font-medium text-foreground">
+                                    ประเภทร้าน (ถ้ามี)
+                                  </Label>
+                                  <Select 
+                                    value={formData.food_type_2} 
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
+                                  >
+                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
+                                      <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="none">ไม่เลือก</SelectItem>
+                                      {foodTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                          {type}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+
+                              {/* Image Upload */}
+                              <div>
+                                <Label htmlFor="edit_image" className="text-sm font-medium text-foreground">
+                                  รูปภาพ
+                                </Label>
+                                <div className="mt-1">
+                                  <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
+                                    <input
+                                      id="edit_image"
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleImageChange}
+                                      className="hidden"
+                                    />
+                                    <label
+                                      htmlFor="edit_image"
+                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
+                                    >
+                                      {imagePreview ? (
+                                        <div className="relative">
+                                          <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
+                                          />
+                                          <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              setSelectedImage(null);
+                                              setImagePreview(null);
+                                            }}
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <Upload className="h-8 w-8 text-muted-foreground" />
+                                          <div className="text-center">
+                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพใหม่</span>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                              รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
+                                            </p>
+                                          </div>
+                                        </>
+                                      )}
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </ScrollArea>
-                        </CardContent>
-                      </Card>
+                          
+                          <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                  resetForm();
+                                  setIsEditModalOpen(false);
+                                  setSelectedRestaurant(null);
+                                }}
+                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
+                                disabled={isSubmitting}
+                              >
+                                ยกเลิก
+                              </Button>
+                              <Button 
+                                variant="default" 
+                                onClick={handleUpdateRestaurant}
+                                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                                disabled={isSubmitting}
+                              >
+                                {isSubmitting ? 'กำลังบันทึก...' : 'อัปเดต'}
+                              </Button>
+                            </div>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Add Menu Modal (Placeholder) */}
+                      <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
+                        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh]">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                              เพิ่มรายการอาหาร - {selectedRestaurant?.shop_name}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="p-4 text-center text-muted-foreground">
+                            ฟีเจอร์นี้จะพัฒนาในอนาคต
+                          </div>
+                          <DialogFooter>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => {
+                                setIsAddMenuModalOpen(false);
+                                setSelectedRestaurant(null);
+                              }}
+                            >
+                              ปิด
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* View Menu Modal (Placeholder) */}
+                      <Dialog open={isViewMenuModalOpen} onOpenChange={setIsViewMenuModalOpen}>
+                        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh]">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                              รายการอาหาร - {selectedRestaurant?.shop_name}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="p-4 text-center text-muted-foreground">
+                            ฟีเจอร์นี้จะพัฒนาในอนาคต
+                          </div>
+                          <DialogFooter>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => {
+                                setIsViewMenuModalOpen(false);
+                                setSelectedRestaurant(null);
+                              }}
+                            >
+                              ปิด
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </CardContent>
                 </Card>
