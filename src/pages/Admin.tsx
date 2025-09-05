@@ -624,7 +624,7 @@ const Admin = () => {
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-9 w-9 p-0 border-brand-pink/30 hover:bg-brand-pink/10"
+                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
                                           onClick={() => {
                                             setSelectedRestaurant(restaurant);
                                             setIsAddMenuModalOpen(true);
@@ -637,7 +637,7 @@ const Admin = () => {
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-9 w-9 p-0 border-brand-pink/30 hover:bg-brand-pink/10"
+                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
                                           onClick={() => handleEditRestaurant(restaurant)}
                                         >
                                           <Edit className="h-4 w-4 text-primary" />
@@ -647,7 +647,7 @@ const Admin = () => {
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-9 w-9 p-0 border-brand-pink/30 hover:bg-brand-pink/10"
+                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
                                           onClick={() => {
                                             setSelectedRestaurant(restaurant);
                                             setIsViewMenuModalOpen(true);
