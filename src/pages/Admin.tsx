@@ -1752,7 +1752,6 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <h3 className="text-lg font-semibold text-foreground mb-4">แบบร่างใบจองอาหาร</h3>
                           <PlanList />
                         </CardContent>
                       </Card>
