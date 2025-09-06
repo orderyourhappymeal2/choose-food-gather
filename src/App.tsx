@@ -21,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Welcome />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/food-categories" element={<FoodCategories />} />
           <Route path="/menu/:restaurantId" element={<MenuSelection />} />
