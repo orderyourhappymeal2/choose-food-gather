@@ -177,63 +177,61 @@ const PlanList = () => {
           ยังไม่มีแผนการจองอาหาร
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
-            <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10">
-              <CardContent className="p-4">
-                <div className="space-y-3">
+            <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10 overflow-hidden">
+              <CardContent className="p-4 min-w-0">
+                <div className="space-y-3 min-w-0">
                   <div className="space-y-2">
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex flex-col space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
-                      <div className="text-sm font-semibold text-foreground">{plan.plan_name}</div>
+                      <div className="text-sm font-semibold text-foreground truncate">{plan.plan_name}</div>
                     </div>
                     
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex flex-col space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
-                      <div className="text-sm text-foreground">{plan.plan_location}</div>
+                      <div className="text-sm text-foreground truncate">{plan.plan_location}</div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col space-y-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
-                        <div className="text-sm text-foreground">{formatThaiDate(plan.plan_date)}</div>
+                        <div className="text-sm text-foreground truncate">{formatThaiDate(plan.plan_date)}</div>
                       </div>
-                      <div className="flex flex-col space-y-1">
+                      <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">เวลา</Label>
-                        <div className="text-sm text-foreground">{plan.plan_time}</div>
+                        <div className="text-sm text-foreground truncate">{plan.plan_time}</div>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col space-y-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
-                        <div className="text-sm text-foreground">{plan.plan_pwd}</div>
+                        <div className="text-sm text-foreground truncate">{plan.plan_pwd}</div>
                       </div>
-                      <div className="flex flex-col space-y-1">
+                      <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">จำนวนคน</Label>
-                        <div className="text-sm text-foreground">{plan.plan_maxp} คน</div>
+                        <div className="text-sm text-foreground truncate">{plan.plan_maxp} คน</div>
                       </div>
                     </div>
                     
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex flex-col space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
-                      <div className="text-sm text-foreground">{plan.plan_editor}</div>
+                      <div className="text-sm text-foreground truncate">{plan.plan_editor}</div>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 pt-2">
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
-                      <Plus className="h-3 w-3 mr-1" />
-                      เพิ่มร้าน
+                  <div className="flex gap-2 pt-2 overflow-hidden">
+                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
+                      <Plus className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
-                      <Eye className="h-3 w-3 mr-1" />
-                      ดูร้าน
+                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
+                      <Eye className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(plan)}>
+                    <Button size="sm" variant="outline" className="min-w-0" onClick={() => handleEdit(plan)}>
                       <Edit className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(plan)}>
+                    <Button size="sm" variant="outline" className="min-w-0" onClick={() => handleDelete(plan)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
