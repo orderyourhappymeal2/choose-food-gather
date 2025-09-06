@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
+
 // Plan form schema
 const planFormSchema = z.object({
   plan_name: z.string().min(1, "กรุณากรอกชื่องาน"),
@@ -37,432 +38,6 @@ const planFormSchema = z.object({
 });
 
 type PlanFormData = z.infer<typeof planFormSchema>;
-
-// PlanList component
-const PlanList = () => {
-  const [plans, setPlans] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editingPlan, setEditingPlan] = useState<any>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deletingPlan, setDeletingPlan] = useState<any>(null);
-
-  // Edit form
-  const editForm = useForm<PlanFormData>({
-    resolver: zodResolver(planFormSchema),
-  });
-
-  // Format date to Thai format
-  const formatThaiDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return format(date, "d MMM yyyy", { locale: th }).replace(/\d{4}/, (year) => (parseInt(year) + 543).toString());
-    } catch {
-      return dateString;
-    }
-  };
-
-  // Fetch plans
-  const fetchPlans = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('plan')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setPlans(data || []);
-    } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลแผน');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
-  // Handle edit
-  const handleEdit = (plan: any) => {
-    setEditingPlan(plan);
-    const [startTime, endTime] = plan.plan_time.includes('-') ? plan.plan_time.split(' - ') : [plan.plan_time, plan.plan_time];
-    editForm.reset({
-      plan_name: plan.plan_name,
-      plan_location: plan.plan_location,
-      plan_date: new Date(plan.plan_date),
-      plan_time_start: startTime,
-      plan_time_end: endTime,
-      plan_pwd: plan.plan_pwd,
-      plan_maxp: plan.plan_maxp.toString(),
-      plan_editor: plan.plan_editor,
-    });
-    setIsEditModalOpen(true);
-  };
-
-  // Handle delete
-  const handleDelete = (plan: any) => {
-    setDeletingPlan(plan);
-    setIsDeleteDialogOpen(true);
-  };
-
-  // Confirm delete
-  const confirmDelete = async () => {
-    if (!deletingPlan) return;
-
-    try {
-      const { error } = await supabase
-        .from('plan')
-        .delete()
-        .eq('plan_id', deletingPlan.plan_id);
-
-      if (error) throw error;
-
-      toast.success('ลบแผนสำเร็จ');
-      setPlans(plans.filter(p => p.plan_id !== deletingPlan.plan_id));
-      setIsDeleteDialogOpen(false);
-      setDeletingPlan(null);
-    } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการลบแผน');
-    }
-  };
-
-  // Handle edit submit
-  const handleEditSubmit = async (data: PlanFormData) => {
-    if (!editingPlan) return;
-
-    try {
-      const planTime = `${data.plan_time_start} - ${data.plan_time_end}`;
-      
-      const { error } = await supabase
-        .from('plan')
-        .update({
-          plan_name: data.plan_name,
-          plan_location: data.plan_location,
-          plan_date: data.plan_date.toISOString().split('T')[0],
-          plan_time: planTime,
-          plan_pwd: data.plan_pwd,
-          plan_maxp: parseInt(data.plan_maxp),
-          plan_editor: data.plan_editor,
-        })
-        .eq('plan_id', editingPlan.plan_id);
-
-      if (error) throw error;
-
-      toast.success('แก้ไขแผนสำเร็จ');
-      setIsEditModalOpen(false);
-      setEditingPlan(null);
-      fetchPlans();
-    } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการแก้ไขแผน');
-    }
-  };
-
-  // Generate time options
-  const timeOptions = [];
-  for (let hour = 6; hour <= 21; hour++) {
-    for (let minute = 0; minute < 60; minute += 30) {
-      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-      timeOptions.push(timeString);
-    }
-  }
-
-  if (isLoading) {
-    return <div className="text-center py-8">กำลังโหลด...</div>;
-  }
-
-  return (
-    <div className="space-y-4">
-      {plans.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          ยังไม่มีแผนการจองอาหาร
-        </div>
-      ) : (
-        <div className="space-y-4 overflow-hidden">
-          <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-            {plans.map((plan) => (
-              <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10 w-full">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-1 gap-2">
-                        <div className="flex flex-col space-y-1">
-                          <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
-                          <div className="text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
-                    </div>
-                    
-                    <div className="flex flex-col space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
-                      <div className="text-sm text-foreground">{plan.plan_location}</div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col space-y-1">
-                        <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
-                        <div className="text-sm text-foreground">{formatThaiDate(plan.plan_date)}</div>
-                      </div>
-                      <div className="flex flex-col space-y-1">
-                        <Label className="text-xs font-medium text-muted-foreground">เวลา</Label>
-                        <div className="text-sm text-foreground">{plan.plan_time}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col space-y-1">
-                        <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
-                        <div className="text-sm text-foreground">{plan.plan_pwd}</div>
-                      </div>
-                      <div className="flex flex-col space-y-1">
-                        <Label className="text-xs font-medium text-muted-foreground">จำนวนคน</Label>
-                        <div className="text-sm text-foreground">{plan.plan_maxp} คน</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
-                      <div className="text-sm text-foreground">{plan.plan_editor}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 pt-2">
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
-                      <Plus className="h-3 w-3 mr-1" />
-                      เพิ่มร้าน
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
-                      <Eye className="h-3 w-3 mr-1" />
-                      ดูร้าน
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(plan)}>
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(plan)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-foreground">แก้ไขแผนการจอง</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="plan_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ชื่องาน</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกชื่องาน" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>สถานที่</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกสถานที่" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>วันที่</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "d MMMM yyyy", { locale: th })
-                              ) : (
-                                <span>เลือกวันที่</span>
-                              )}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-2">
-                  <FormField
-                    control={editForm.control}
-                    name="plan_time_start"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>เวลาเริ่ม</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="เลือกเวลาเริ่ม" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {timeOptions.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={editForm.control}
-                    name="plan_time_end"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>เวลาจบ</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="เลือกเวลาจบ" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {timeOptions.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_pwd"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>รหัส</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกรหัส" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_maxp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>จำนวนผู้เข้าร่วม</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="number" placeholder="กรอกจำนวนผู้เข้าร่วม" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_editor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="flex-1 sm:flex-none"
-                >
-                  ยกเลิก
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                >
-                  บันทึกการแก้ไข
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการลบแผน</AlertDialogTitle>
-            <AlertDialogDescription>
-              หากลบแผน "{deletingPlan?.plan_name}" แผนการสั่งจองทั้งหมดจะถูกลบออกไปด้วย
-              <br />
-              คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              ลบแผน
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-};
 
 const Admin = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
@@ -519,14 +94,36 @@ const Admin = () => {
     }
   }
 
-  // Fetch restaurants data
-  useEffect(() => {
-    fetchRestaurants();
-  }, []);
+  const handlePlanSubmit = async (data: PlanFormData) => {
+    setIsPlanSubmitting(true);
+    try {
+      const planTime = `${data.plan_time_start} - ${data.plan_time_end}`;
+      
+      const { error } = await supabase.from('plan').insert({
+        plan_name: data.plan_name,
+        plan_location: data.plan_location,
+        plan_date: data.plan_date.toISOString().split('T')[0],
+        plan_time: planTime,
+        plan_pwd: data.plan_pwd,
+        plan_maxp: parseInt(data.plan_maxp),
+        plan_editor: data.plan_editor,
+      });
 
+      if (error) throw error;
+
+      toast.success('เพิ่มใบสั่งอาหารสำเร็จ');
+      planForm.reset();
+      setIsOrderModalOpen(false);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการเพิ่มใบสั่งอาหาร');
+    } finally {
+      setIsPlanSubmitting(false);
+    }
+  };
+
+  // Restaurant functions
   const fetchRestaurants = async () => {
     try {
-      setIsLoading(true);
       const { data, error } = await supabase
         .from('shop')
         .select('*')
@@ -535,115 +132,15 @@ const Admin = () => {
       if (error) throw error;
       setRestaurants(data || []);
     } catch (error) {
-      console.error('Error fetching restaurants:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลร้านอาหาร');
+      toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลร้านอาหาร');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEditRestaurant = (restaurant: any) => {
-    setSelectedRestaurant(restaurant);
-    setFormData({
-      shop_name: restaurant.shop_name,
-      description: restaurant.description,
-      open_day: restaurant.open_day,
-      open_time: restaurant.open_time,
-      food_type_1: restaurant.food_type_1,
-      food_type_2: restaurant.food_type_2 || '',
-    });
-    if (restaurant.url_pic) {
-      setImagePreview(restaurant.url_pic);
-    }
-    setIsEditModalOpen(true);
-  };
-
-  const handleUpdateRestaurant = async () => {
-    if (!selectedRestaurant || !validateForm()) return;
-    
-    setIsSubmitting(true);
-    try {
-      let imageUrl = selectedRestaurant.url_pic;
-      
-      if (selectedImage) {
-        const fileExt = selectedImage.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `shop/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('shop')
-          .upload(filePath, selectedImage);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('shop')
-          .getPublicUrl(filePath);
-        
-        imageUrl = publicUrl;
-      }
-
-      const { error } = await supabase
-        .from('shop')
-        .update({
-          shop_name: formData.shop_name,
-          description: formData.description,
-          open_day: formData.open_day,
-          open_time: formData.open_time,
-          food_type_1: formData.food_type_1,
-          food_type_2: formData.food_type_2 || null,
-          url_pic: imageUrl,
-        })
-        .eq('shop_id', selectedRestaurant.shop_id);
-
-      if (error) throw error;
-
-      toast.success('แก้ไขร้านอาหารสำเร็จ!');
-      resetForm();
-      setIsEditModalOpen(false);
-      setSelectedRestaurant(null);
-      fetchRestaurants();
-    } catch (error) {
-      console.error('Error updating restaurant:', error);
-      toast.error('เกิดข้อผิดพลาดในการแก้ไขร้านอาหาร');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteRestaurant = async () => {
-    if (!selectedRestaurant) return;
-    
-    try {
-      const { error } = await supabase
-        .from('shop')
-        .delete()
-        .eq('shop_id', selectedRestaurant.shop_id);
-
-      if (error) throw error;
-
-      toast.success('ลบร้านอาหารสำเร็จ!');
-      setIsDeleteConfirmOpen(false);
-      setSelectedRestaurant(null);
-      fetchRestaurants();
-    } catch (error) {
-      console.error('Error deleting restaurant:', error);
-      toast.error('เกิดข้อผิดพลาดในการลบร้านอาหาร');
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      shop_name: '',
-      description: '',
-      open_day: '',
-      open_time: '',
-      food_type_1: '',
-      food_type_2: '',
-    });
-    setSelectedImage(null);
-    setImagePreview(null);
-  };
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -657,178 +154,130 @@ const Admin = () => {
     }
   };
 
-  const validateForm = () => {
-    const requiredFields = ['shop_name', 'description', 'open_day', 'open_time', 'food_type_1'];
-    for (const field of requiredFields) {
-      if (!formData[field as keyof typeof formData]) {
-        toast.error(`กรุณากรอก${field === 'shop_name' ? 'ชื่อร้านอาหาร' : 
-          field === 'description' ? 'รายละเอียด' :
-          field === 'open_day' ? 'วันที่เปิด' :
-          field === 'open_time' ? 'เวลาเปิด' :
-          field === 'food_type_1' ? 'ประเภทร้าน' : field}`);
-        return false;
-      }
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `shop/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('shop')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('shop')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
     }
-    if (!selectedImage) {
-      toast.error('กรุณาเลือกรูปภาพ');
-      return false;
-    }
-    return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (!formData.shop_name || !formData.open_day || !formData.open_time || !formData.food_type_1) {
+      toast.error('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+      return;
+    }
+
     setIsSubmitting(true);
+    
     try {
-      let imageUrl = '';
-      
+      let imageUrl = null;
       if (selectedImage) {
-        const fileExt = selectedImage.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `shop/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('shop')
-          .upload(filePath, selectedImage);
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('shop')
-          .getPublicUrl(filePath);
-        
-        imageUrl = publicUrl;
+        imageUrl = await uploadImage(selectedImage);
       }
 
-      const { error } = await supabase
-        .from('shop')
-        .insert([{
-          shop_name: formData.shop_name,
-          description: formData.description,
-          open_day: formData.open_day,
-          open_time: formData.open_time,
-          food_type_1: formData.food_type_1,
-          food_type_2: formData.food_type_2 || null,
-          url_pic: imageUrl,
-        }]);
+      const { error } = await supabase.from('shop').insert({
+        shop_name: formData.shop_name,
+        description: formData.description,
+        open_day: formData.open_day,
+        open_time: formData.open_time,
+        food_type_1: formData.food_type_1,
+        food_type_2: formData.food_type_2,
+        url_pic: imageUrl,
+      });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      toast.success('เพิ่มร้านอาหารสำเร็จ!');
-      resetForm();
+      toast.success('เพิ่มร้านอาหารสำเร็จ');
+      setFormData({
+        shop_name: '',
+        description: '',
+        open_day: '',
+        open_time: '',
+        food_type_1: '',
+        food_type_2: '',
+      });
+      setSelectedImage(null);
+      setImagePreview(null);
       setIsRestaurantModalOpen(false);
+      fetchRestaurants();
     } catch (error) {
-      console.error('Error adding restaurant:', error);
       toast.error('เกิดข้อผิดพลาดในการเพิ่มร้านอาหาร');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const toggleProgressSort = () => {
-    setProgressSortOrder(prev => 
-      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
-    );
-  };
-
-  const toggleCompletedSort = () => {
-    setCompletedSortOrder(prev => 
-      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
-    );
-  };
-
-  const toggleRestaurantMenu = (restaurantId: string) => {
+  const toggleRestaurantExpanded = (shopId: string) => {
     setExpandedRestaurants(prev => ({
       ...prev,
-      [restaurantId]: !prev[restaurantId]
+      [shopId]: !prev[shopId]
     }));
   };
 
+  const handleSort = (type: 'progress' | 'completed') => {
+    if (type === 'progress') {
+      const nextOrder = progressSortOrder === 'none' ? 'asc' : progressSortOrder === 'asc' ? 'desc' : 'none';
+      setProgressSortOrder(nextOrder);
+    } else {
+      const nextOrder = completedSortOrder === 'none' ? 'asc' : completedSortOrder === 'asc' ? 'desc' : 'none';
+      setCompletedSortOrder(nextOrder);
+    }
+  };
+
   const getSortIcon = (sortOrder: 'none' | 'asc' | 'desc') => {
-    switch (sortOrder) {
-      case 'asc': return ArrowUp;
-      case 'desc': return ArrowDown;
-      default: return ArrowUpDown;
-    }
+    if (sortOrder === 'asc') return <ArrowUp className="h-4 w-4" />;
+    if (sortOrder === 'desc') return <ArrowDown className="h-4 w-4" />;
+    return <ArrowUpDown className="h-4 w-4" />;
   };
 
-  // Handle plan form submission
-  const handlePlanSubmit = async (data: PlanFormData) => {
-    setIsPlanSubmitting(true);
-    try {
-      // Convert Buddhist year to Gregorian year for database storage
-      const buddhistYear = data.plan_date.getFullYear() + 543;
-      const formattedDate = format(data.plan_date, 'dd/MM/') + buddhistYear;
-      const timeRange = `${data.plan_time_start} - ${data.plan_time_end}`;
-
-      const { error } = await (supabase as any)
-        .from('plan')
-        .insert([{
-          plan_name: data.plan_name,
-          plan_location: data.plan_location,
-          plan_date: formattedDate,
-          plan_time: timeRange,
-          plan_pwd: data.plan_pwd,
-          plan_maxp: parseInt(data.plan_maxp),
-          plan_editor: data.plan_editor,
-        }]);
-
-      if (error) throw error;
-
-      toast.success('เพิ่มใบสั่งอาหารสำเร็จ!');
-      planForm.reset();
-      setIsOrderModalOpen(false);
-    } catch (error) {
-      console.error('Error creating plan:', error);
-      toast.error('เกิดข้อผิดพลาดในการเพิ่มใบสั่งอาหาร');
-    } finally {
-      setIsPlanSubmitting(false);
-    }
-  };
-  return <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-6">
-      <div className="max-w-6xl mx-auto pt-4 sm:pt-8 relative">
-        {/* Navigation Dropdown */}
-        <div className="absolute top-0 right-0 p-6 z-50">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-brand-cream via-white to-brand-pink/10">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">ผู้ดูแลระบบ</h1>
+            <p className="text-gray-600">จัดการร้านอาหาร ใบสั่งอาหาร และติดตามสถานะคำสั่งซื้อ</p>
+          </div>
           <NavigationDropdown />
         </div>
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <ChefHat className="w-16 h-16 text-primary" />
-          </div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Choose food</h1>
-          <p className="text-lg text-muted-foreground mb-1">by GSB</p>
-          <p className="text-base text-foreground font-medium">ระบบจองอาหารล่วงหน้า (แอดมิน)</p>
-        </div>
-
-        {/* Main Admin Container */}
-        <Card className="bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30 mx-2 sm:mx-4">
-          <CardContent className="p-4 md:p-8">
-            <h2 className="text-3xl font-bold text-center text-foreground mb-8">ระบบจัดการ</h2>
-            
+        <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
+          <CardContent className="p-6">
             <Tabs defaultValue="restaurants" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-brand-pink/20 via-brand-cream/30 to-brand-yellow/20 border border-brand-pink/30">
-                <TabsTrigger value="restaurants" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
-                  <Store className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-xs md:text-sm hidden sm:block">รายชื่อร้านอาหาร</span>
+              <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsTrigger value="restaurants" className="flex items-center gap-2">
+                  <Store className="h-4 w-4" />
+                  ร้านอาหาร
                 </TabsTrigger>
-                <TabsTrigger value="drafts" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
-                  <FileText className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-xs md:text-sm hidden sm:block">แบบร่างใบจองอาหาร</span>
+                <TabsTrigger value="orders" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  ใบสั่งอาหาร
                 </TabsTrigger>
-                <TabsTrigger value="progress" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
-                  <Clock className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-xs md:text-sm hidden sm:block">กำลังดำเนินการ</span>
+                <TabsTrigger value="progress" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  กำลังดำเนินการ
                 </TabsTrigger>
-                <TabsTrigger value="completed" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 data-[state=active]:bg-white/80 data-[state=active]:text-primary">
-                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-xs md:text-sm hidden sm:block">เสร็จสิ้น</span>
+                <TabsTrigger value="completed" className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  เสร็จสิ้น
                 </TabsTrigger>
               </TabsList>
 
@@ -836,921 +285,411 @@ const Admin = () => {
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">รายชื่อร้านอาหาร</h3>
+                      <h3 className="text-xl font-semibold text-foreground">จัดการร้านอาหาร</h3>
                       <Dialog open={isRestaurantModalOpen} onOpenChange={setIsRestaurantModalOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
-                            <Plus className="h-4 w-4 md:mr-2" />
-                            <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
+                          <Button className="bg-primary hover:bg-primary/90">
+                            <Plus className="h-4 w-4 mr-2" />
+                            เพิ่มร้านอาหาร
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
-                          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              เพิ่มร้านอาหาร
-                            </DialogTitle>
+                        <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+                          <DialogHeader>
+                            <DialogTitle className="text-lg font-semibold text-foreground">เพิ่มร้านอาหารใหม่</DialogTitle>
                           </DialogHeader>
-                          
-                          <ScrollArea className="flex-1 max-h-[calc(90vh-10rem)] px-4">
-                            <div className="py-4 space-y-6">
-                              {/* Shop Name */}
+                          <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
                               <div>
-                                <Label htmlFor="shop_name" className="text-sm font-medium text-foreground">
-                                  ชื่อร้านอาหาร *
-                                </Label>
+                                <Label htmlFor="shop_name">ชื่อร้าน *</Label>
                                 <Input
                                   id="shop_name"
-                                  type="text"
                                   value={formData.shop_name}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
-                                  placeholder="กรุณากรอกชื่อร้านอาหาร"
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                  onChange={(e) => setFormData({...formData, shop_name: e.target.value})}
+                                  placeholder="กรอกชื่อร้านอาหาร"
+                                  required
                                 />
                               </div>
 
-                              {/* Description */}
                               <div>
-                                <Label htmlFor="description" className="text-sm font-medium text-foreground">
-                                  รายละเอียด *
-                                </Label>
+                                <Label htmlFor="description">รายละเอียด</Label>
                                 <Textarea
                                   id="description"
                                   value={formData.description}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                  placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
-                                  rows={3}
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
+                                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                  placeholder="รายละเอียดร้านอาหาร"
                                 />
                               </div>
 
-                              {/* Open Day and Time */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="open_day" className="text-sm font-medium text-foreground">
-                                    วันที่เปิด *
-                                  </Label>
-                                  <Input
-                                    id="open_day"
-                                    type="text"
-                                    value={formData.open_day}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
-                                    placeholder="เช่น จันทร์-ศุกร์"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="open_time" className="text-sm font-medium text-foreground">
-                                    เวลาเปิด *
-                                  </Label>
-                                  <Input
-                                    id="open_time"
-                                    type="text"
-                                    value={formData.open_time}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
-                                    placeholder="เช่น 08:00-17:00"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Food Types */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="food_type_1" className="text-sm font-medium text-foreground">
-                                    ประเภทร้าน *
-                                  </Label>
-                                  <Select 
-                                    value={formData.food_type_1} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
-                                  >
-                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
-                                      <SelectValue placeholder="เลือกประเภทร้าน" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                          {type}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label htmlFor="food_type_2" className="text-sm font-medium text-foreground">
-                                    ประเภทร้าน (ถ้ามี)
-                                  </Label>
-                                  <Select 
-                                    value={formData.food_type_2} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
-                                  >
-                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
-                                      <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="none">ไม่เลือก</SelectItem>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                          {type}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-
-                              {/* Image Upload */}
                               <div>
-                                <Label htmlFor="image" className="text-sm font-medium text-foreground">
-                                  รูปภาพ *
-                                </Label>
-                                <div className="mt-1">
-                                  <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
-                                    <input
-                                      id="image"
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageChange}
-                                      className="hidden"
-                                    />
-                                    <label
-                                      htmlFor="image"
-                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
-                                    >
-                                      {imagePreview ? (
-                                        <div className="relative">
-                                          <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
-                                          />
-                                          <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="sm"
-                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              setSelectedImage(null);
-                                              setImagePreview(null);
-                                            }}
-                                          >
-                                            <X className="h-3 w-3" />
-                                          </Button>
-                                        </div>
-                                      ) : (
-                                        <>
-                                          <Upload className="h-8 w-8 text-muted-foreground" />
-                                          <div className="text-center">
-                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพ</span>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                              รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
-                                            </p>
-                                          </div>
-                                        </>
-                                      )}
-                                    </label>
-                                  </div>
-                                </div>
+                                <Label htmlFor="open_day">วันที่เปิด *</Label>
+                                <Input
+                                  id="open_day"
+                                  value={formData.open_day}
+                                  onChange={(e) => setFormData({...formData, open_day: e.target.value})}
+                                  placeholder="เช่น จันทร์-ศุกร์"
+                                  required
+                                />
+                              </div>
+
+                              <div>
+                                <Label htmlFor="open_time">เวลาเปิด *</Label>
+                                <Input
+                                  id="open_time"
+                                  value={formData.open_time}
+                                  onChange={(e) => setFormData({...formData, open_time: e.target.value})}
+                                  placeholder="เช่น 08:00-17:00"
+                                  required
+                                />
+                              </div>
+
+                              <div>
+                                <Label htmlFor="food_type_1">ประเภทอาหารหลัก *</Label>
+                                <Select value={formData.food_type_1} onValueChange={(value) => setFormData({...formData, food_type_1: value})}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="เลือกประเภทอาหาร" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {foodTypes.map((type) => (
+                                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div>
+                                <Label htmlFor="food_type_2">ประเภทอาหารรอง</Label>
+                                <Select value={formData.food_type_2} onValueChange={(value) => setFormData({...formData, food_type_2: value})}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="เลือกประเภทอาหาร (ไม่บังคับ)" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {foodTypes.map((type) => (
+                                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div>
+                                <Label htmlFor="image">รูปภาพร้าน</Label>
+                                <Input
+                                  id="image"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                />
+                                {imagePreview && (
+                                  <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="mt-2 w-full h-32 object-cover rounded"
+                                  />
+                                )}
                               </div>
                             </div>
-                          </ScrollArea>
-                          
-                          <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
-                            <div className="flex gap-2 w-full sm:w-auto">
-                              <Button 
-                                variant="outline" 
-                                onClick={() => {
-                                  resetForm();
-                                  setIsRestaurantModalOpen(false);
-                                }}
-                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
-                                disabled={isSubmitting}
+
+                            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsRestaurantModalOpen(false)}
+                                className="flex-1 sm:flex-none"
                               >
                                 ยกเลิก
                               </Button>
-                              <Button 
-                                variant="default" 
-                                onClick={handleSubmit}
+                              <Button
+                                type="submit"
                                 className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
                                 disabled={isSubmitting}
                               >
-                                {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
+                                {isSubmitting ? "กำลังบันทึก..." : "บันทึก"}
                               </Button>
-                            </div>
-                          </DialogFooter>
+                            </DialogFooter>
+                          </form>
                         </DialogContent>
                       </Dialog>
                     </div>
-                    <div className="space-y-4">
-                      {/* Restaurant Grid */}
-                      {isLoading ? (
-                        <Card className="bg-white/60 border border-brand-pink/10">
-                          <CardContent className="p-6 text-center">
-                            <div className="text-muted-foreground">กำลังโหลดข้อมูล...</div>
-                          </CardContent>
-                        </Card>
-                      ) : restaurants.length === 0 ? (
-                        <Card className="bg-white/60 border border-brand-pink/10">
-                          <CardContent className="p-6 text-center">
-                            <div className="text-muted-foreground">ยังไม่มีร้านอาหาร</div>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {restaurants.map((restaurant) => (
-                            <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10 overflow-hidden">
-                              <CardContent className="p-0">
-                                <div className="flex flex-col">
-                                  {/* Restaurant Image */}
-                                  <div className="w-full h-48 bg-gradient-to-br from-brand-cream/20 to-brand-pink/10 relative overflow-hidden">
-                                    {restaurant.url_pic ? (
-                                      <img
-                                        src={restaurant.url_pic}
-                                        alt={restaurant.shop_name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center">
-                                        <Store className="h-16 w-16 text-muted-foreground/40" />
-                                      </div>
-                                    )}
-                                  </div>
 
-                                  {/* Restaurant Info */}
-                                  <div className="p-4 space-y-3">
-                                    {/* Name and Description Container */}
-                                    <div className="space-y-2">
-                                      <h4 className="text-lg font-bold text-foreground line-clamp-2">
-                                        {restaurant.shop_name}
-                                      </h4>
-                                      <p className="text-sm text-muted-foreground line-clamp-3">
-                                        {restaurant.description}
-                                      </p>
-                                    </div>
-
-                                    {/* Details Container */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                      <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                          <Clock className="h-4 w-4 text-primary" />
-                                          <span className="font-medium text-foreground">วันเปิด:</span>
-                                        </div>
-                                        <p className="text-muted-foreground ml-6">{restaurant.open_day}</p>
-                                      </div>
-                                      
-                                      <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                          <Clock className="h-4 w-4 text-primary" />
-                                          <span className="font-medium text-foreground">เวลา:</span>
-                                        </div>
-                                        <p className="text-muted-foreground ml-6">{restaurant.open_time}</p>
+                    <ScrollArea className="h-[600px] w-full">
+                      <div className="space-y-4">
+                        {isLoading ? (
+                          <div className="text-center py-8">กำลังโหลด...</div>
+                        ) : restaurants.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            ยังไม่มีร้านอาหารในระบบ
+                          </div>
+                        ) : (
+                          restaurants.map((restaurant) => (
+                            <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10">
+                              <CardContent className="p-4">
+                                <Collapsible open={expandedRestaurants[restaurant.shop_id]} onOpenChange={() => toggleRestaurantExpanded(restaurant.shop_id)}>
+                                  <CollapsibleTrigger className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-4">
+                                      {restaurant.url_pic && (
+                                        <img
+                                          src={restaurant.url_pic}
+                                          alt={restaurant.shop_name}
+                                          className="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                      )}
+                                      <div className="text-left">
+                                        <h4 className="font-semibold text-foreground">{restaurant.shop_name}</h4>
+                                        <p className="text-sm text-muted-foreground">{restaurant.food_type_1}{restaurant.food_type_2 && `, ${restaurant.food_type_2}`}</p>
                                       </div>
                                     </div>
-
-                                    {/* Food Types Container */}
-                                    <div className="space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <UtensilsCrossed className="h-4 w-4 text-primary" />
-                                        <span className="font-medium text-foreground text-sm">ประเภทอาหาร:</span>
+                                    <div className="flex items-center gap-2">
+                                      <Button variant="outline" size="sm">
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <Button variant="outline" size="sm">
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button variant="outline" size="sm">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                      {expandedRestaurants[restaurant.shop_id] ? (
+                                        <ChevronUp className="h-4 w-4" />
+                                      ) : (
+                                        <ChevronDown className="h-4 w-4" />
+                                      )}
+                                    </div>
+                                  </CollapsibleTrigger>
+                                  <CollapsibleContent className="mt-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-brand-cream/10 rounded-lg">
+                                      <div>
+                                        <p className="text-sm font-medium">รายละเอียด:</p>
+                                        <p className="text-sm text-muted-foreground">{restaurant.description || 'ไม่มีรายละเอียด'}</p>
                                       </div>
-                                      <div className="flex flex-wrap gap-2 ml-6">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                                          {restaurant.food_type_1}
-                                        </span>
-                                        {restaurant.food_type_2 && (
-                                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                                            {restaurant.food_type_2}
-                                          </span>
-                                        )}
+                                      <div>
+                                        <p className="text-sm font-medium">วันที่เปิด:</p>
+                                        <p className="text-sm text-muted-foreground">{restaurant.open_day}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium">เวลาเปิด:</p>
+                                        <p className="text-sm text-muted-foreground">{restaurant.open_time}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium">ประเภทอาหาร:</p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {restaurant.food_type_1}{restaurant.food_type_2 && `, ${restaurant.food_type_2}`}
+                                        </p>
                                       </div>
                                     </div>
-
-                                    {/* Action Buttons Container */}
-                                    <div className="flex justify-center pt-3 border-t border-brand-pink/10">
-                                      <div className="flex gap-2">
-                                        {/* Add Menu Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => {
-                                            setSelectedRestaurant(restaurant);
-                                            setIsAddMenuModalOpen(true);
-                                          }}
-                                        >
-                                          <Plus className="h-4 w-4 text-primary" />
-                                        </Button>
-
-                                        {/* Edit Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => handleEditRestaurant(restaurant)}
-                                        >
-                                          <Edit className="h-4 w-4 text-primary" />
-                                        </Button>
-
-                                        {/* View Menu Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => {
-                                            setSelectedRestaurant(restaurant);
-                                            setIsViewMenuModalOpen(true);
-                                          }}
-                                        >
-                                          <Eye className="h-4 w-4 text-primary" />
-                                        </Button>
-
-                                        {/* Delete Button */}
-                                        <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
-                                          <AlertDialogTrigger asChild>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400"
-                                              onClick={() => {
-                                                setSelectedRestaurant(restaurant);
-                                                setIsDeleteConfirmOpen(true);
-                                              }}
-                                            >
-                                              <Trash2 className="h-4 w-4 text-red-600" />
-                                            </Button>
-                                          </AlertDialogTrigger>
-                                          <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                                คุณแน่ใจหรือไม่ที่จะลบร้าน "{restaurant.shop_name}"? 
-                                                <br />
-                                                <span className="text-red-600 font-medium">
-                                                  หากลบร้านอาหาร รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
-                                                </span>
-                                                <br />
-                                                การกระทำนี้ไม่สามารถย้อนกลับได้
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel 
-                                                onClick={() => {
-                                                  setIsDeleteConfirmOpen(false);
-                                                  setSelectedRestaurant(null);
-                                                }}
-                                              >
-                                                ยกเลิก
-                                              </AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={handleDeleteRestaurant}
-                                                className="bg-red-600 hover:bg-red-700"
-                                              >
-                                                ลบร้านอาหาร
-                                              </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                  </CollapsibleContent>
+                                </Collapsible>
                               </CardContent>
                             </Card>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Edit Restaurant Modal */}
-                      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
-                          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              แก้ไขร้านอาหาร
-                            </DialogTitle>
-                          </DialogHeader>
-                          
-                          <ScrollArea className="flex-1 max-h-[calc(90vh-10rem)] px-4">
-                            <div className="py-4 space-y-6">
-                              {/* Shop Name */}
-                              <div>
-                                <Label htmlFor="edit_shop_name" className="text-sm font-medium text-foreground">
-                                  ชื่อร้านอาหาร *
-                                </Label>
-                                <Input
-                                  id="edit_shop_name"
-                                  type="text"
-                                  value={formData.shop_name}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
-                                  placeholder="กรุณากรอกชื่อร้านอาหาร"
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                />
-                              </div>
-
-                              {/* Description */}
-                              <div>
-                                <Label htmlFor="edit_description" className="text-sm font-medium text-foreground">
-                                  รายละเอียด *
-                                </Label>
-                                <Textarea
-                                  id="edit_description"
-                                  value={formData.description}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                  placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
-                                  rows={3}
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
-                                />
-                              </div>
-
-                              {/* Open Day and Time */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="edit_open_day" className="text-sm font-medium text-foreground">
-                                    วันที่เปิด *
-                                  </Label>
-                                  <Input
-                                    id="edit_open_day"
-                                    type="text"
-                                    value={formData.open_day}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
-                                    placeholder="เช่น จันทร์-ศุกร์"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit_open_time" className="text-sm font-medium text-foreground">
-                                    เวลาเปิด *
-                                  </Label>
-                                  <Input
-                                    id="edit_open_time"
-                                    type="text"
-                                    value={formData.open_time}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
-                                    placeholder="เช่น 08:00-17:00"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Food Types */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="edit_food_type_1" className="text-sm font-medium text-foreground">
-                                    ประเภทร้าน *
-                                  </Label>
-                                  <Select 
-                                    value={formData.food_type_1} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
-                                  >
-                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
-                                      <SelectValue placeholder="เลือกประเภทร้าน" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                          {type}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit_food_type_2" className="text-sm font-medium text-foreground">
-                                    ประเภทร้าน (ถ้ามี)
-                                  </Label>
-                                  <Select 
-                                    value={formData.food_type_2} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
-                                  >
-                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
-                                      <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="none">ไม่เลือก</SelectItem>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                          {type}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-
-                              {/* Image Upload */}
-                              <div>
-                                <Label htmlFor="edit_image" className="text-sm font-medium text-foreground">
-                                  รูปภาพ
-                                </Label>
-                                <div className="mt-1">
-                                  <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
-                                    <input
-                                      id="edit_image"
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageChange}
-                                      className="hidden"
-                                    />
-                                    <label
-                                      htmlFor="edit_image"
-                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
-                                    >
-                                      {imagePreview ? (
-                                        <div className="relative">
-                                          <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
-                                          />
-                                          <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="sm"
-                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              setSelectedImage(null);
-                                              setImagePreview(null);
-                                            }}
-                                          >
-                                            <X className="h-3 w-3" />
-                                          </Button>
-                                        </div>
-                                      ) : (
-                                        <>
-                                          <Upload className="h-8 w-8 text-muted-foreground" />
-                                          <div className="text-center">
-                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพใหม่</span>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                              รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
-                                            </p>
-                                          </div>
-                                        </>
-                                      )}
-                                    </label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </ScrollArea>
-                          
-                          <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
-                            <div className="flex gap-2 w-full sm:w-auto">
-                              <Button 
-                                variant="outline" 
-                                onClick={() => {
-                                  resetForm();
-                                  setIsEditModalOpen(false);
-                                  setSelectedRestaurant(null);
-                                }}
-                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
-                                disabled={isSubmitting}
-                              >
-                                ยกเลิก
-                              </Button>
-                              <Button 
-                                variant="default" 
-                                onClick={handleUpdateRestaurant}
-                                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                                disabled={isSubmitting}
-                              >
-                                {isSubmitting ? 'กำลังบันทึก...' : 'อัปเดต'}
-                              </Button>
-                            </div>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      {/* Add Menu Modal (Placeholder) */}
-                      <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh]">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              เพิ่มรายการอาหาร - {selectedRestaurant?.shop_name}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="p-4 text-center text-muted-foreground">
-                            ฟีเจอร์นี้จะพัฒนาในอนาคต
-                          </div>
-                          <DialogFooter>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setIsAddMenuModalOpen(false);
-                                setSelectedRestaurant(null);
-                              }}
-                            >
-                              ปิด
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      {/* View Menu Modal (Placeholder) */}
-                      <Dialog open={isViewMenuModalOpen} onOpenChange={setIsViewMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh]">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              รายการอาหาร - {selectedRestaurant?.shop_name}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="p-4 text-center text-muted-foreground">
-                            ฟีเจอร์นี้จะพัฒนาในอนาคต
-                          </div>
-                          <DialogFooter>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setIsViewMenuModalOpen(false);
-                                setSelectedRestaurant(null);
-                              }}
-                            >
-                              ปิด
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="drafts" className="mt-6">
+              <TabsContent value="orders" className="mt-6">
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">แบบร่างใบจองอาหาร</h3>
+                      <h3 className="text-xl font-semibold text-foreground">จัดการใบสั่งอาหาร</h3>
                       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90">
-                            <FilePlus className="h-4 w-4 md:mr-2" />
-                            <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
+                          <Button className="bg-primary hover:bg-primary/90">
+                            <FilePlus className="h-4 w-4 mr-2" />
+                            เพิ่มใบสั่งอาหาร
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden">
+                        <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              เพิ่มใบสั่งอาหาร
-                            </DialogTitle>
+                            <DialogTitle className="text-lg font-semibold text-foreground">เพิ่มใบสั่งอาหาร</DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="flex-1 max-h-[calc(90vh-12rem)] overflow-auto">
-                            <Form {...planForm}>
-                              <form onSubmit={planForm.handleSubmit(handlePlanSubmit)} className="space-y-6 p-4">
-                                
-                                {/* Plan Name */}
-                                <div className="grid grid-cols-1 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_name"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            ชื่องาน *
-                                          </FormLabel>
+                          <Form {...planForm}>
+                            <form onSubmit={planForm.handleSubmit(handlePlanSubmit)} className="space-y-4">
+                              <div className="space-y-4">
+                                <FormField
+                                  control={planForm.control}
+                                  name="plan_name"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>ชื่องาน</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="กรอกชื่องาน" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={planForm.control}
+                                  name="plan_location"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>สถานที่</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="กรอกสถานที่" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={planForm.control}
+                                  name="plan_date"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>วันที่</FormLabel>
+                                      <Popover>
+                                        <PopoverTrigger asChild>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกชื่องาน"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <Button
+                                              variant="outline"
+                                              className={cn(
+                                                "w-full justify-start text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                              )}
+                                            >
+                                              <CalendarIcon className="mr-2 h-4 w-4" />
+                                              {field.value ? (
+                                                format(field.value, "d MMMM yyyy", { locale: th })
+                                              ) : (
+                                                <span>เลือกวันที่</span>
+                                              )}
+                                            </Button>
                                           </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                          <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={field.onChange}
+                                            initialFocus
+                                            className="pointer-events-auto"
+                                          />
+                                        </PopoverContent>
+                                      </Popover>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
 
-                                {/* Location */}
-                                <div className="grid grid-cols-1 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_location"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            สถานที่ *
-                                          </FormLabel>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <FormField
+                                    control={planForm.control}
+                                    name="plan_time_start"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>เวลาเริ่ม</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกสถานที่"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="เลือกเวลาเริ่ม" />
+                                            </SelectTrigger>
                                           </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
+                                          <SelectContent>
+                                            {timeOptions.map((time) => (
+                                              <SelectItem key={time} value={time}>
+                                                {time}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
 
-                                {/* Date */}
-                                <div className="grid grid-cols-1 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_date"
-                                      render={({ field }) => (
-                                        <FormItem className="flex flex-col">
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            วันที่ *
-                                          </FormLabel>
-                                          <Popover>
-                                            <PopoverTrigger asChild>
-                                              <FormControl>
-                                                <Button
-                                                  variant="outline"
-                                                  className={cn(
-                                                    "w-full pl-3 text-left font-normal bg-white/80 border-brand-pink/20 focus:border-primary",
-                                                    !field.value && "text-muted-foreground"
-                                                  )}
-                                                >
-                                                  {field.value ? (
-                                                    `${format(field.value, "dd MMMM", { locale: th })} ${field.value.getFullYear() + 543}`
-                                                  ) : (
-                                                    <span>เลือกวันที่</span>
-                                                  )}
-                                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                              </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                               <Calendar
-                                                 mode="single"
-                                                 selected={field.value}
-                                                 onSelect={field.onChange}
-                                                 initialFocus
-                                                 className="pointer-events-auto"
-                                               />
-                                            </PopoverContent>
-                                          </Popover>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* Time Range */}
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_time_start"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            เวลาเริ่มต้น *
-                                          </FormLabel>
-                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                              <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                                                <SelectValue placeholder="เลือกเวลาเริ่มต้น" />
-                                              </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent className="max-h-[200px]">
-                                              {timeOptions.map((time) => (
-                                                <SelectItem key={time} value={time}>
-                                                  {time}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_time_end"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            เวลาสิ้นสุด *
-                                          </FormLabel>
-                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                              <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                                                <SelectValue placeholder="เลือกเวลาสิ้นสุด" />
-                                              </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent className="max-h-[200px]">
-                                              {timeOptions.map((time) => (
-                                                <SelectItem key={time} value={time}>
-                                                  {time}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* Password and Max Participants */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_pwd"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            รหัส *
-                                          </FormLabel>
+                                  <FormField
+                                    control={planForm.control}
+                                    name="plan_time_end"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>เวลาจบ</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกรหัส"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="เลือกเวลาจบ" />
+                                            </SelectTrigger>
                                           </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_maxp"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            จำนวนผู้เข้าร่วม *
-                                          </FormLabel>
-                                          <FormControl>
-                                            <Input
-                                              {...field}
-                                              type="number"
-                                              min="1"
-                                              placeholder="จำนวนคน"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
+                                          <SelectContent>
+                                            {timeOptions.map((time) => (
+                                              <SelectItem key={time} value={time}>
+                                                {time}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
                                 </div>
 
-                                {/* Editor Name */}
-                                <div className="grid grid-cols-1 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_editor"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            ชื่อผู้สร้างฟอร์ม *
-                                          </FormLabel>
-                                          <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกชื่อผู้สร้างฟอร์ม"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
+                                <FormField
+                                  control={planForm.control}
+                                  name="plan_pwd"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>รหัส</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="กรอกรหัส" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
 
-                              </form>
-                            </Form>
-                          </ScrollArea>
-                          
-                          <DialogFooter className="gap-2 p-4 border-t bg-white/90">
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                planForm.reset();
-                                setIsOrderModalOpen(false);
-                              }}
-                              className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
-                              disabled={isPlanSubmitting}
-                            >
-                              ยกเลิก
-                            </Button>
-                            <Button 
-                              onClick={planForm.handleSubmit(handlePlanSubmit)}
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                              disabled={isPlanSubmitting}
-                            >
-                              {isPlanSubmitting ? "กำลังบันทึก..." : "ยืนยัน"}
-                            </Button>
-                          </DialogFooter>
+                                <FormField
+                                  control={planForm.control}
+                                  name="plan_maxp"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>จำนวนผู้เข้าร่วม</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} type="number" placeholder="กรอกจำนวนผู้เข้าร่วม" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={planForm.control}
+                                  name="plan_editor"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+
+                              <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => setIsOrderModalOpen(false)}
+                                  className="flex-1 sm:flex-none"
+                                >
+                                  ยกเลิก
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  onClick={planForm.handleSubmit(handlePlanSubmit)}
+                                  className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                                  disabled={isPlanSubmitting}
+                                >
+                                  {isPlanSubmitting ? "กำลังบันทึก..." : "ยืนยัน"}
+                                </Button>
+                              </DialogFooter>
+                            </form>
+                          </Form>
                         </DialogContent>
                       </Dialog>
                     </div>
@@ -1770,39 +709,32 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">รายการที่กำลังดำเนินการ</h3>
-                      <div className="border border-brand-pink/20 rounded-lg p-1 bg-white/60">
-                        <Button
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={toggleProgressSort}
-                          className="hover:bg-brand-pink/10"
-                        >
-                          {(() => {
-                            const SortIcon = getSortIcon(progressSortOrder);
-                            return <SortIcon className="h-4 w-4" />;
-                          })()}
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleSort('progress')}
+                        className="flex items-center gap-2"
+                      >
+                        เรียงลำดับ
+                        {getSortIcon(progressSortOrder)}
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-3">
-                          
-                          <ScrollArea className="h-[300px] w-full">
-                            <div className="space-y-2">
-                              <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #101</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารไทย | สถานะ: กำลังเตรียม</div>
-                              </div>
-                              <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #102</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารจีน | สถานะ: กำลังปรุง</div>
-                              </div>
+                    <ScrollArea className="h-[500px] w-full">
+                      <div className="space-y-3">
+                        <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium text-gray-800">งานเลี้ยงบริษัท ABC</h4>
+                              <p className="text-sm text-gray-600">วันที่: 15 ก.ย. 2567 | เวลา: 12:00-14:00</p>
+                              <p className="text-sm text-gray-600">สถานที่: ห้องประชุมใหญ่</p>
                             </div>
-                          </ScrollArea>
-                        </CardContent>
-                      </Card>
-                    </div>
+                            <div className="text-right">
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">กำลังดำเนินการ</span>
+                              <p className="text-xs text-gray-500 mt-1">50 คน</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </ScrollArea>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1811,40 +743,33 @@ const Admin = () => {
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">รายการที่ดำเนินการเสร็จสิ้น</h3>
-                      <div className="border border-brand-pink/20 rounded-lg p-1 bg-white/60">
-                        <Button
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={toggleCompletedSort}
-                          className="hover:bg-brand-pink/10"
-                        >
-                          {(() => {
-                            const SortIcon = getSortIcon(completedSortOrder);
-                            return <SortIcon className="h-4 w-4" />;
-                          })()}
-                        </Button>
-                      </div>
+                      <h3 className="text-xl font-semibold text-foreground">รายการที่เสร็จสิ้น</h3>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleSort('completed')}
+                        className="flex items-center gap-2"
+                      >
+                        เรียงลำดับ
+                        {getSortIcon(completedSortOrder)}
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-3">
-                          
-                          <ScrollArea className="h-[300px] w-full">
-                            <div className="space-y-2">
-                              <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #099</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารไทย | สถานะ: เสร็จสิ้น | เวลา: 12:30</div>
-                              </div>
-                              <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #098</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารจีน | สถานะ: เสร็จสิ้น | เวลา: 12:15</div>
-                              </div>
+                    <ScrollArea className="h-[500px] w-full">
+                      <div className="space-y-3">
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium text-gray-800">งานสัมมนาประจำปี</h4>
+                              <p className="text-sm text-gray-600">วันที่: 10 ก.ย. 2567 | เวลา: 09:00-17:00</p>
+                              <p className="text-sm text-gray-600">สถานที่: โรงแรม XYZ</p>
                             </div>
-                          </ScrollArea>
-                        </CardContent>
-                      </Card>
-                    </div>
+                            <div className="text-right">
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">เสร็จสิ้น</span>
+                              <p className="text-xs text-gray-500 mt-1">100 คน</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </ScrollArea>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1852,6 +777,8 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Admin;
