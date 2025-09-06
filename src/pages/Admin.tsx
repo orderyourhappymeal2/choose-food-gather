@@ -422,7 +422,7 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               {field.value ? (
-                                format(field.value, "d MMMM yyyy", { locale: th })
+                                `${format(field.value, "d MMMM", { locale: th })} ${field.value.getFullYear() + 543}`
                               ) : (
                                 <span>เลือกวันที่</span>
                               )}
@@ -956,9 +956,7 @@ const Admin = () => {
   const handlePlanSubmit = async (data: PlanFormData) => {
     setIsPlanSubmitting(true);
     try {
-      // Convert Buddhist year to Gregorian year for database storage
-      const buddhistYear = data.plan_date.getFullYear() + 543;
-      const formattedDate = format(data.plan_date, 'dd/MM/') + buddhistYear;
+      // Store date in CE format for database (same as update function)
       const timeRange = `${data.plan_time_start} - ${data.plan_time_end}`;
 
       const { error } = await (supabase as any)
@@ -966,7 +964,7 @@ const Admin = () => {
         .insert([{
           plan_name: data.plan_name,
           plan_location: data.plan_location,
-          plan_date: formattedDate,
+          plan_date: data.plan_date.toISOString().split('T')[0], // Store as CE format like update function
           plan_time: timeRange,
           plan_pwd: data.plan_pwd,
           plan_maxp: parseInt(data.plan_maxp),
