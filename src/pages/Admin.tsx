@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState, useEffect } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -45,6 +45,8 @@ const PlanList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingPlan, setDeletingPlan] = useState<any>(null);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [publishingPlan, setPublishingPlan] = useState<any>(null);
 
   // Edit form
   const editForm = useForm<PlanFormData>({
@@ -103,6 +105,33 @@ const PlanList = () => {
   const handleDelete = (plan: any) => {
     setDeletingPlan(plan);
     setIsDeleteDialogOpen(true);
+  };
+
+  // Handle publish
+  const handlePublish = (plan: any) => {
+    setPublishingPlan(plan);
+    setIsPublishDialogOpen(true);
+  };
+
+  // Confirm publish
+  const confirmPublish = async () => {
+    if (!publishingPlan) return;
+
+    try {
+      const { error } = await supabase
+        .from('plan')
+        .update({ plan_state: 'published' })
+        .eq('plan_id', publishingPlan.plan_id);
+
+      if (error) throw error;
+
+      toast.success('เผยแพร่แผนสำเร็จ');
+      setIsPublishDialogOpen(false);
+      setPublishingPlan(null);
+      fetchPlans();
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการเผยแพร่แผน');
+    }
   };
 
   // Confirm delete
@@ -228,10 +257,13 @@ const PlanList = () => {
                     <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
                       <Eye className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="min-w-0" onClick={() => handleEdit(plan)}>
+                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleEdit(plan)}>
                       <Edit className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="min-w-0" onClick={() => handleDelete(plan)}>
+                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handlePublish(plan)}>
+                      <Send className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
@@ -451,6 +483,26 @@ const PlanList = () => {
             <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
               ลบแผน
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Publish Confirmation */}
+      <AlertDialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการเผยแพร่แผน</AlertDialogTitle>
+            <AlertDialogDescription>
+              หากเผยแพร่แผน "{publishingPlan?.plan_name}" แล้ว จะไม่สามารถย้อนกลับมาแก้ไขได้อีก
+              <br />
+              คุณแน่ใจหรือไม่ที่จะเผยแพร่แผนนี้?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmPublish} className="bg-primary hover:bg-primary/90">
+              เผยแพร่แผน
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
