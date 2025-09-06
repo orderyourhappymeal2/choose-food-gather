@@ -27,14 +27,15 @@ import { cn } from "@/lib/utils";
 const planFormSchema = z.object({
   plan_name: z.string().min(1, "กรุณากรอกชื่องาน"),
   plan_location: z.string().min(1, "กรุณากรอกสถานที่"),
-  plan_date: z.date({ required_error: "กรุณาเลือกวันที่" }),
+  plan_date: z.date({
+    required_error: "กรุณาเลือกวันที่"
+  }),
   plan_time_start: z.string().min(1, "กรุณาเลือกเวลาเริ่มต้น"),
   plan_time_end: z.string().min(1, "กรุณาเลือกเวลาสิ้นสุด"),
   plan_pwd: z.string().min(1, "กรุณากรอกรหัส"),
   plan_maxp: z.string().min(1, "กรุณากรอกจำนวนผู้เข้าร่วม"),
-  plan_editor: z.string().min(1, "กรุณากรอกชื่อผู้สร้างฟอร์ม"),
+  plan_editor: z.string().min(1, "กรุณากรอกชื่อผู้สร้างฟอร์ม")
 });
-
 type PlanFormData = z.infer<typeof planFormSchema>;
 
 // PlanList component
@@ -48,14 +49,16 @@ const PlanList = () => {
 
   // Edit form
   const editForm = useForm<PlanFormData>({
-    resolver: zodResolver(planFormSchema),
+    resolver: zodResolver(planFormSchema)
   });
 
   // Format date to Thai format
   const formatThaiDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return format(date, "d MMM yyyy", { locale: th }).replace(/\d{4}/, (year) => (parseInt(year) + 543).toString());
+      return format(date, "d MMM yyyy", {
+        locale: th
+      }).replace(/\d{4}/, year => (parseInt(year) + 543).toString());
     } catch {
       return dateString;
     }
@@ -64,11 +67,12 @@ const PlanList = () => {
   // Fetch plans
   const fetchPlans = async () => {
     try {
-      const { data, error } = await supabase
-        .from('plan')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('plan').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setPlans(data || []);
     } catch (error) {
@@ -77,7 +81,6 @@ const PlanList = () => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchPlans();
   }, []);
@@ -94,7 +97,7 @@ const PlanList = () => {
       plan_time_end: endTime,
       plan_pwd: plan.plan_pwd,
       plan_maxp: plan.plan_maxp.toString(),
-      plan_editor: plan.plan_editor,
+      plan_editor: plan.plan_editor
     });
     setIsEditModalOpen(true);
   };
@@ -108,15 +111,11 @@ const PlanList = () => {
   // Confirm delete
   const confirmDelete = async () => {
     if (!deletingPlan) return;
-
     try {
-      const { error } = await supabase
-        .from('plan')
-        .delete()
-        .eq('plan_id', deletingPlan.plan_id);
-
+      const {
+        error
+      } = await supabase.from('plan').delete().eq('plan_id', deletingPlan.plan_id);
       if (error) throw error;
-
       toast.success('ลบแผนสำเร็จ');
       setPlans(plans.filter(p => p.plan_id !== deletingPlan.plan_id));
       setIsDeleteDialogOpen(false);
@@ -129,25 +128,20 @@ const PlanList = () => {
   // Handle edit submit
   const handleEditSubmit = async (data: PlanFormData) => {
     if (!editingPlan) return;
-
     try {
       const planTime = `${data.plan_time_start} - ${data.plan_time_end}`;
-      
-      const { error } = await supabase
-        .from('plan')
-        .update({
-          plan_name: data.plan_name,
-          plan_location: data.plan_location,
-          plan_date: data.plan_date.toISOString().split('T')[0],
-          plan_time: planTime,
-          plan_pwd: data.plan_pwd,
-          plan_maxp: parseInt(data.plan_maxp),
-          plan_editor: data.plan_editor,
-        })
-        .eq('plan_id', editingPlan.plan_id);
-
+      const {
+        error
+      } = await supabase.from('plan').update({
+        plan_name: data.plan_name,
+        plan_location: data.plan_location,
+        plan_date: data.plan_date.toISOString().split('T')[0],
+        plan_time: planTime,
+        plan_pwd: data.plan_pwd,
+        plan_maxp: parseInt(data.plan_maxp),
+        plan_editor: data.plan_editor
+      }).eq('plan_id', editingPlan.plan_id);
       if (error) throw error;
-
       toast.success('แก้ไขแผนสำเร็จ');
       setIsEditModalOpen(false);
       setEditingPlan(null);
@@ -165,82 +159,75 @@ const PlanList = () => {
       timeOptions.push(timeString);
     }
   }
-
   if (isLoading) {
     return <div className="text-center py-8">กำลังโหลด...</div>;
   }
-
-  return (
-    <div className="space-y-4">
-      {plans.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
+  return <div className="space-y-4">
+      {plans.length === 0 ? <div className="text-center py-8 text-muted-foreground">
           ยังไม่มีแผนการจองอาหาร
-        </div>
-      ) : (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10 overflow-hidden">
-              <CardContent className="p-4 min-w-0">
-                <div className="space-y-3 min-w-0">
+        </div> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {plans.map(plan => <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10">
+              <CardContent className="p-4">
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="flex flex-col space-y-1">
                       <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
-                      <div className="text-sm font-semibold text-foreground truncate">{plan.plan_name}</div>
+                      <div className="text-sm font-semibold text-foreground">{plan.plan_name}</div>
                     </div>
                     
-                    <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="flex flex-col space-y-1">
                       <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
-                      <div className="text-sm text-foreground truncate">{plan.plan_location}</div>
+                      <div className="text-sm text-foreground">{plan.plan_location}</div>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col space-y-1">
                         <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
-                        <div className="text-sm text-foreground truncate">{formatThaiDate(plan.plan_date)}</div>
+                        <div className="text-sm text-foreground">{formatThaiDate(plan.plan_date)}</div>
                       </div>
-                      <div className="flex flex-col space-y-1 min-w-0">
+                      <div className="flex flex-col space-y-1">
                         <Label className="text-xs font-medium text-muted-foreground">เวลา</Label>
-                        <div className="text-sm text-foreground truncate">{plan.plan_time}</div>
+                        <div className="text-sm text-foreground">{plan.plan_time}</div>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col space-y-1">
                         <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
-                        <div className="text-sm text-foreground truncate">{plan.plan_pwd}</div>
+                        <div className="text-sm text-foreground">{plan.plan_pwd}</div>
                       </div>
-                      <div className="flex flex-col space-y-1 min-w-0">
+                      <div className="flex flex-col space-y-1">
                         <Label className="text-xs font-medium text-muted-foreground">จำนวนคน</Label>
-                        <div className="text-sm text-foreground truncate">{plan.plan_maxp} คน</div>
+                        <div className="text-sm text-foreground">{plan.plan_maxp} คน</div>
                       </div>
                     </div>
                     
-                    <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="flex flex-col space-y-1">
                       <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
-                      <div className="text-sm text-foreground truncate">{plan.plan_editor}</div>
+                      <div className="text-sm text-foreground">{plan.plan_editor}</div>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 pt-2 overflow-hidden">
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
-                      <Plus className="h-3 w-3" />
+                  <div className="flex gap-2 pt-2">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
+                      <Plus className="h-3 w-3 mr-1" />
+                      เพิ่มร้าน
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
-                      <Eye className="h-3 w-3" />
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
+                      <Eye className="h-3 w-3 mr-1" />
+                      ดูร้าน
                     </Button>
-                    <Button size="sm" variant="outline" className="min-w-0" onClick={() => handleEdit(plan)}>
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(plan)}>
                       <Edit className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="min-w-0" onClick={() => handleDelete(plan)}>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(plan)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+            </Card>)}
+        </div>}
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
@@ -252,80 +239,52 @@ const PlanList = () => {
           <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="plan_name"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={editForm.control} name="plan_name" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>ชื่องาน</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="กรอกชื่องาน" />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
-                <FormField
-                  control={editForm.control}
-                  name="plan_location"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={editForm.control} name="plan_location" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>สถานที่</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="กรอกสถานที่" />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
-                <FormField
-                  control={editForm.control}
-                  name="plan_date"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={editForm.control} name="plan_date" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>วันที่</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
+                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}>
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "d MMMM yyyy", { locale: th })
-                              ) : (
-                                <span>เลือกวันที่</span>
-                              )}
+                              {field.value ? format(field.value, "d MMMM yyyy", {
+                          locale: th
+                        }) : <span>เลือกวันที่</span>}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus className="pointer-events-auto" />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
                 <div className="grid grid-cols-2 gap-2">
-                  <FormField
-                    control={editForm.control}
-                    name="plan_time_start"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={editForm.control} name="plan_time_start" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>เวลาเริ่ม</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
@@ -334,23 +293,17 @@ const PlanList = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {timeOptions.map((time) => (
-                              <SelectItem key={time} value={time}>
+                            {timeOptions.map(time => <SelectItem key={time} value={time}>
                                 {time}
-                              </SelectItem>
-                            ))}
+                              </SelectItem>)}
                           </SelectContent>
                         </Select>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
 
-                  <FormField
-                    control={editForm.control}
-                    name="plan_time_end"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={editForm.control} name="plan_time_end" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>เวลาจบ</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
@@ -359,75 +312,51 @@ const PlanList = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {timeOptions.map((time) => (
-                              <SelectItem key={time} value={time}>
+                            {timeOptions.map(time => <SelectItem key={time} value={time}>
                                 {time}
-                              </SelectItem>
-                            ))}
+                              </SelectItem>)}
                           </SelectContent>
                         </Select>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                 </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="plan_pwd"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={editForm.control} name="plan_pwd" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>รหัส</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="กรอกรหัส" />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
-                <FormField
-                  control={editForm.control}
-                  name="plan_maxp"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={editForm.control} name="plan_maxp" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>จำนวนผู้เข้าร่วม</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" placeholder="กรอกจำนวนผู้เข้าร่วม" />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
-                <FormField
-                  control={editForm.control}
-                  name="plan_editor"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={editForm.control} name="plan_editor" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
               </div>
 
               <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="flex-1 sm:flex-none"
-                >
+                <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)} className="flex-1 sm:flex-none">
                   ยกเลิก
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                >
+                <Button type="submit" className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none">
                   บันทึกการแก้ไข
                 </Button>
               </DialogFooter>
@@ -455,16 +384,16 @@ const PlanList = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
-
 const Admin = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
-  const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
+  const [expandedRestaurants, setExpandedRestaurants] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
 
   // Restaurant form states
@@ -474,7 +403,7 @@ const Admin = () => {
     open_day: '',
     open_time: '',
     food_type_1: '',
-    food_type_2: '',
+    food_type_2: ''
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -488,7 +417,6 @@ const Admin = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
   const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
 
   // Plan form
@@ -501,8 +429,8 @@ const Admin = () => {
       plan_time_end: '',
       plan_pwd: '',
       plan_maxp: '',
-      plan_editor: '',
-    },
+      plan_editor: ''
+    }
   });
 
   // Generate time options (06:00 to 21:00)
@@ -518,15 +446,15 @@ const Admin = () => {
   useEffect(() => {
     fetchRestaurants();
   }, []);
-
   const fetchRestaurants = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('shop')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('shop').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setRestaurants(data || []);
     } catch (error) {
@@ -536,7 +464,6 @@ const Admin = () => {
       setIsLoading(false);
     }
   };
-
   const handleEditRestaurant = (restaurant: any) => {
     setSelectedRestaurant(restaurant);
     setFormData({
@@ -545,54 +472,45 @@ const Admin = () => {
       open_day: restaurant.open_day,
       open_time: restaurant.open_time,
       food_type_1: restaurant.food_type_1,
-      food_type_2: restaurant.food_type_2 || '',
+      food_type_2: restaurant.food_type_2 || ''
     });
     if (restaurant.url_pic) {
       setImagePreview(restaurant.url_pic);
     }
     setIsEditModalOpen(true);
   };
-
   const handleUpdateRestaurant = async () => {
     if (!selectedRestaurant || !validateForm()) return;
-    
     setIsSubmitting(true);
     try {
       let imageUrl = selectedRestaurant.url_pic;
-      
       if (selectedImage) {
         const fileExt = selectedImage.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `shop/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('shop')
-          .upload(filePath, selectedImage);
-
+        const {
+          error: uploadError
+        } = await supabase.storage.from('shop').upload(filePath, selectedImage);
         if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('shop')
-          .getPublicUrl(filePath);
-        
+        const {
+          data: {
+            publicUrl
+          }
+        } = supabase.storage.from('shop').getPublicUrl(filePath);
         imageUrl = publicUrl;
       }
-
-      const { error } = await supabase
-        .from('shop')
-        .update({
-          shop_name: formData.shop_name,
-          description: formData.description,
-          open_day: formData.open_day,
-          open_time: formData.open_time,
-          food_type_1: formData.food_type_1,
-          food_type_2: formData.food_type_2 || null,
-          url_pic: imageUrl,
-        })
-        .eq('shop_id', selectedRestaurant.shop_id);
-
+      const {
+        error
+      } = await supabase.from('shop').update({
+        shop_name: formData.shop_name,
+        description: formData.description,
+        open_day: formData.open_day,
+        open_time: formData.open_time,
+        food_type_1: formData.food_type_1,
+        food_type_2: formData.food_type_2 || null,
+        url_pic: imageUrl
+      }).eq('shop_id', selectedRestaurant.shop_id);
       if (error) throw error;
-
       toast.success('แก้ไขร้านอาหารสำเร็จ!');
       resetForm();
       setIsEditModalOpen(false);
@@ -605,18 +523,13 @@ const Admin = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleDeleteRestaurant = async () => {
     if (!selectedRestaurant) return;
-    
     try {
-      const { error } = await supabase
-        .from('shop')
-        .delete()
-        .eq('shop_id', selectedRestaurant.shop_id);
-
+      const {
+        error
+      } = await supabase.from('shop').delete().eq('shop_id', selectedRestaurant.shop_id);
       if (error) throw error;
-
       toast.success('ลบร้านอาหารสำเร็จ!');
       setIsDeleteConfirmOpen(false);
       setSelectedRestaurant(null);
@@ -626,7 +539,6 @@ const Admin = () => {
       toast.error('เกิดข้อผิดพลาดในการลบร้านอาหาร');
     }
   };
-
   const resetForm = () => {
     setFormData({
       shop_name: '',
@@ -634,33 +546,27 @@ const Admin = () => {
       open_day: '',
       open_time: '',
       food_type_1: '',
-      food_type_2: '',
+      food_type_2: ''
     });
     setSelectedImage(null);
     setImagePreview(null);
   };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
-
   const validateForm = () => {
     const requiredFields = ['shop_name', 'description', 'open_day', 'open_time', 'food_type_1'];
     for (const field of requiredFields) {
       if (!formData[field as keyof typeof formData]) {
-        toast.error(`กรุณากรอก${field === 'shop_name' ? 'ชื่อร้านอาหาร' : 
-          field === 'description' ? 'รายละเอียด' :
-          field === 'open_day' ? 'วันที่เปิด' :
-          field === 'open_time' ? 'เวลาเปิด' :
-          field === 'food_type_1' ? 'ประเภทร้าน' : field}`);
+        toast.error(`กรุณากรอก${field === 'shop_name' ? 'ชื่อร้านอาหาร' : field === 'description' ? 'รายละเอียด' : field === 'open_day' ? 'วันที่เปิด' : field === 'open_time' ? 'เวลาเปิด' : field === 'food_type_1' ? 'ประเภทร้าน' : field}`);
         return false;
       }
     }
@@ -670,50 +576,42 @@ const Admin = () => {
     }
     return true;
   };
-
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    
     setIsSubmitting(true);
     try {
       let imageUrl = '';
-      
       if (selectedImage) {
         const fileExt = selectedImage.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `shop/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('shop')
-          .upload(filePath, selectedImage);
-
+        const {
+          error: uploadError
+        } = await supabase.storage.from('shop').upload(filePath, selectedImage);
         if (uploadError) {
           throw uploadError;
         }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('shop')
-          .getPublicUrl(filePath);
-        
+        const {
+          data: {
+            publicUrl
+          }
+        } = supabase.storage.from('shop').getPublicUrl(filePath);
         imageUrl = publicUrl;
       }
-
-      const { error } = await supabase
-        .from('shop')
-        .insert([{
-          shop_name: formData.shop_name,
-          description: formData.description,
-          open_day: formData.open_day,
-          open_time: formData.open_time,
-          food_type_1: formData.food_type_1,
-          food_type_2: formData.food_type_2 || null,
-          url_pic: imageUrl,
-        }]);
-
+      const {
+        error
+      } = await supabase.from('shop').insert([{
+        shop_name: formData.shop_name,
+        description: formData.description,
+        open_day: formData.open_day,
+        open_time: formData.open_time,
+        food_type_1: formData.food_type_1,
+        food_type_2: formData.food_type_2 || null,
+        url_pic: imageUrl
+      }]);
       if (error) {
         throw error;
       }
-
       toast.success('เพิ่มร้านอาหารสำเร็จ!');
       resetForm();
       setIsRestaurantModalOpen(false);
@@ -724,31 +622,26 @@ const Admin = () => {
       setIsSubmitting(false);
     }
   };
-
   const toggleProgressSort = () => {
-    setProgressSortOrder(prev => 
-      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
-    );
+    setProgressSortOrder(prev => prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none');
   };
-
   const toggleCompletedSort = () => {
-    setCompletedSortOrder(prev => 
-      prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none'
-    );
+    setCompletedSortOrder(prev => prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none');
   };
-
   const toggleRestaurantMenu = (restaurantId: string) => {
     setExpandedRestaurants(prev => ({
       ...prev,
       [restaurantId]: !prev[restaurantId]
     }));
   };
-
   const getSortIcon = (sortOrder: 'none' | 'asc' | 'desc') => {
     switch (sortOrder) {
-      case 'asc': return ArrowUp;
-      case 'desc': return ArrowDown;
-      default: return ArrowUpDown;
+      case 'asc':
+        return ArrowUp;
+      case 'desc':
+        return ArrowDown;
+      default:
+        return ArrowUpDown;
     }
   };
 
@@ -760,21 +653,18 @@ const Admin = () => {
       const buddhistYear = data.plan_date.getFullYear() + 543;
       const formattedDate = format(data.plan_date, 'dd/MM/') + buddhistYear;
       const timeRange = `${data.plan_time_start} - ${data.plan_time_end}`;
-
-      const { error } = await (supabase as any)
-        .from('plan')
-        .insert([{
-          plan_name: data.plan_name,
-          plan_location: data.plan_location,
-          plan_date: formattedDate,
-          plan_time: timeRange,
-          plan_pwd: data.plan_pwd,
-          plan_maxp: parseInt(data.plan_maxp),
-          plan_editor: data.plan_editor,
-        }]);
-
+      const {
+        error
+      } = await (supabase as any).from('plan').insert([{
+        plan_name: data.plan_name,
+        plan_location: data.plan_location,
+        plan_date: formattedDate,
+        plan_time: timeRange,
+        plan_pwd: data.plan_pwd,
+        plan_maxp: parseInt(data.plan_maxp),
+        plan_editor: data.plan_editor
+      }]);
       if (error) throw error;
-
       toast.success('เพิ่มใบสั่งอาหารสำเร็จ!');
       planForm.reset();
       setIsOrderModalOpen(false);
@@ -853,14 +743,10 @@ const Admin = () => {
                                 <Label htmlFor="shop_name" className="text-sm font-medium text-foreground">
                                   ชื่อร้านอาหาร *
                                 </Label>
-                                <Input
-                                  id="shop_name"
-                                  type="text"
-                                  value={formData.shop_name}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
-                                  placeholder="กรุณากรอกชื่อร้านอาหาร"
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                />
+                                <Input id="shop_name" type="text" value={formData.shop_name} onChange={e => setFormData(prev => ({
+                                ...prev,
+                                shop_name: e.target.value
+                              }))} placeholder="กรุณากรอกชื่อร้านอาหาร" className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary" />
                               </div>
 
                               {/* Description */}
@@ -868,14 +754,10 @@ const Admin = () => {
                                 <Label htmlFor="description" className="text-sm font-medium text-foreground">
                                   รายละเอียด *
                                 </Label>
-                                <Textarea
-                                  id="description"
-                                  value={formData.description}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                  placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
-                                  rows={3}
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
-                                />
+                                <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({
+                                ...prev,
+                                description: e.target.value
+                              }))} placeholder="กรุณากรอกรายละเอียดร้านอาหาร" rows={3} className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none" />
                               </div>
 
                               {/* Open Day and Time */}
@@ -884,27 +766,19 @@ const Admin = () => {
                                   <Label htmlFor="open_day" className="text-sm font-medium text-foreground">
                                     วันที่เปิด *
                                   </Label>
-                                  <Input
-                                    id="open_day"
-                                    type="text"
-                                    value={formData.open_day}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
-                                    placeholder="เช่น จันทร์-ศุกร์"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
+                                  <Input id="open_day" type="text" value={formData.open_day} onChange={e => setFormData(prev => ({
+                                  ...prev,
+                                  open_day: e.target.value
+                                }))} placeholder="เช่น จันทร์-ศุกร์" className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary" />
                                 </div>
                                 <div>
                                   <Label htmlFor="open_time" className="text-sm font-medium text-foreground">
                                     เวลาเปิด *
                                   </Label>
-                                  <Input
-                                    id="open_time"
-                                    type="text"
-                                    value={formData.open_time}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
-                                    placeholder="เช่น 08:00-17:00"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
+                                  <Input id="open_time" type="text" value={formData.open_time} onChange={e => setFormData(prev => ({
+                                  ...prev,
+                                  open_time: e.target.value
+                                }))} placeholder="เช่น 08:00-17:00" className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary" />
                                 </div>
                               </div>
 
@@ -914,19 +788,17 @@ const Admin = () => {
                                   <Label htmlFor="food_type_1" className="text-sm font-medium text-foreground">
                                     ประเภทร้าน *
                                   </Label>
-                                  <Select 
-                                    value={formData.food_type_1} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
-                                  >
+                                  <Select value={formData.food_type_1} onValueChange={value => setFormData(prev => ({
+                                  ...prev,
+                                  food_type_1: value
+                                }))}>
                                     <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
                                       <SelectValue placeholder="เลือกประเภทร้าน" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
+                                      {foodTypes.map(type => <SelectItem key={type} value={type}>
                                           {type}
-                                        </SelectItem>
-                                      ))}
+                                        </SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -934,20 +806,18 @@ const Admin = () => {
                                   <Label htmlFor="food_type_2" className="text-sm font-medium text-foreground">
                                     ประเภทร้าน (ถ้ามี)
                                   </Label>
-                                  <Select 
-                                    value={formData.food_type_2} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
-                                  >
+                                  <Select value={formData.food_type_2} onValueChange={value => setFormData(prev => ({
+                                  ...prev,
+                                  food_type_2: value === "none" ? "" : value
+                                }))}>
                                     <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
                                       <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="none">ไม่เลือก</SelectItem>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
+                                      {foodTypes.map(type => <SelectItem key={type} value={type}>
                                           {type}
-                                        </SelectItem>
-                                      ))}
+                                        </SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -960,40 +830,18 @@ const Admin = () => {
                                 </Label>
                                 <div className="mt-1">
                                   <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
-                                    <input
-                                      id="image"
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageChange}
-                                      className="hidden"
-                                    />
-                                    <label
-                                      htmlFor="image"
-                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
-                                    >
-                                      {imagePreview ? (
-                                        <div className="relative">
-                                          <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
-                                          />
-                                          <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="sm"
-                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              setSelectedImage(null);
-                                              setImagePreview(null);
-                                            }}
-                                          >
+                                    <input id="image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                    <label htmlFor="image" className="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                                      {imagePreview ? <div className="relative">
+                                          <img src={imagePreview} alt="Preview" className="w-full max-w-[200px] h-32 object-cover rounded-lg" />
+                                          <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={e => {
+                                        e.preventDefault();
+                                        setSelectedImage(null);
+                                        setImagePreview(null);
+                                      }}>
                                             <X className="h-3 w-3" />
                                           </Button>
-                                        </div>
-                                      ) : (
-                                        <>
+                                        </div> : <>
                                           <Upload className="h-8 w-8 text-muted-foreground" />
                                           <div className="text-center">
                                             <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพ</span>
@@ -1001,8 +849,7 @@ const Admin = () => {
                                               รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
                                             </p>
                                           </div>
-                                        </>
-                                      )}
+                                        </>}
                                     </label>
                                   </div>
                                 </div>
@@ -1012,23 +859,13 @@ const Admin = () => {
                           
                           <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
                             <div className="flex gap-2 w-full sm:w-auto">
-                              <Button 
-                                variant="outline" 
-                                onClick={() => {
-                                  resetForm();
-                                  setIsRestaurantModalOpen(false);
-                                }}
-                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
-                                disabled={isSubmitting}
-                              >
+                              <Button variant="outline" onClick={() => {
+                              resetForm();
+                              setIsRestaurantModalOpen(false);
+                            }} className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10" disabled={isSubmitting}>
                                 ยกเลิก
                               </Button>
-                              <Button 
-                                variant="default" 
-                                onClick={handleSubmit}
-                                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                                disabled={isSubmitting}
-                              >
+                              <Button variant="default" onClick={handleSubmit} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none" disabled={isSubmitting}>
                                 {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
                               </Button>
                             </div>
@@ -1038,37 +875,23 @@ const Admin = () => {
                     </div>
                     <div className="space-y-4">
                       {/* Restaurant Grid */}
-                      {isLoading ? (
-                        <Card className="bg-white/60 border border-brand-pink/10">
+                      {isLoading ? <Card className="bg-white/60 border border-brand-pink/10">
                           <CardContent className="p-6 text-center">
                             <div className="text-muted-foreground">กำลังโหลดข้อมูล...</div>
                           </CardContent>
-                        </Card>
-                      ) : restaurants.length === 0 ? (
-                        <Card className="bg-white/60 border border-brand-pink/10">
+                        </Card> : restaurants.length === 0 ? <Card className="bg-white/60 border border-brand-pink/10">
                           <CardContent className="p-6 text-center">
                             <div className="text-muted-foreground">ยังไม่มีร้านอาหาร</div>
                           </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {restaurants.map((restaurant) => (
-                            <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10 overflow-hidden">
+                        </Card> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {restaurants.map(restaurant => <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10 overflow-hidden">
                               <CardContent className="p-0">
                                 <div className="flex flex-col">
                                   {/* Restaurant Image */}
                                   <div className="w-full h-48 bg-gradient-to-br from-brand-cream/20 to-brand-pink/10 relative overflow-hidden">
-                                    {restaurant.url_pic ? (
-                                      <img
-                                        src={restaurant.url_pic}
-                                        alt={restaurant.shop_name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center">
+                                    {restaurant.url_pic ? <img src={restaurant.url_pic} alt={restaurant.shop_name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">
                                         <Store className="h-16 w-16 text-muted-foreground/40" />
-                                      </div>
-                                    )}
+                                      </div>}
                                   </div>
 
                                   {/* Restaurant Info */}
@@ -1112,11 +935,9 @@ const Admin = () => {
                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                                           {restaurant.food_type_1}
                                         </span>
-                                        {restaurant.food_type_2 && (
-                                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                        {restaurant.food_type_2 && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                                             {restaurant.food_type_2}
-                                          </span>
-                                        )}
+                                          </span>}
                                       </div>
                                     </div>
 
@@ -1124,53 +945,33 @@ const Admin = () => {
                                     <div className="flex justify-center pt-3 border-t border-brand-pink/10">
                                       <div className="flex gap-2">
                                         {/* Add Menu Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => {
-                                            setSelectedRestaurant(restaurant);
-                                            setIsAddMenuModalOpen(true);
-                                          }}
-                                        >
+                                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => {
+                                    setSelectedRestaurant(restaurant);
+                                    setIsAddMenuModalOpen(true);
+                                  }}>
                                           <Plus className="h-4 w-4 text-primary" />
                                         </Button>
 
                                         {/* Edit Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => handleEditRestaurant(restaurant)}
-                                        >
+                                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleEditRestaurant(restaurant)}>
                                           <Edit className="h-4 w-4 text-primary" />
                                         </Button>
 
                                         {/* View Menu Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => {
-                                            setSelectedRestaurant(restaurant);
-                                            setIsViewMenuModalOpen(true);
-                                          }}
-                                        >
+                                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => {
+                                    setSelectedRestaurant(restaurant);
+                                    setIsViewMenuModalOpen(true);
+                                  }}>
                                           <Eye className="h-4 w-4 text-primary" />
                                         </Button>
 
                                         {/* Delete Button */}
                                         <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
                                           <AlertDialogTrigger asChild>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400"
-                                              onClick={() => {
-                                                setSelectedRestaurant(restaurant);
-                                                setIsDeleteConfirmOpen(true);
-                                              }}
-                                            >
+                                            <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400" onClick={() => {
+                                        setSelectedRestaurant(restaurant);
+                                        setIsDeleteConfirmOpen(true);
+                                      }}>
                                               <Trash2 className="h-4 w-4 text-red-600" />
                                             </Button>
                                           </AlertDialogTrigger>
@@ -1188,18 +989,13 @@ const Admin = () => {
                                               </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                              <AlertDialogCancel 
-                                                onClick={() => {
-                                                  setIsDeleteConfirmOpen(false);
-                                                  setSelectedRestaurant(null);
-                                                }}
-                                              >
+                                              <AlertDialogCancel onClick={() => {
+                                          setIsDeleteConfirmOpen(false);
+                                          setSelectedRestaurant(null);
+                                        }}>
                                                 ยกเลิก
                                               </AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={handleDeleteRestaurant}
-                                                className="bg-red-600 hover:bg-red-700"
-                                              >
+                                              <AlertDialogAction onClick={handleDeleteRestaurant} className="bg-red-600 hover:bg-red-700">
                                                 ลบร้านอาหาร
                                               </AlertDialogAction>
                                             </AlertDialogFooter>
@@ -1210,10 +1006,8 @@ const Admin = () => {
                                   </div>
                                 </div>
                               </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
+                            </Card>)}
+                        </div>}
 
                       {/* Edit Restaurant Modal */}
                       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
@@ -1231,14 +1025,10 @@ const Admin = () => {
                                 <Label htmlFor="edit_shop_name" className="text-sm font-medium text-foreground">
                                   ชื่อร้านอาหาร *
                                 </Label>
-                                <Input
-                                  id="edit_shop_name"
-                                  type="text"
-                                  value={formData.shop_name}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
-                                  placeholder="กรุณากรอกชื่อร้านอาหาร"
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                />
+                                <Input id="edit_shop_name" type="text" value={formData.shop_name} onChange={e => setFormData(prev => ({
+                                ...prev,
+                                shop_name: e.target.value
+                              }))} placeholder="กรุณากรอกชื่อร้านอาหาร" className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary" />
                               </div>
 
                               {/* Description */}
@@ -1246,14 +1036,10 @@ const Admin = () => {
                                 <Label htmlFor="edit_description" className="text-sm font-medium text-foreground">
                                   รายละเอียด *
                                 </Label>
-                                <Textarea
-                                  id="edit_description"
-                                  value={formData.description}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                  placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
-                                  rows={3}
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
-                                />
+                                <Textarea id="edit_description" value={formData.description} onChange={e => setFormData(prev => ({
+                                ...prev,
+                                description: e.target.value
+                              }))} placeholder="กรุณากรอกรายละเอียดร้านอาหาร" rows={3} className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none" />
                               </div>
 
                               {/* Open Day and Time */}
@@ -1262,27 +1048,19 @@ const Admin = () => {
                                   <Label htmlFor="edit_open_day" className="text-sm font-medium text-foreground">
                                     วันที่เปิด *
                                   </Label>
-                                  <Input
-                                    id="edit_open_day"
-                                    type="text"
-                                    value={formData.open_day}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
-                                    placeholder="เช่น จันทร์-ศุกร์"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
+                                  <Input id="edit_open_day" type="text" value={formData.open_day} onChange={e => setFormData(prev => ({
+                                  ...prev,
+                                  open_day: e.target.value
+                                }))} placeholder="เช่น จันทร์-ศุกร์" className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary" />
                                 </div>
                                 <div>
                                   <Label htmlFor="edit_open_time" className="text-sm font-medium text-foreground">
                                     เวลาเปิด *
                                   </Label>
-                                  <Input
-                                    id="edit_open_time"
-                                    type="text"
-                                    value={formData.open_time}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
-                                    placeholder="เช่น 08:00-17:00"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
+                                  <Input id="edit_open_time" type="text" value={formData.open_time} onChange={e => setFormData(prev => ({
+                                  ...prev,
+                                  open_time: e.target.value
+                                }))} placeholder="เช่น 08:00-17:00" className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary" />
                                 </div>
                               </div>
 
@@ -1292,19 +1070,17 @@ const Admin = () => {
                                   <Label htmlFor="edit_food_type_1" className="text-sm font-medium text-foreground">
                                     ประเภทร้าน *
                                   </Label>
-                                  <Select 
-                                    value={formData.food_type_1} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
-                                  >
+                                  <Select value={formData.food_type_1} onValueChange={value => setFormData(prev => ({
+                                  ...prev,
+                                  food_type_1: value
+                                }))}>
                                     <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
                                       <SelectValue placeholder="เลือกประเภทร้าน" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
+                                      {foodTypes.map(type => <SelectItem key={type} value={type}>
                                           {type}
-                                        </SelectItem>
-                                      ))}
+                                        </SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -1312,20 +1088,18 @@ const Admin = () => {
                                   <Label htmlFor="edit_food_type_2" className="text-sm font-medium text-foreground">
                                     ประเภทร้าน (ถ้ามี)
                                   </Label>
-                                  <Select 
-                                    value={formData.food_type_2} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
-                                  >
+                                  <Select value={formData.food_type_2} onValueChange={value => setFormData(prev => ({
+                                  ...prev,
+                                  food_type_2: value === "none" ? "" : value
+                                }))}>
                                     <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
                                       <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="none">ไม่เลือก</SelectItem>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
+                                      {foodTypes.map(type => <SelectItem key={type} value={type}>
                                           {type}
-                                        </SelectItem>
-                                      ))}
+                                        </SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -1338,40 +1112,18 @@ const Admin = () => {
                                 </Label>
                                 <div className="mt-1">
                                   <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
-                                    <input
-                                      id="edit_image"
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageChange}
-                                      className="hidden"
-                                    />
-                                    <label
-                                      htmlFor="edit_image"
-                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
-                                    >
-                                      {imagePreview ? (
-                                        <div className="relative">
-                                          <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
-                                          />
-                                          <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="sm"
-                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              setSelectedImage(null);
-                                              setImagePreview(null);
-                                            }}
-                                          >
+                                    <input id="edit_image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                    <label htmlFor="edit_image" className="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                                      {imagePreview ? <div className="relative">
+                                          <img src={imagePreview} alt="Preview" className="w-full max-w-[200px] h-32 object-cover rounded-lg" />
+                                          <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={e => {
+                                        e.preventDefault();
+                                        setSelectedImage(null);
+                                        setImagePreview(null);
+                                      }}>
                                             <X className="h-3 w-3" />
                                           </Button>
-                                        </div>
-                                      ) : (
-                                        <>
+                                        </div> : <>
                                           <Upload className="h-8 w-8 text-muted-foreground" />
                                           <div className="text-center">
                                             <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพใหม่</span>
@@ -1379,8 +1131,7 @@ const Admin = () => {
                                               รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
                                             </p>
                                           </div>
-                                        </>
-                                      )}
+                                        </>}
                                     </label>
                                   </div>
                                 </div>
@@ -1390,24 +1141,14 @@ const Admin = () => {
                           
                           <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
                             <div className="flex gap-2 w-full sm:w-auto">
-                              <Button 
-                                variant="outline" 
-                                onClick={() => {
-                                  resetForm();
-                                  setIsEditModalOpen(false);
-                                  setSelectedRestaurant(null);
-                                }}
-                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
-                                disabled={isSubmitting}
-                              >
+                              <Button variant="outline" onClick={() => {
+                              resetForm();
+                              setIsEditModalOpen(false);
+                              setSelectedRestaurant(null);
+                            }} className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10" disabled={isSubmitting}>
                                 ยกเลิก
                               </Button>
-                              <Button 
-                                variant="default" 
-                                onClick={handleUpdateRestaurant}
-                                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                                disabled={isSubmitting}
-                              >
+                              <Button variant="default" onClick={handleUpdateRestaurant} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none" disabled={isSubmitting}>
                                 {isSubmitting ? 'กำลังบันทึก...' : 'อัปเดต'}
                               </Button>
                             </div>
@@ -1427,13 +1168,10 @@ const Admin = () => {
                             ฟีเจอร์นี้จะพัฒนาในอนาคต
                           </div>
                           <DialogFooter>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setIsAddMenuModalOpen(false);
-                                setSelectedRestaurant(null);
-                              }}
-                            >
+                            <Button variant="outline" onClick={() => {
+                            setIsAddMenuModalOpen(false);
+                            setSelectedRestaurant(null);
+                          }}>
                               ปิด
                             </Button>
                           </DialogFooter>
@@ -1452,13 +1190,10 @@ const Admin = () => {
                             ฟีเจอร์นี้จะพัฒนาในอนาคต
                           </div>
                           <DialogFooter>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setIsViewMenuModalOpen(false);
-                                setSelectedRestaurant(null);
-                              }}
-                            >
+                            <Button variant="outline" onClick={() => {
+                            setIsViewMenuModalOpen(false);
+                            setSelectedRestaurant(null);
+                          }}>
                               ปิด
                             </Button>
                           </DialogFooter>
@@ -1495,108 +1230,72 @@ const Admin = () => {
                                 {/* Plan Name */}
                                 <div className="grid grid-cols-1 gap-4">
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_name"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_name" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             ชื่องาน *
                                           </FormLabel>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกชื่องาน"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <Input {...field} placeholder="กรุณากรอกชื่องาน" className="bg-white/80 border-brand-pink/20 focus:border-primary" />
                                           </FormControl>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                 </div>
 
                                 {/* Location */}
                                 <div className="grid grid-cols-1 gap-4">
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_location"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_location" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             สถานที่ *
                                           </FormLabel>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกสถานที่"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <Input {...field} placeholder="กรุณากรอกสถานที่" className="bg-white/80 border-brand-pink/20 focus:border-primary" />
                                           </FormControl>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                 </div>
 
                                 {/* Date */}
                                 <div className="grid grid-cols-1 gap-4">
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_date"
-                                      render={({ field }) => (
-                                        <FormItem className="flex flex-col">
+                                    <FormField control={planForm.control} name="plan_date" render={({
+                                    field
+                                  }) => <FormItem className="flex flex-col">
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             วันที่ *
                                           </FormLabel>
                                           <Popover>
                                             <PopoverTrigger asChild>
                                               <FormControl>
-                                                <Button
-                                                  variant="outline"
-                                                  className={cn(
-                                                    "w-full pl-3 text-left font-normal bg-white/80 border-brand-pink/20 focus:border-primary",
-                                                    !field.value && "text-muted-foreground"
-                                                  )}
-                                                >
-                                                  {field.value ? (
-                                                    `${format(field.value, "dd MMMM", { locale: th })} ${field.value.getFullYear() + 543}`
-                                                  ) : (
-                                                    <span>เลือกวันที่</span>
-                                                  )}
+                                                <Button variant="outline" className={cn("w-full pl-3 text-left font-normal bg-white/80 border-brand-pink/20 focus:border-primary", !field.value && "text-muted-foreground")}>
+                                                  {field.value ? `${format(field.value, "dd MMMM", {
+                                              locale: th
+                                            })} ${field.value.getFullYear() + 543}` : <span>เลือกวันที่</span>}
                                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                                 </Button>
                                               </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0" align="start">
-                                               <Calendar
-                                                 mode="single"
-                                                 selected={field.value}
-                                                 onSelect={field.onChange}
-                                                 initialFocus
-                                                 className="pointer-events-auto"
-                                               />
+                                               <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus className="pointer-events-auto" />
                                             </PopoverContent>
                                           </Popover>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                 </div>
 
                                 {/* Time Range */}
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_time_start"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_time_start" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             เวลาเริ่มต้น *
                                           </FormLabel>
@@ -1607,24 +1306,18 @@ const Admin = () => {
                                               </SelectTrigger>
                                             </FormControl>
                                             <SelectContent className="max-h-[200px]">
-                                              {timeOptions.map((time) => (
-                                                <SelectItem key={time} value={time}>
+                                              {timeOptions.map(time => <SelectItem key={time} value={time}>
                                                   {time}
-                                                </SelectItem>
-                                              ))}
+                                                </SelectItem>)}
                                             </SelectContent>
                                           </Select>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_time_end"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_time_end" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             เวลาสิ้นสุด *
                                           </FormLabel>
@@ -1635,90 +1328,60 @@ const Admin = () => {
                                               </SelectTrigger>
                                             </FormControl>
                                             <SelectContent className="max-h-[200px]">
-                                              {timeOptions.map((time) => (
-                                                <SelectItem key={time} value={time}>
+                                              {timeOptions.map(time => <SelectItem key={time} value={time}>
                                                   {time}
-                                                </SelectItem>
-                                              ))}
+                                                </SelectItem>)}
                                             </SelectContent>
                                           </Select>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                 </div>
 
                                 {/* Password and Max Participants */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_pwd"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_pwd" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             รหัส *
                                           </FormLabel>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกรหัส"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <Input {...field} placeholder="กรุณากรอกรหัส" className="bg-white/80 border-brand-pink/20 focus:border-primary" />
                                           </FormControl>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_maxp"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_maxp" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             จำนวนผู้เข้าร่วม *
                                           </FormLabel>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              type="number"
-                                              min="1"
-                                              placeholder="จำนวนคน"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <Input {...field} type="number" min="1" placeholder="จำนวนคน" className="bg-white/80 border-brand-pink/20 focus:border-primary" />
                                           </FormControl>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                 </div>
 
                                 {/* Editor Name */}
                                 <div className="grid grid-cols-1 gap-4">
                                   <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_editor"
-                                      render={({ field }) => (
-                                        <FormItem>
+                                    <FormField control={planForm.control} name="plan_editor" render={({
+                                    field
+                                  }) => <FormItem>
                                           <FormLabel className="text-sm font-medium text-foreground">
                                             ชื่อผู้สร้างฟอร์ม *
                                           </FormLabel>
                                           <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกชื่อผู้สร้างฟอร์ม"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
+                                            <Input {...field} placeholder="กรุณากรอกชื่อผู้สร้างฟอร์ม" className="bg-white/80 border-brand-pink/20 focus:border-primary" />
                                           </FormControl>
                                           <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                        </FormItem>} />
                                   </div>
                                 </div>
 
@@ -1727,22 +1390,13 @@ const Admin = () => {
                           </ScrollArea>
                           
                           <DialogFooter className="gap-2 p-4 border-t bg-white/90">
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                planForm.reset();
-                                setIsOrderModalOpen(false);
-                              }}
-                              className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
-                              disabled={isPlanSubmitting}
-                            >
+                            <Button variant="outline" onClick={() => {
+                            planForm.reset();
+                            setIsOrderModalOpen(false);
+                          }} className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10" disabled={isPlanSubmitting}>
                               ยกเลิก
                             </Button>
-                            <Button 
-                              onClick={planForm.handleSubmit(handlePlanSubmit)}
-                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                              disabled={isPlanSubmitting}
-                            >
+                            <Button onClick={planForm.handleSubmit(handlePlanSubmit)} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none" disabled={isPlanSubmitting}>
                               {isPlanSubmitting ? "กำลังบันทึก..." : "ยืนยัน"}
                             </Button>
                           </DialogFooter>
@@ -1750,12 +1404,7 @@ const Admin = () => {
                       </Dialog>
                     </div>
                     <div className="space-y-4">
-                      <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-4">
-                          <h3 className="text-lg font-semibold text-foreground mb-4">แบบร่างใบจองอาหาร</h3>
-                          <PlanList />
-                        </CardContent>
-                      </Card>
+                      
                     </div>
                   </CardContent>
                 </Card>
@@ -1767,16 +1416,11 @@ const Admin = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">รายการที่กำลังดำเนินการ</h3>
                       <div className="border border-brand-pink/20 rounded-lg p-1 bg-white/60">
-                        <Button
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={toggleProgressSort}
-                          className="hover:bg-brand-pink/10"
-                        >
+                        <Button variant="ghost" size="sm" onClick={toggleProgressSort} className="hover:bg-brand-pink/10">
                           {(() => {
-                            const SortIcon = getSortIcon(progressSortOrder);
-                            return <SortIcon className="h-4 w-4" />;
-                          })()}
+                          const SortIcon = getSortIcon(progressSortOrder);
+                          return <SortIcon className="h-4 w-4" />;
+                        })()}
                         </Button>
                       </div>
                     </div>
@@ -1809,16 +1453,11 @@ const Admin = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">รายการที่ดำเนินการเสร็จสิ้น</h3>
                       <div className="border border-brand-pink/20 rounded-lg p-1 bg-white/60">
-                        <Button
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={toggleCompletedSort}
-                          className="hover:bg-brand-pink/10"
-                        >
+                        <Button variant="ghost" size="sm" onClick={toggleCompletedSort} className="hover:bg-brand-pink/10">
                           {(() => {
-                            const SortIcon = getSortIcon(completedSortOrder);
-                            return <SortIcon className="h-4 w-4" />;
-                          })()}
+                          const SortIcon = getSortIcon(completedSortOrder);
+                          return <SortIcon className="h-4 w-4" />;
+                        })()}
                         </Button>
                       </div>
                     </div>
