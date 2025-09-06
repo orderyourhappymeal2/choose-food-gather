@@ -37,6 +37,430 @@ const planFormSchema = z.object({
 
 type PlanFormData = z.infer<typeof planFormSchema>;
 
+// PlanList component
+const PlanList = () => {
+  const [plans, setPlans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingPlan, setEditingPlan] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingPlan, setDeletingPlan] = useState<any>(null);
+
+  // Edit form
+  const editForm = useForm<PlanFormData>({
+    resolver: zodResolver(planFormSchema),
+  });
+
+  // Format date to Thai format
+  const formatThaiDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "d MMM yyyy", { locale: th }).replace(/\d{4}/, (year) => (parseInt(year) + 543).toString());
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Fetch plans
+  const fetchPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('plan')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPlans(data || []);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลแผน');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  // Handle edit
+  const handleEdit = (plan: any) => {
+    setEditingPlan(plan);
+    const [startTime, endTime] = plan.plan_time.includes('-') ? plan.plan_time.split(' - ') : [plan.plan_time, plan.plan_time];
+    editForm.reset({
+      plan_name: plan.plan_name,
+      plan_location: plan.plan_location,
+      plan_date: new Date(plan.plan_date),
+      plan_time_start: startTime,
+      plan_time_end: endTime,
+      plan_pwd: plan.plan_pwd,
+      plan_maxp: plan.plan_maxp.toString(),
+      plan_editor: plan.plan_editor,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // Handle delete
+  const handleDelete = (plan: any) => {
+    setDeletingPlan(plan);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    if (!deletingPlan) return;
+
+    try {
+      const { error } = await supabase
+        .from('plan')
+        .delete()
+        .eq('plan_id', deletingPlan.plan_id);
+
+      if (error) throw error;
+
+      toast.success('ลบแผนสำเร็จ');
+      setPlans(plans.filter(p => p.plan_id !== deletingPlan.plan_id));
+      setIsDeleteDialogOpen(false);
+      setDeletingPlan(null);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการลบแผน');
+    }
+  };
+
+  // Handle edit submit
+  const handleEditSubmit = async (data: PlanFormData) => {
+    if (!editingPlan) return;
+
+    try {
+      const planTime = `${data.plan_time_start} - ${data.plan_time_end}`;
+      
+      const { error } = await supabase
+        .from('plan')
+        .update({
+          plan_name: data.plan_name,
+          plan_location: data.plan_location,
+          plan_date: data.plan_date.toISOString().split('T')[0],
+          plan_time: planTime,
+          plan_pwd: data.plan_pwd,
+          plan_maxp: parseInt(data.plan_maxp),
+          plan_editor: data.plan_editor,
+        })
+        .eq('plan_id', editingPlan.plan_id);
+
+      if (error) throw error;
+
+      toast.success('แก้ไขแผนสำเร็จ');
+      setIsEditModalOpen(false);
+      setEditingPlan(null);
+      fetchPlans();
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการแก้ไขแผน');
+    }
+  };
+
+  // Generate time options
+  const timeOptions = [];
+  for (let hour = 6; hour <= 21; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      timeOptions.push(timeString);
+    }
+  }
+
+  if (isLoading) {
+    return <div className="text-center py-8">กำลังโหลด...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {plans.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          ยังไม่มีแผนการจองอาหาร
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex flex-col space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
+                      <div className="text-sm font-semibold text-foreground">{plan.plan_name}</div>
+                    </div>
+                    
+                    <div className="flex flex-col space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
+                      <div className="text-sm text-foreground">{plan.plan_location}</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col space-y-1">
+                        <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
+                        <div className="text-sm text-foreground">{formatThaiDate(plan.plan_date)}</div>
+                      </div>
+                      <div className="flex flex-col space-y-1">
+                        <Label className="text-xs font-medium text-muted-foreground">เวลา</Label>
+                        <div className="text-sm text-foreground">{plan.plan_time}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col space-y-1">
+                        <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
+                        <div className="text-sm text-foreground">{plan.plan_pwd}</div>
+                      </div>
+                      <div className="flex flex-col space-y-1">
+                        <Label className="text-xs font-medium text-muted-foreground">จำนวนคน</Label>
+                        <div className="text-sm text-foreground">{plan.plan_maxp} คน</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
+                      <div className="text-sm text-foreground">{plan.plan_editor}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-2">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
+                      <Plus className="h-3 w-3 mr-1" />
+                      เพิ่มร้าน
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {}}>
+                      <Eye className="h-3 w-3 mr-1" />
+                      ดูร้าน
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(plan)}>
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(plan)}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-foreground">แก้ไขแผนการจอง</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="plan_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ชื่องาน</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="กรอกชื่องาน" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="plan_location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>สถานที่</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="กรอกสถานที่" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="plan_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>วันที่</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "d MMMM yyyy", { locale: th })
+                              ) : (
+                                <span>เลือกวันที่</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-2">
+                  <FormField
+                    control={editForm.control}
+                    name="plan_time_start"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>เวลาเริ่ม</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="เลือกเวลาเริ่ม" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {timeOptions.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="plan_time_end"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>เวลาจบ</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="เลือกเวลาจบ" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {timeOptions.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={editForm.control}
+                  name="plan_pwd"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>รหัส</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="กรอกรหัส" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="plan_maxp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>จำนวนผู้เข้าร่วม</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="number" placeholder="กรอกจำนวนผู้เข้าร่วม" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="plan_editor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 sm:flex-none"
+                >
+                  ยกเลิก
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                >
+                  บันทึกการแก้ไข
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการลบแผน</AlertDialogTitle>
+            <AlertDialogDescription>
+              หากลบแผน "{deletingPlan?.plan_name}" แผนการสั่งจองทั้งหมดจะถูกลบออกไปด้วย
+              <br />
+              คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              ลบแผน
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
 const Admin = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -1327,22 +1751,11 @@ const Admin = () => {
                         </DialogContent>
                       </Dialog>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-3">
-                          
-                          <ScrollArea className="h-[300px] w-full">
-                            <div className="space-y-2">
-                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">แบบร่างใบจอง #001</div>
-                                <div className="text-xs text-muted-foreground">วันที่สร้าง: 30/08/2025 | สถานะ: รอการอนุมัติ</div>
-                              </div>
-                              <div className="p-3 bg-gradient-to-r from-brand-cream/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">แบบร่างใบจอง #002</div>
-                                <div className="text-xs text-muted-foreground">วันที่สร้าง: 29/08/2025 | สถานะ: รอการแก้ไข</div>
-                              </div>
-                            </div>
-                          </ScrollArea>
+                        <CardContent className="p-4">
+                          <h3 className="text-lg font-semibold text-foreground mb-4">แบบร่างใบจองอาหาร</h3>
+                          <PlanList />
                         </CardContent>
                       </Card>
                     </div>
