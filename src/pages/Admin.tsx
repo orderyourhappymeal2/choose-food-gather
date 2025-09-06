@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState, useEffect } from "react";
@@ -327,10 +327,10 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                   
                   <div className="flex gap-1 pt-2 overflow-hidden">
                     <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
-                      <Plus className="h-3 w-3" />
+                      <Receipt className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
-                      <Eye className="h-3 w-3" />
+                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                     {filterState === 'waiting' && (
                       <>
