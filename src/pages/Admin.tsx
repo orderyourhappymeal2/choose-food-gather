@@ -2009,22 +2009,10 @@ const Admin = () => {
                         </Button>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-3">
-                          
-                          <ScrollArea className="h-[300px] w-full">
-                            <div className="space-y-2">
-                              <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #099</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารไทย | สถานะ: เสร็จสิ้น | เวลา: 12:30</div>
-                              </div>
-                              <div className="p-3 bg-gradient-to-r from-green-100/80 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #098</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารจีน | สถานะ: เสร็จสิ้น | เวลา: 12:15</div>
-                              </div>
-                            </div>
-                          </ScrollArea>
+                        <CardContent className="p-4">
+                          <PlanList filterState="finished" />
                         </CardContent>
                       </Card>
                     </div>
