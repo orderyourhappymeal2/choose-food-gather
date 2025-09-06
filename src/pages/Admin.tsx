@@ -333,35 +333,35 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                   )}
                   
                   <div className="flex gap-2 pt-2 overflow-hidden justify-center">
-                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => {}}>
-                      <Receipt className="h-4 w-4 text-primary" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400" onClick={() => handleDelete(plan)}>
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => {}}>
+                      <Plus className="h-4 w-4 text-primary" />
                     </Button>
                     {filterState === 'waiting' && (
                       <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleEdit(plan)}>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleEdit(plan)}>
                           <Edit className="h-4 w-4 text-primary" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handlePublish(plan)}>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handlePublish(plan)}>
                           <Send className="h-4 w-4 text-primary" />
                         </Button>
                       </>
                     )}
                     {filterState === 'published' && (
                       <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleFinishPlan(plan)}>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleFinishPlan(plan)}>
                           <CheckCircle className="h-4 w-4 text-primary" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleShowOrders(plan)}>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleShowOrders(plan)}>
                           <ShoppingCart className="h-4 w-4 text-primary" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleCopyLink(plan)}>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleCopyLink(plan)}>
                           <Link className="h-4 w-4 text-primary" />
                         </Button>
                       </>
                     )}
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-300 hover:bg-red-600 hover:border-red-600" onClick={() => handleDelete(plan)}>
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -1326,56 +1326,56 @@ const Admin = () => {
                                     <div className="flex justify-center pt-3 border-t border-brand-pink/10">
                                       <div className="flex gap-2">
                                         {/* Add Menu Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => {
-                                            setSelectedRestaurant(restaurant);
-                                            setIsAddMenuModalOpen(true);
-                                          }}
-                                        >
-                                          <Plus className="h-4 w-4 text-primary" />
-                                        </Button>
+                                         <Button
+                                           size="sm"
+                                           variant="outline"
+                                           className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary"
+                                           onClick={() => {
+                                             setSelectedRestaurant(restaurant);
+                                             setIsAddMenuModalOpen(true);
+                                           }}
+                                         >
+                                           <Plus className="h-4 w-4 text-primary" />
+                                         </Button>
 
-                                        {/* Edit Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => handleEditRestaurant(restaurant)}
-                                        >
-                                          <Edit className="h-4 w-4 text-primary" />
-                                        </Button>
+                                         {/* Edit Button */}
+                                         <Button
+                                           size="sm"
+                                           variant="outline"
+                                           className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary"
+                                           onClick={() => handleEditRestaurant(restaurant)}
+                                         >
+                                           <Edit className="h-4 w-4 text-primary" />
+                                         </Button>
 
-                                        {/* View Menu Button */}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80"
-                                          onClick={() => {
-                                            setSelectedRestaurant(restaurant);
-                                            setIsViewMenuModalOpen(true);
-                                          }}
-                                        >
-                                          <Eye className="h-4 w-4 text-primary" />
-                                        </Button>
+                                         {/* View Menu Button */}
+                                         <Button
+                                           size="sm"
+                                           variant="outline"
+                                           className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary"
+                                           onClick={() => {
+                                             setSelectedRestaurant(restaurant);
+                                             setIsViewMenuModalOpen(true);
+                                           }}
+                                         >
+                                           <Eye className="h-4 w-4 text-primary" />
+                                         </Button>
 
-                                        {/* Delete Button */}
-                                        <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
-                                          <AlertDialogTrigger asChild>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400"
-                                              onClick={() => {
-                                                setSelectedRestaurant(restaurant);
-                                                setIsDeleteConfirmOpen(true);
-                                              }}
-                                            >
-                                              <Trash2 className="h-4 w-4 text-red-600" />
-                                            </Button>
-                                          </AlertDialogTrigger>
+                                         {/* Delete Button */}
+                                         <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
+                                           <AlertDialogTrigger asChild>
+                                             <Button
+                                               size="sm"
+                                               variant="outline"
+                                               className="h-9 w-9 p-0 border-red-300 hover:bg-red-600 hover:border-red-600"
+                                               onClick={() => {
+                                                 setSelectedRestaurant(restaurant);
+                                                 setIsDeleteConfirmOpen(true);
+                                               }}
+                                             >
+                                               <Trash2 className="h-4 w-4 text-red-600" />
+                                             </Button>
+                                           </AlertDialogTrigger>
                                           <AlertDialogContent>
                                             <AlertDialogHeader>
                                               <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
