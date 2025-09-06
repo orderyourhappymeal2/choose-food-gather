@@ -38,7 +38,7 @@ const planFormSchema = z.object({
 type PlanFormData = z.infer<typeof planFormSchema>;
 
 // PlanList component
-const PlanList = () => {
+const PlanList = ({ filterState }: { filterState?: string }) => {
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingPlan, setEditingPlan] = useState<any>(null);
@@ -66,10 +66,15 @@ const PlanList = () => {
   // Fetch plans
   const fetchPlans = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('plan')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      if (filterState) {
+        query = query.eq('plan_state', filterState);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setPlans(data || []);
@@ -257,15 +262,19 @@ const PlanList = () => {
                     <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
                       <Eye className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleEdit(plan)}>
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handlePublish(plan)}>
-                      <Send className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {filterState === 'waiting' && (
+                      <>
+                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleEdit(plan)}>
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handlePublish(plan)}>
+                          <Send className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -1804,7 +1813,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList />
+                          <PlanList filterState="waiting" />
                         </CardContent>
                       </Card>
                     </div>
@@ -1831,22 +1840,10 @@ const Admin = () => {
                         </Button>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
-                        <CardContent className="p-3">
-                          
-                          <ScrollArea className="h-[300px] w-full">
-                            <div className="space-y-2">
-                              <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #101</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารไทย | สถานะ: กำลังเตรียม</div>
-                              </div>
-                              <div className="p-3 bg-gradient-to-r from-brand-yellow/20 to-transparent rounded-lg border border-brand-pink/10">
-                                <div className="text-sm font-medium text-foreground">ใบจอง #102</div>
-                                <div className="text-xs text-muted-foreground">ร้าน: ร้านอาหารจีน | สถานะ: กำลังปรุง</div>
-                              </div>
-                            </div>
-                          </ScrollArea>
+                        <CardContent className="p-4">
+                          <PlanList filterState="published" />
                         </CardContent>
                       </Card>
                     </div>
