@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { PlanList } from "@/components/PlanList";
 import { useState, useEffect } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -177,15 +178,17 @@ const PlanList = () => {
           ยังไม่มีแผนการจองอาหาร
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <div className="flex flex-col space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
-                      <div className="text-sm font-semibold text-foreground">{plan.plan_name}</div>
+        <div className="space-y-4 overflow-hidden">
+          <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+            {plans.map((plan) => (
+              <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10 w-full">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
+                        <div className="flex flex-col space-y-1">
+                          <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
+                          <div className="text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
                     </div>
                     
                     <div className="flex flex-col space-y-1">
@@ -1754,7 +1757,6 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <h3 className="text-lg font-semibold text-foreground mb-4">แบบร่างใบจองอาหาร</h3>
                           <PlanList />
                         </CardContent>
                       </Card>
