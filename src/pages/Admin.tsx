@@ -333,33 +333,33 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                   )}
                   
                   <div className="flex gap-2 pt-2 overflow-hidden justify-center">
-                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => {}}>
-                      <Plus className="h-4 w-4 text-primary" />
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => {}}>
+                      <Plus className="h-4 w-4 text-green-600" />
                     </Button>
                     {filterState === 'waiting' && (
                       <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleEdit(plan)}>
-                          <Edit className="h-4 w-4 text-primary" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleEdit(plan)}>
+                          <Edit className="h-4 w-4 text-gray-800" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handlePublish(plan)}>
-                          <Send className="h-4 w-4 text-primary" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handlePublish(plan)}>
+                          <Send className="h-4 w-4 text-gray-800" />
                         </Button>
                       </>
                     )}
                     {filterState === 'published' && (
                       <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleFinishPlan(plan)}>
-                          <CheckCircle className="h-4 w-4 text-primary" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleFinishPlan(plan)}>
+                          <CheckCircle className="h-4 w-4 text-gray-800" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleShowOrders(plan)}>
-                          <ShoppingCart className="h-4 w-4 text-primary" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
+                          <ShoppingCart className="h-4 w-4 text-gray-800" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary" onClick={() => handleCopyLink(plan)}>
-                          <Link className="h-4 w-4 text-primary" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleCopyLink(plan)}>
+                          <Link className="h-4 w-4 text-gray-800" />
                         </Button>
                       </>
                     )}
-                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-300 hover:bg-red-600 hover:border-red-600" onClick={() => handleDelete(plan)}>
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600" onClick={() => handleDelete(plan)}>
                       <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
                   </div>
@@ -1329,36 +1329,36 @@ const Admin = () => {
                                          <Button
                                            size="sm"
                                            variant="outline"
-                                           className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary"
+                                           className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600"
                                            onClick={() => {
                                              setSelectedRestaurant(restaurant);
                                              setIsAddMenuModalOpen(true);
                                            }}
                                          >
-                                           <Plus className="h-4 w-4 text-primary" />
+                                           <Plus className="h-4 w-4 text-green-600" />
                                          </Button>
 
                                          {/* Edit Button */}
                                          <Button
                                            size="sm"
                                            variant="outline"
-                                           className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary"
+                                           className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
                                            onClick={() => handleEditRestaurant(restaurant)}
                                          >
-                                           <Edit className="h-4 w-4 text-primary" />
+                                           <Edit className="h-4 w-4 text-gray-800" />
                                          </Button>
 
                                          {/* View Menu Button */}
                                          <Button
                                            size="sm"
                                            variant="outline"
-                                           className="h-9 w-9 p-0 border-primary/60 hover:bg-primary hover:border-primary"
+                                           className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
                                            onClick={() => {
                                              setSelectedRestaurant(restaurant);
                                              setIsViewMenuModalOpen(true);
                                            }}
                                          >
-                                           <Eye className="h-4 w-4 text-primary" />
+                                           <Eye className="h-4 w-4 text-gray-800" />
                                          </Button>
 
                                          {/* Delete Button */}
@@ -1367,7 +1367,7 @@ const Admin = () => {
                                              <Button
                                                size="sm"
                                                variant="outline"
-                                               className="h-9 w-9 p-0 border-red-300 hover:bg-red-600 hover:border-red-600"
+                                               className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600"
                                                onClick={() => {
                                                  setSelectedRestaurant(restaurant);
                                                  setIsDeleteConfirmOpen(true);
