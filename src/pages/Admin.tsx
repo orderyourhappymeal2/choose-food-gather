@@ -333,9 +333,16 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                   )}
                   
                   <div className="flex gap-2 pt-2 overflow-hidden justify-center">
-                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => {}}>
-                      <Plus className="h-4 w-4 text-green-600" />
-                    </Button>
+                    {filterState === 'waiting' && (
+                      <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => {}}>
+                        <Plus className="h-4 w-4 text-green-600" />
+                      </Button>
+                    )}
+                    {filterState === 'finished' && (
+                      <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => {}}>
+                        <FileText className="h-4 w-4 text-gray-800" />
+                      </Button>
+                    )}
                     {filterState === 'waiting' && (
                       <>
                         <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleEdit(plan)}>
