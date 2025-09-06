@@ -68,6 +68,16 @@ const Admin = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [editFormData, setEditFormData] = useState({
+    shop_name: '',
+    description: '',
+    open_day: '',
+    open_time: '',
+    food_type_1: '',
+    food_type_2: '',
+  });
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editSelectedImage, setEditSelectedImage] = useState<File | null>(null);
 
   const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
 
@@ -240,6 +250,112 @@ const Admin = () => {
       const nextOrder = completedSortOrder === 'none' ? 'asc' : completedSortOrder === 'asc' ? 'desc' : 'none';
       setCompletedSortOrder(nextOrder);
     }
+  };
+
+  // Restaurant management functions
+  const handleEditRestaurant = (restaurant: any) => {
+    setSelectedRestaurant(restaurant);
+    setEditFormData({
+      shop_name: restaurant.shop_name,
+      description: restaurant.description || '',
+      open_day: restaurant.open_day,
+      open_time: restaurant.open_time,
+      food_type_1: restaurant.food_type_1,
+      food_type_2: restaurant.food_type_2 || '',
+    });
+    setEditImagePreview(restaurant.url_pic);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteRestaurant = (restaurant: any) => {
+    setSelectedRestaurant(restaurant);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteRestaurant = async () => {
+    if (!selectedRestaurant) return;
+
+    try {
+      const { error } = await supabase
+        .from('shop')
+        .delete()
+        .eq('shop_id', selectedRestaurant.shop_id);
+
+      if (error) throw error;
+
+      toast.success('ลบร้านอาหารสำเร็จ');
+      setRestaurants(restaurants.filter(r => r.shop_id !== selectedRestaurant.shop_id));
+      setIsDeleteConfirmOpen(false);
+      setSelectedRestaurant(null);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการลบร้านอาหาร');
+    }
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editFormData.shop_name || !editFormData.open_day || !editFormData.open_time || !editFormData.food_type_1) {
+      toast.error('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      let imageUrl = selectedRestaurant?.url_pic;
+      if (editSelectedImage) {
+        imageUrl = await uploadImage(editSelectedImage);
+      }
+
+      const { error } = await supabase
+        .from('shop')
+        .update({
+          shop_name: editFormData.shop_name,
+          description: editFormData.description,
+          open_day: editFormData.open_day,
+          open_time: editFormData.open_time,
+          food_type_1: editFormData.food_type_1,
+          food_type_2: editFormData.food_type_2,
+          url_pic: imageUrl,
+        })
+        .eq('shop_id', selectedRestaurant.shop_id);
+
+      if (error) throw error;
+
+      toast.success('แก้ไขร้านอาหารสำเร็จ');
+      setIsEditModalOpen(false);
+      setSelectedRestaurant(null);
+      setEditSelectedImage(null);
+      setEditImagePreview(null);
+      fetchRestaurants();
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการแก้ไขร้านอาหาร');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleViewMenu = (restaurant: any) => {
+    setSelectedRestaurant(restaurant);
+    setIsViewMenuModalOpen(true);
+  };
+
+  const handleAddMenu = (restaurant: any) => {
+    setSelectedRestaurant(restaurant);
+    setIsAddMenuModalOpen(true);
   };
 
   const getSortIcon = (sortOrder: 'none' | 'asc' | 'desc') => {
@@ -438,13 +554,48 @@ const Admin = () => {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Button variant="outline" size="sm">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleAddMenu(restaurant);
+                                        }}
+                                        title="เพิ่มเมนูอาหาร"
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleViewMenu(restaurant);
+                                        }}
+                                        title="ดูเมนูอาหาร"
+                                      >
                                         <Eye className="h-4 w-4" />
                                       </Button>
-                                      <Button variant="outline" size="sm">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEditRestaurant(restaurant);
+                                        }}
+                                        title="แก้ไขร้านอาหาร"
+                                      >
                                         <Edit className="h-4 w-4" />
                                       </Button>
-                                      <Button variant="outline" size="sm">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteRestaurant(restaurant);
+                                        }}
+                                        title="ลบร้านอาหาร"
+                                      >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
                                       {expandedRestaurants[restaurant.shop_id] ? (
@@ -483,6 +634,172 @@ const Admin = () => {
                         )}
                       </div>
                     </ScrollArea>
+
+                    {/* Edit Restaurant Modal */}
+                    <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                      <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+                        <DialogHeader>
+                          <DialogTitle className="text-lg font-semibold text-foreground">แก้ไขร้านอาหาร</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleEditSubmit} className="space-y-4">
+                          <div className="grid grid-cols-1 gap-4">
+                            <div>
+                              <Label htmlFor="edit_shop_name">ชื่อร้าน *</Label>
+                              <Input
+                                id="edit_shop_name"
+                                value={editFormData.shop_name}
+                                onChange={(e) => setEditFormData({...editFormData, shop_name: e.target.value})}
+                                placeholder="กรอกชื่อร้านอาหาร"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="edit_description">รายละเอียด</Label>
+                              <Textarea
+                                id="edit_description"
+                                value={editFormData.description}
+                                onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                                placeholder="รายละเอียดร้านอาหาร"
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="edit_open_day">วันที่เปิด *</Label>
+                              <Input
+                                id="edit_open_day"
+                                value={editFormData.open_day}
+                                onChange={(e) => setEditFormData({...editFormData, open_day: e.target.value})}
+                                placeholder="เช่น จันทร์-ศุกร์"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="edit_open_time">เวลาเปิด *</Label>
+                              <Input
+                                id="edit_open_time"
+                                value={editFormData.open_time}
+                                onChange={(e) => setEditFormData({...editFormData, open_time: e.target.value})}
+                                placeholder="เช่น 08:00-17:00"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="edit_food_type_1">ประเภทอาหารหลัก *</Label>
+                              <Select value={editFormData.food_type_1} onValueChange={(value) => setEditFormData({...editFormData, food_type_1: value})}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="เลือกประเภทอาหาร" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {foodTypes.map((type) => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="edit_food_type_2">ประเภทอาหารรอง</Label>
+                              <Select value={editFormData.food_type_2} onValueChange={(value) => setEditFormData({...editFormData, food_type_2: value})}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="เลือกประเภทอาหาร (ไม่บังคับ)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {foodTypes.map((type) => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="edit_image">รูปภาพร้าน</Label>
+                              <Input
+                                id="edit_image"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleEditImageChange}
+                              />
+                              {editImagePreview && (
+                                <img
+                                  src={editImagePreview}
+                                  alt="Preview"
+                                  className="mt-2 w-full h-32 object-cover rounded"
+                                />
+                              )}
+                            </div>
+                          </div>
+
+                          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setIsEditModalOpen(false)}
+                              className="flex-1 sm:flex-none"
+                            >
+                              ยกเลิก
+                            </Button>
+                            <Button
+                              type="submit"
+                              className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                              disabled={isSubmitting}
+                            >
+                              {isSubmitting ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Delete Confirmation Dialog */}
+                    <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            คุณต้องการลบร้าน "{selectedRestaurant?.shop_name}" หรือไม่?
+                            <br />
+                            การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                          <AlertDialogAction onClick={confirmDeleteRestaurant} className="bg-destructive hover:bg-destructive/90">
+                            ลบร้านอาหาร
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    {/* View Menu Modal */}
+                    <Dialog open={isViewMenuModalOpen} onOpenChange={setIsViewMenuModalOpen}>
+                      <DialogContent className="max-w-2xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+                        <DialogHeader>
+                          <DialogTitle className="text-lg font-semibold text-foreground">
+                            เมนูอาหาร - {selectedRestaurant?.shop_name}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <p className="text-center text-muted-foreground">ฟีเจอร์นี้อยู่ระหว่างการพัฒนา</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Add Menu Modal */}
+                    <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
+                      <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+                        <DialogHeader>
+                          <DialogTitle className="text-lg font-semibold text-foreground">
+                            เพิ่มเมนูอาหาร - {selectedRestaurant?.shop_name}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <p className="text-center text-muted-foreground">ฟีเจอร์นี้อยู่ระหว่างการพัฒนา</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardContent>
                 </Card>
               </TabsContent>
