@@ -50,6 +50,11 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
   const [publishingPlan, setPublishingPlan] = useState<any>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [selectedPlanForOrder, setSelectedPlanForOrder] = useState<any>(null);
+  const [isAddMealModalOpen, setIsAddMealModalOpen] = useState(false);
+  const [isMealListModalOpen, setIsMealListModalOpen] = useState(false);
+  const [selectedPlanForMeal, setSelectedPlanForMeal] = useState<any>(null);
+  const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
+  const [finishingPlan, setFinishingPlan] = useState<any>(null);
 
   // Edit form
   const editForm = useForm<PlanFormData>({
@@ -220,15 +225,25 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
 
   // Handle finish plan
   const handleFinishPlan = async (plan: any) => {
+    setFinishingPlan(plan);
+    setIsFinishDialogOpen(true);
+  };
+
+  // Confirm finish plan
+  const confirmFinishPlan = async () => {
+    if (!finishingPlan) return;
+
     try {
       const { error } = await supabase
         .from('plan')
         .update({ plan_state: 'finished' })
-        .eq('plan_id', plan.plan_id);
+        .eq('plan_id', finishingPlan.plan_id);
 
       if (error) throw error;
 
       toast.success('ดำเนินการเสร็จสิ้นแล้ว');
+      setIsFinishDialogOpen(false);
+      setFinishingPlan(null);
       fetchPlans();
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
@@ -254,6 +269,18 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
   const handleShowOrders = (plan: any) => {
     setSelectedPlanForOrder(plan);
     setIsOrderModalOpen(true);
+  };
+
+  // Handle add meal
+  const handleAddMeal = (plan: any) => {
+    setSelectedPlanForMeal(plan);
+    setIsAddMealModalOpen(true);
+  };
+
+  // Handle show meal list
+  const handleShowMealList = (plan: any) => {
+    setSelectedPlanForMeal(plan);
+    setIsMealListModalOpen(true);
   };
 
   // Generate time options
@@ -334,12 +361,17 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                   
                   <div className="flex gap-2 pt-2 overflow-hidden justify-center">
                     {filterState === 'waiting' && (
-                      <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => {}}>
-                        <Plus className="h-4 w-4 text-green-600" />
-                      </Button>
+                      <>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => handleAddMeal(plan)}>
+                          <Plus className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
+                          <FileText className="h-4 w-4 text-gray-800" />
+                        </Button>
+                      </>
                     )}
                     {filterState === 'finished' && (
-                      <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => {}}>
+                      <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
                         <FileText className="h-4 w-4 text-gray-800" />
                       </Button>
                     )}
@@ -355,8 +387,11 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                     )}
                     {filterState === 'published' && (
                       <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleFinishPlan(plan)}>
-                          <CheckCircle className="h-4 w-4 text-gray-800" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-blue-600 hover:bg-blue-600 hover:border-blue-600" onClick={() => handleFinishPlan(plan)}>
+                          <CheckCircle className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
+                          <FileText className="h-4 w-4 text-gray-800" />
                         </Button>
                         <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
                           <ShoppingCart className="h-4 w-4 text-gray-800" />
@@ -379,103 +414,24 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+        <DialogContent className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">แก้ไขแผนการจอง</DialogTitle>
           </DialogHeader>
           
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="plan_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ชื่องาน</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกชื่องาน" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>สถานที่</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกสถานที่" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>วันที่</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                `${format(field.value, "d MMMM", { locale: th })} ${field.value.getFullYear() + 543}`
-                              ) : (
-                                <span>เลือกวันที่</span>
-                              )}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-2">
+          <ScrollArea className="max-h-[70vh] pr-4">
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
                   <FormField
                     control={editForm.control}
-                    name="plan_time_start"
+                    name="plan_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>เวลาเริ่ม</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="เลือกเวลาเริ่ม" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {timeOptions.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>ชื่องาน</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="กรอกชื่องาน" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -483,91 +439,172 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
 
                   <FormField
                     control={editForm.control}
-                    name="plan_time_end"
+                    name="plan_location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>เวลาจบ</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="เลือกเวลาจบ" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {timeOptions.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>สถานที่</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="กรอกสถานที่" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="plan_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>วันที่</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? (
+                                  `${format(field.value, "d MMMM", { locale: th })} ${field.value.getFullYear() + 543}`
+                                ) : (
+                                  <span>เลือกวันที่</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={editForm.control}
+                      name="plan_time_start"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>เวลาเริ่ม</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="เลือกเวลาเริ่ม" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {timeOptions.map((time) => (
+                                <SelectItem key={time} value={time}>
+                                  {time}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={editForm.control}
+                      name="plan_time_end"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>เวลาจบ</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="เลือกเวลาจบ" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {timeOptions.map((time) => (
+                                <SelectItem key={time} value={time}>
+                                  {time}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={editForm.control}
+                    name="plan_pwd"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>รหัส</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="กรอกรหัส" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="plan_maxp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>จำนวนผู้เข้าร่วม</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="number" placeholder="กรอกจำนวนผู้เข้าร่วม" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="plan_editor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="plan_pwd"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>รหัส</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกรหัส" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_maxp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>จำนวนผู้เข้าร่วม</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="number" placeholder="กรอกจำนวนผู้เข้าร่วม" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="plan_editor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="flex-1 sm:flex-none"
-                >
-                  ยกเลิก
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
-                >
-                  บันทึกการแก้ไข
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+                <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="flex-1 sm:flex-none"
+                  >
+                    ยกเลิก
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                  >
+                    บันทึกการแก้ไข
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
@@ -666,6 +703,76 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add Meal Modal */}
+      <Dialog open={isAddMealModalOpen} onOpenChange={setIsAddMealModalOpen}>
+        <DialogContent className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-foreground">
+              เพิ่มมื้ออาหาร - {selectedPlanForMeal?.plan_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[70vh]">
+            <div className="min-h-[500px] border border-brand-pink/10 rounded-lg bg-white/30 p-4">
+              <div className="text-center text-muted-foreground py-8">
+                ฟอร์มเพิ่มมื้ออาหารจะมาตรงนี้
+              </div>
+            </div>
+          </ScrollArea>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddMealModalOpen(false)}>
+              ปิด
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Meal List Modal */}
+      <Dialog open={isMealListModalOpen} onOpenChange={setIsMealListModalOpen}>
+        <DialogContent className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-foreground">
+              รายการมื้ออาหาร - {selectedPlanForMeal?.plan_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[70vh]">
+            <div className="min-h-[500px] border border-brand-pink/10 rounded-lg bg-white/30 p-4">
+              <div className="text-center text-muted-foreground py-8">
+                รายการมื้ออาหารจะมาตรงนี้
+              </div>
+            </div>
+          </ScrollArea>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMealListModalOpen(false)}>
+              ปิด
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Finish Confirmation */}
+      <AlertDialog open={isFinishDialogOpen} onOpenChange={setIsFinishDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการดำเนินการให้เสร็จสิ้น</AlertDialogTitle>
+            <AlertDialogDescription>
+              หากดำเนินการแผน "{finishingPlan?.plan_name}" ให้เสร็จสิ้นแล้ว จะไม่สามารถย้อนกลับได้
+              <br />
+              คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmFinishPlan} className="bg-blue-600 hover:bg-blue-700">
+              ยืนยันการดำเนินการ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
