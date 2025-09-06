@@ -332,33 +332,33 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                     </div>
                   )}
                   
-                  <div className="flex gap-1 pt-2 overflow-hidden">
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
-                      <Receipt className="h-3 w-3" />
+                  <div className="flex gap-2 pt-2 overflow-hidden justify-center">
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => {}}>
+                      <Receipt className="h-4 w-4 text-primary" />
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
-                      <Trash2 className="h-3 w-3" />
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-300 hover:bg-red-50 hover:border-red-400" onClick={() => handleDelete(plan)}>
+                      <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
                     {filterState === 'waiting' && (
                       <>
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleEdit(plan)}>
-                          <Edit className="h-3 w-3" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleEdit(plan)}>
+                          <Edit className="h-4 w-4 text-primary" />
                         </Button>
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handlePublish(plan)}>
-                          <Send className="h-3 w-3" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handlePublish(plan)}>
+                          <Send className="h-4 w-4 text-primary" />
                         </Button>
                       </>
                     )}
                     {filterState === 'published' && (
                       <>
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleFinishPlan(plan)}>
-                          <CheckCircle className="h-3 w-3" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleFinishPlan(plan)}>
+                          <CheckCircle className="h-4 w-4 text-primary" />
                         </Button>
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleShowOrders(plan)}>
-                          <ShoppingCart className="h-3 w-3" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleShowOrders(plan)}>
+                          <ShoppingCart className="h-4 w-4 text-primary" />
                         </Button>
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleCopyLink(plan)}>
-                          <Link className="h-3 w-3" />
+                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-primary/60 hover:bg-primary/20 hover:border-primary/80" onClick={() => handleCopyLink(plan)}>
+                          <Link className="h-4 w-4 text-primary" />
                         </Button>
                       </>
                     )}
