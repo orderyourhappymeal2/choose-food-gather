@@ -1,27 +1,83 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChefHat, MapPin, Calendar, Clock, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { th } from "date-fns/locale";
 
 const Welcome = () => {
   const [formData, setFormData] = useState({
     nickname: "",
     code: ""
   });
+  const [planData, setPlanData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
-  // Mock event data (would come from admin in real app)
-  const eventData = {
+  // Format date to Thai format with Buddhist Era
+  const formatThaiDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "d MMMM yyyy", { locale: th }).replace(/\d{4}/, (year) => (parseInt(year) + 543).toString());
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Fetch plan data from URL parameter
+  useEffect(() => {
+    const planId = searchParams.get('plan');
+    if (planId) {
+      fetchPlanData(planId);
+    } else {
+      setIsLoading(false);
+    }
+  }, [searchParams]);
+
+  const fetchPlanData = async (planId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('plan')
+        .select('*')
+        .eq('plan_id', planId)
+        .single();
+
+      if (error) throw error;
+      
+      setPlanData(data);
+    } catch (error) {
+      console.error('Error fetching plan data:', error);
+      toast({
+        title: "ไม่พบข้อมูลแผนการจอง",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Default event data for when no plan is loaded
+  const defaultEventData = {
     title: "การประชุมประจำเดือน มกราคม 2024",
-    location: "ห้องประชุม A ชั้น 5",
+    location: "ห้องประชุม A ชั้น 5", 
     date: "15 มกราคม 2567",
     time: "09:00 - 16:00 น."
   };
+
+  // Use plan data if available, otherwise use default
+  const eventData = planData ? {
+    title: planData.plan_name,
+    location: planData.plan_location,
+    date: formatThaiDate(planData.plan_date),
+    time: planData.plan_time + " น."
+  } : defaultEventData;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

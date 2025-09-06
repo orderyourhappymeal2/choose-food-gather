@@ -126,9 +126,16 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
     if (!publishingPlan) return;
 
     try {
+      // Generate link to welcome page with plan ID
+      const welcomeUrl = `${window.location.origin}/welcome?plan=${publishingPlan.plan_id}`;
+      
       const { error } = await supabase
         .from('plan')
-        .update({ plan_state: 'published' })
+        .update({ 
+          plan_state: 'published',
+          url_portal: welcomeUrl,
+          is_open: 1
+        })
         .eq('plan_id', publishingPlan.plan_id);
 
       if (error) throw error;
@@ -339,9 +346,6 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                         </Button>
                         <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handlePublish(plan)}>
                           <Send className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
-                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </>
                     )}
