@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState, useEffect } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -47,6 +48,8 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
   const [deletingPlan, setDeletingPlan] = useState<any>(null);
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [publishingPlan, setPublishingPlan] = useState<any>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [selectedPlanForOrder, setSelectedPlanForOrder] = useState<any>(null);
 
   // Edit form
   const editForm = useForm<PlanFormData>({
@@ -191,6 +194,61 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
     }
   };
 
+  // Handle toggle switch (is_open)
+  const handleToggleOpen = async (plan: any, newValue: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('plan')
+        .update({ is_open: newValue ? 1 : 0 } as any)
+        .eq('plan_id', plan.plan_id);
+
+      if (error) throw error;
+
+      toast.success('อัปเดตสถานะการเปิดรับสำเร็จ');
+      fetchPlans();
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+    }
+  };
+
+  // Handle finish plan
+  const handleFinishPlan = async (plan: any) => {
+    try {
+      const { error } = await supabase
+        .from('plan')
+        .update({ plan_state: 'finished' })
+        .eq('plan_id', plan.plan_id);
+
+      if (error) throw error;
+
+      toast.success('ดำเนินการเสร็จสิ้นแล้ว');
+      fetchPlans();
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+    }
+  };
+
+  // Handle copy link
+  const handleCopyLink = async (plan: any) => {
+    if (!plan.url_portal) {
+      toast.error('ไม่พบลิงก์ในแผนนี้');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(plan.url_portal);
+      toast.success('คัดลอกลิงก์สำเร็จ');
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการคัดลอกลิงก์');
+    }
+  };
+
+  // Handle show orders
+  const handleShowOrders = (plan: any) => {
+    setSelectedPlanForOrder(plan);
+    setIsOrderModalOpen(true);
+  };
+
   // Generate time options
   const timeOptions = [];
   for (let hour = 6; hour <= 21; hour++) {
@@ -255,7 +313,19 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 pt-2 overflow-hidden">
+                  {filterState === 'published' && (
+                    <div className="flex items-center justify-between pt-2 border-t border-brand-pink/10">
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs font-medium text-muted-foreground">เปิดรับ:</Label>
+                        <Switch
+                          checked={plan.is_open === 1}
+                          onCheckedChange={(checked) => handleToggleOpen(plan, checked)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-1 pt-2 overflow-hidden">
                     <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {}}>
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -272,6 +342,19 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
                         </Button>
                         <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleDelete(plan)}>
                           <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
+                    {filterState === 'published' && (
+                      <>
+                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleFinishPlan(plan)}>
+                          <CheckCircle className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleShowOrders(plan)}>
+                          <ShoppingCart className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleCopyLink(plan)}>
+                          <Link className="h-3 w-3" />
                         </Button>
                       </>
                     )}
@@ -516,6 +599,62 @@ const PlanList = ({ filterState }: { filterState?: string }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Order Modal */}
+      <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
+        <DialogContent className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-foreground">
+              แสดงการสั่งซื้ออาหาร - {selectedPlanForOrder?.plan_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Two dropdowns at the top */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">เลือกร้านอาหาร</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="-- เลือกร้านอาหาร --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="restaurant1">ร้านอาหารไทย</SelectItem>
+                    <SelectItem value="restaurant2">ร้านอาหารจีน</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">เลือกมื้อ</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="-- เลือกมื้อ --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="breakfast">มื้อเช้า</SelectItem>
+                    <SelectItem value="lunch">มื้อกลางวัน</SelectItem>
+                    <SelectItem value="dinner">มื้อเย็น</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Orders content area */}
+            <div className="min-h-[400px] border border-brand-pink/10 rounded-lg bg-white/30 p-4">
+              <div className="text-center text-muted-foreground py-8">
+                เลือกร้านอาหารและมื้ออาหารเพื่อดูรายการสั่งซื้อ
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOrderModalOpen(false)}>
+              ปิด
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
