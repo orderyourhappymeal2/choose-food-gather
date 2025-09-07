@@ -784,6 +784,11 @@ const Admin = () => {
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
   const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
+  
+  // Filter states for progress tab
+  const [selectedOrderer, setSelectedOrderer] = useState('all');
+  const [selectedMealTime, setSelectedMealTime] = useState('all');
+  const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('all');
 
   // Restaurant form states
   const [formData, setFormData] = useState({
@@ -2092,7 +2097,7 @@ const Admin = () => {
                 <Card className="bg-gradient-to-br from-white/80 to-brand-cream/20 border border-brand-pink/20">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold text-foreground">รายการที่กำลังดำเนินการ</h3>
+                      <h3 className="text-xl font-semibold text-foreground">รายการอาหารที่ถูกสั่ง</h3>
                       <div className="border border-brand-pink/20 rounded-lg p-1 bg-white/60">
                         <Button
                           variant="ghost" 
@@ -2107,6 +2112,71 @@ const Admin = () => {
                         </Button>
                       </div>
                     </div>
+                    
+                    {/* Filter Container */}
+                    <div className="mb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* ผู้สั่งอาหาร Filter */}
+                        <div>
+                          <Label className="text-sm font-medium text-foreground mb-2 block">
+                            ผู้สั่งอาหาร
+                          </Label>
+                          <Select value={selectedOrderer} onValueChange={setSelectedOrderer}>
+                            <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                              <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                              <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                              <div className="border-t border-brand-pink/10 my-1"></div>
+                              <SelectItem value="user1">ผู้ใช้ 1</SelectItem>
+                              <SelectItem value="user2">ผู้ใช้ 2</SelectItem>
+                              <SelectItem value="user3">ผู้ใช้ 3</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* มื้ออาหาร Filter */}
+                        <div>
+                          <Label className="text-sm font-medium text-foreground mb-2 block">
+                            มื้ออาหาร
+                          </Label>
+                          <Select value={selectedMealTime} onValueChange={setSelectedMealTime}>
+                            <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                              <SelectValue placeholder="เลือกมื้ออาหาร" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                              <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                              <div className="border-t border-brand-pink/10 my-1"></div>
+                              <SelectItem value="breakfast">เช้า</SelectItem>
+                              <SelectItem value="lunch">เที่ยง</SelectItem>
+                              <SelectItem value="dinner">เย็น</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* ร้านอาหาร Filter */}
+                        <div>
+                          <Label className="text-sm font-medium text-foreground mb-2 block">
+                            ร้านอาหาร
+                          </Label>
+                          <Select value={selectedRestaurantFilter} onValueChange={setSelectedRestaurantFilter}>
+                            <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                              <SelectValue placeholder="เลือกร้านอาหาร" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                              <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                              <div className="border-t border-brand-pink/10 my-1"></div>
+                              {restaurants.map((restaurant) => (
+                                <SelectItem key={restaurant.shop_id} value={restaurant.shop_id}>
+                                  {restaurant.shop_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
