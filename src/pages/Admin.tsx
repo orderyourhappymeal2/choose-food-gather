@@ -982,7 +982,8 @@ const Admin = () => {
         return false;
       }
     }
-    if (!selectedImage) {
+    // ตรวจสอบรูปภาพ - บังคับเฉพาะเมื่อเพิ่มใหม่ หรือแก้ไขแต่ไม่มีรูปเดิม
+    if (!selectedImage && (!selectedRestaurant || !selectedRestaurant.url_pic)) {
       toast.error('กรุณาเลือกรูปภาพ');
       return false;
     }
