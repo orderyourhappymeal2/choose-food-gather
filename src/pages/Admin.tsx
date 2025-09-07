@@ -1650,7 +1650,7 @@ const Admin = () => {
                               {/* Image Upload */}
                               <div>
                                 <Label htmlFor="edit_image" className="text-sm font-medium text-foreground">
-                                  รูปภาพ
+                                  รูปภาพร้าน {selectedRestaurant?.url_pic && imagePreview === selectedRestaurant.url_pic && "(รูปปัจจุบัน)"}
                                 </Label>
                                 <div className="mt-1">
                                   <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
@@ -1669,9 +1669,14 @@ const Admin = () => {
                                         <div className="relative">
                                           <img
                                             src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
+                                            alt="รูปภาพร้าน"
+                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg border"
                                           />
+                                          {imagePreview === selectedRestaurant?.url_pic && (
+                                            <div className="absolute -top-1 -left-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                              รูปปัจจุบัน
+                                            </div>
+                                          )}
                                           <Button
                                             type="button"
                                             variant="destructive"
@@ -1680,7 +1685,8 @@ const Admin = () => {
                                             onClick={(e) => {
                                               e.preventDefault();
                                               setSelectedImage(null);
-                                              setImagePreview(null);
+                                              // Reset กลับไปรูปเดิมถ้ามี หรือ null ถ้าไม่มี
+                                              setImagePreview(selectedRestaurant?.url_pic || null);
                                             }}
                                           >
                                             <X className="h-3 w-3" />
@@ -1690,7 +1696,7 @@ const Admin = () => {
                                         <>
                                           <Upload className="h-8 w-8 text-muted-foreground" />
                                           <div className="text-center">
-                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพใหม่</span>
+                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพ</span>
                                             <p className="text-xs text-muted-foreground mt-1">
                                               รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
                                             </p>
@@ -1699,6 +1705,11 @@ const Admin = () => {
                                       )}
                                     </label>
                                   </div>
+                                  {selectedRestaurant?.url_pic && imagePreview === selectedRestaurant.url_pic && (
+                                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                                      ไม่จำเป็นต้องเลือกรูปใหม่ หากต้องการใช้รูปเดิม
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             </div>
