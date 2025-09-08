@@ -839,6 +839,20 @@ const Admin = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Add Menu Form state
+  const [menuFormData, setMenuFormData] = useState({
+    foodCategory: '',
+    menuName: '',
+    description: '',
+    addOnDescription: '',
+    addOnCount: '',
+    addOnTitles: [] as string[],
+    price: ''
+  });
+  const [menuImage, setMenuImage] = useState<File | null>(null);
+  const [menuImagePreview, setMenuImagePreview] = useState<string | null>(null);
+  const [isMenuSubmitting, setIsMenuSubmitting] = useState(false);
+
   const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
 
   // Plan form
@@ -1132,6 +1146,119 @@ const Admin = () => {
       toast.error('เกิดข้อผิดพลาดในการเพิ่มใบสั่งอาหาร');
     } finally {
       setIsPlanSubmitting(false);
+    }
+  };
+
+  // Menu form handlers
+  const resetMenuForm = () => {
+    setMenuFormData({
+      foodCategory: '',
+      menuName: '',
+      description: '',
+      addOnDescription: '',
+      addOnCount: '',
+      addOnTitles: [],
+      price: ''
+    });
+    setMenuImage(null);
+    setMenuImagePreview(null);
+  };
+
+  const handleMenuImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMenuImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMenuImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddOnCountChange = (count: string) => {
+    const numCount = parseInt(count) || 0;
+    setMenuFormData(prev => ({
+      ...prev,
+      addOnCount: count,
+      addOnTitles: Array.from({ length: numCount }, (_, i) => prev.addOnTitles[i] || '')
+    }));
+  };
+
+  const handleAddOnTitleChange = (index: number, value: string) => {
+    setMenuFormData(prev => ({
+      ...prev,
+      addOnTitles: prev.addOnTitles.map((title, i) => i === index ? value : title)
+    }));
+  };
+
+  const handleMenuSubmit = async () => {
+    // Validation
+    if (!menuFormData.foodCategory.trim()) {
+      toast.error('กรุณากรอกหมวดอาหาร');
+      return;
+    }
+    if (!menuFormData.menuName.trim()) {
+      toast.error('กรุณากรอกชื่อเมนูอาหาร');
+      return;
+    }
+    if (!menuFormData.description.trim()) {
+      toast.error('กรุณากรอกรายละเอียด');
+      return;
+    }
+    if (!menuFormData.price.trim()) {
+      toast.error('กรุณากรอกราคา');
+      return;
+    }
+    if (!menuImage) {
+      toast.error('กรุณาเลือกรูปภาพ');
+      return;
+    }
+
+    setIsMenuSubmitting(true);
+    try {
+      // Upload image
+      let imageUrl = '';
+      if (menuImage) {
+        const fileExt = menuImage.name.split('.').pop();
+        const fileName = `menu_${Date.now()}.${fileExt}`;
+        const filePath = `menu/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('shop')
+          .upload(filePath, menuImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('shop')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
+      }
+
+      // Here you would save to your menu table
+      // This is a placeholder - you'll need to create the menu table structure
+      console.log('Menu data to save:', {
+        shop_id: selectedRestaurant?.shop_id,
+        food_category: menuFormData.foodCategory,
+        menu_name: menuFormData.menuName,
+        description: menuFormData.description,
+        add_on_description: menuFormData.addOnDescription,
+        add_on_titles: menuFormData.addOnTitles,
+        price: parseFloat(menuFormData.price),
+        image_url: imageUrl
+      });
+
+      toast.success('เพิ่มรายการอาหารสำเร็จ!');
+      resetMenuForm();
+      setIsAddMenuModalOpen(false);
+      setSelectedRestaurant(null);
+    } catch (error) {
+      console.error('Error adding menu:', error);
+      toast.error('เกิดข้อผิดพลาดในการเพิ่มรายการอาหาร');
+    } finally {
+      setIsMenuSubmitting(false);
     }
   };
   return <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-6">
@@ -1775,26 +1902,202 @@ const Admin = () => {
                         </DialogContent>
                       </Dialog>
 
-                      {/* Add Menu Modal (Placeholder) */}
+                      {/* Add Menu Modal */}
                       <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh]">
+                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh]">
                           <DialogHeader>
                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
                               เพิ่มรายการอาหาร - {selectedRestaurant?.shop_name}
                             </DialogTitle>
                           </DialogHeader>
-                          <div className="p-4 text-center text-muted-foreground">
-                            ฟีเจอร์นี้จะพัฒนาในอนาคต
-                          </div>
-                          <DialogFooter>
+                          
+                          <ScrollArea className="max-h-[70vh] pr-4">
+                            <div className="space-y-4 p-1">
+                              {/* Food Category */}
+                              <div className="space-y-2">
+                                <Label htmlFor="foodCategory" className="text-sm font-medium text-foreground">
+                                  หมวดอาหาร
+                                </Label>
+                                <Input
+                                  id="foodCategory"
+                                  type="text"
+                                  placeholder="กรอกหมวดอาหาร เช่น จานหลัก, เครื่องดื่ม, ของหวาน"
+                                  value={menuFormData.foodCategory}
+                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, foodCategory: e.target.value }))}
+                                  className="bg-muted/50 border-muted"
+                                />
+                              </div>
+
+                              {/* Image Upload */}
+                              <div className="space-y-2">
+                                <Label className="text-sm font-medium text-foreground">รูปภาพอาหาร</Label>
+                                <div className="flex flex-col items-center space-y-4">
+                                  <div 
+                                    className="w-48 h-48 border-2 border-dashed border-muted rounded-lg flex flex-col items-center justify-center bg-muted/20 cursor-pointer hover:bg-muted/30 transition-colors"
+                                    onClick={() => document.getElementById('menuImageInput')?.click()}
+                                  >
+                                    {menuImagePreview ? (
+                                      <div className="relative w-full h-full">
+                                        <img 
+                                          src={menuImagePreview} 
+                                          alt="Preview" 
+                                          className="w-full h-full object-cover rounded-lg"
+                                        />
+                                        <Button
+                                          type="button"
+                                          variant="destructive"
+                                          size="sm"
+                                          className="absolute top-2 right-2 w-8 h-8 p-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setMenuImage(null);
+                                            setMenuImagePreview(null);
+                                          }}
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <Upload className="w-12 h-12 text-muted-foreground mb-2" />
+                                        <p className="text-sm text-muted-foreground text-center px-2">
+                                          คลิกเพื่ออัปโหลดรูปภาพ<br />
+                                          (รูปสี่เหลี่ยมจตุรัส)
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                  
+                                  <Input
+                                    id="menuImageInput"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleMenuImageChange}
+                                    className="hidden"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Menu Name */}
+                              <div className="space-y-2">
+                                <Label htmlFor="menuName" className="text-sm font-medium text-foreground">
+                                  ชื่อเมนูอาหาร
+                                </Label>
+                                <Input
+                                  id="menuName"
+                                  type="text"
+                                  placeholder="กรอกชื่อเมนูอาหาร"
+                                  value={menuFormData.menuName}
+                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, menuName: e.target.value }))}
+                                  className="bg-muted/50 border-muted"
+                                />
+                              </div>
+
+                              {/* Description */}
+                              <div className="space-y-2">
+                                <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                                  รายละเอียด
+                                </Label>
+                                <Textarea
+                                  id="description"
+                                  placeholder="กรอกรายละเอียดอาหาร"
+                                  value={menuFormData.description}
+                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, description: e.target.value }))}
+                                  className="bg-muted/50 border-muted min-h-[80px]"
+                                />
+                              </div>
+
+                              {/* Add-ons Section */}
+                              <div className="space-y-4 border-t pt-4">
+                                <Label className="text-sm font-medium text-foreground">ส่วนเสริม</Label>
+                                
+                                {/* Add-on Description */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="addOnDescription" className="text-xs text-muted-foreground">
+                                    คำอธิบายส่วนเสริม
+                                  </Label>
+                                  <Input
+                                    id="addOnDescription"
+                                    type="text"
+                                    placeholder="เช่น เลือกความหวาน, เลือกความเผ็ด, เพิ่มผัก"
+                                    value={menuFormData.addOnDescription}
+                                    onChange={(e) => setMenuFormData(prev => ({ ...prev, addOnDescription: e.target.value }))}
+                                    className="bg-muted/50 border-muted"
+                                  />
+                                </div>
+
+                                {/* Add-on Count */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="addOnCount" className="text-xs text-muted-foreground">
+                                    จำนวนส่วนเสริม
+                                  </Label>
+                                  <Input
+                                    id="addOnCount"
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    placeholder="กรอกจำนวนส่วนเสริม"
+                                    value={menuFormData.addOnCount}
+                                    onChange={(e) => handleAddOnCountChange(e.target.value)}
+                                    className="bg-muted/50 border-muted"
+                                  />
+                                </div>
+
+                                {/* Dynamic Add-on Title Fields */}
+                                {menuFormData.addOnTitles.map((title, index) => (
+                                  <div key={index} className="space-y-2">
+                                    <Label htmlFor={`addOnTitle${index}`} className="text-xs text-muted-foreground">
+                                      หัวข้อส่วนเสริม {index + 1}
+                                    </Label>
+                                    <Input
+                                      id={`addOnTitle${index}`}
+                                      type="text"
+                                      placeholder={`กรอกหัวข้อส่วนเสริม ${index + 1}`}
+                                      value={title}
+                                      onChange={(e) => handleAddOnTitleChange(index, e.target.value)}
+                                      className="bg-muted/50 border-muted"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Price */}
+                              <div className="space-y-2">
+                                <Label htmlFor="price" className="text-sm font-medium text-foreground">
+                                  ราคา (บาท)
+                                </Label>
+                                <Input
+                                  id="price"
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="กรอกราคา"
+                                  value={menuFormData.price}
+                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, price: e.target.value }))}
+                                  className="bg-muted/50 border-muted"
+                                />
+                              </div>
+                            </div>
+                          </ScrollArea>
+
+                          <DialogFooter className="flex justify-end gap-2 pt-4 border-t">
                             <Button 
                               variant="outline" 
                               onClick={() => {
+                                resetMenuForm();
                                 setIsAddMenuModalOpen(false);
                                 setSelectedRestaurant(null);
                               }}
+                              className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                             >
-                              ปิด
+                              ยกเลิก
+                            </Button>
+                            <Button 
+                              onClick={handleMenuSubmit}
+                              disabled={isMenuSubmitting}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              {isMenuSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
