@@ -79,25 +79,27 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
   };
 
   const [selectedShop, setSelectedShop] = useState(meal.shopId || '');
-  const [selectedFood, setSelectedFood] = useState(meal.foodId || '');
+  const [selectedFood, setSelectedFood] = useState(meal.foodId || 'user-choice');
   const [mealName, setMealName] = useState(meal.name || '');
 
   const filteredFoods = foods.filter(food => food.shop_id === selectedShop);
 
   const handleShopChange = (shopId: string) => {
     setSelectedShop(shopId);
-    setSelectedFood('');
+    setSelectedFood('user-choice');
     onUpdate(meal.id, { shopId, foodId: '' });
   };
 
   const handleFoodChange = (foodId: string) => {
     setSelectedFood(foodId);
-    onUpdate(meal.id, { shopId: selectedShop, foodId });
+    const actualFoodId = foodId === 'user-choice' ? '' : foodId;
+    onUpdate(meal.id, { shopId: selectedShop, foodId: actualFoodId });
   };
 
   const handleMealNameChange = (name: string) => {
     setMealName(name);
-    onUpdate(meal.id, { name, shopId: selectedShop, foodId: selectedFood });
+    const actualFoodId = selectedFood === 'user-choice' ? '' : selectedFood;
+    onUpdate(meal.id, { name, shopId: selectedShop, foodId: actualFoodId });
   };
 
   return (
@@ -170,7 +172,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     <ScrollArea className="h-full">
-                      <SelectItem value="" className="p-2">
+                      <SelectItem value="user-choice" className="p-2">
                         <span>ให้ผู้ใช้เลือกเอง</span>
                       </SelectItem>
                       {filteredFoods.slice(0, 5).map((food) => (
