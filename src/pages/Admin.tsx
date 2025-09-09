@@ -838,6 +838,10 @@ const Admin = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Food items for view menu modal
+  const [foodItems, setFoodItems] = useState<any[]>([]);
+  const [isFoodLoading, setIsFoodLoading] = useState(false);
 
   // Add Menu Form state
   const [menuFormData, setMenuFormData] = useState({
@@ -896,6 +900,27 @@ const Admin = () => {
       toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลร้านอาหาร');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Fetch food items for a specific restaurant
+  const fetchFoodItems = async (shopId: string) => {
+    try {
+      setIsFoodLoading(true);
+      const { data, error } = await supabase
+        .from('food')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setFoodItems(data || []);
+    } catch (error) {
+      console.error('Error fetching food items:', error);
+      toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลรายการอาหาร');
+      setFoodItems([]);
+    } finally {
+      setIsFoodLoading(false);
     }
   };
 
@@ -1612,6 +1637,7 @@ const Admin = () => {
                                            onClick={() => {
                                              setSelectedRestaurant(restaurant);
                                              setIsViewMenuModalOpen(true);
+                                             fetchFoodItems(restaurant.shop_id);
                                            }}
                                          >
                                            <Eye className="h-4 w-4 text-gray-800" />
@@ -2049,23 +2075,94 @@ const Admin = () => {
                         </DialogContent>
                       </Dialog>
 
-                      {/* View Menu Modal (Placeholder) */}
+                      {/* View Menu Modal */}
                       <Dialog open={isViewMenuModalOpen} onOpenChange={setIsViewMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh]">
+                        <DialogContent className="w-[95vw] max-w-[800px] max-h-[90vh]">
                           <DialogHeader>
                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
                               รายการอาหาร - {selectedRestaurant?.shop_name}
                             </DialogTitle>
                           </DialogHeader>
-                          <div className="p-4 text-center text-muted-foreground">
-                            ฟีเจอร์นี้จะพัฒนาในอนาคต
-                          </div>
+                          
+                          <ScrollArea className="max-h-[70vh] pr-4">
+                            <div className="space-y-4">
+                              {isFoodLoading ? (
+                                <div className="text-center py-8">
+                                  <div className="text-muted-foreground">กำลังโหลด...</div>
+                                </div>
+                              ) : foodItems.length === 0 ? (
+                                <div className="text-center py-8">
+                                  <div className="text-muted-foreground">ยังไม่มีรายการอาหาร</div>
+                                </div>
+                              ) : (
+                                <div className="grid gap-4">
+                                  {foodItems.map((food) => (
+                                    <div 
+                                      key={food.food_id} 
+                                      className="flex gap-4 p-4 bg-white/50 border border-brand-pink/10 rounded-lg hover:bg-white/70 transition-colors"
+                                    >
+                                      {/* Food Image */}
+                                      <div className="flex-shrink-0">
+                                        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-muted/30 border border-muted/50 rounded-lg overflow-hidden flex items-center justify-center">
+                                          {food.url_pic ? (
+                                            <img
+                                              src={food.url_pic}
+                                              alt={food.food_name}
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                              }}
+                                            />
+                                          ) : null}
+                                          <div className={`text-muted-foreground text-xs text-center p-2 ${food.url_pic ? 'hidden' : ''}`}>
+                                            ไม่มีรูป
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Food Info */}
+                                      <div className="flex-1 min-w-0 space-y-2">
+                                        <div>
+                                          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
+                                            {food.food_name}
+                                          </h3>
+                                          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 mt-1">
+                                            <span className="inline-block px-2 py-1 bg-brand-pink/20 text-brand-pink text-xs rounded-full text-center whitespace-nowrap">
+                                              {food.food_type}
+                                            </span>
+                                            <span className="font-bold text-green-600 text-sm sm:text-base mt-1 sm:mt-0">
+                                              ฿{food.price?.toLocaleString() || '0'}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        
+                                        {food.description && (
+                                          <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2">
+                                            {food.description}
+                                          </p>
+                                        )}
+                                        
+                                        {food.topping && (
+                                          <p className="text-muted-foreground text-xs">
+                                            <span className="font-medium">ส่วนเสริม:</span> {food.topping}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </ScrollArea>
+                          
                           <DialogFooter>
                             <Button 
                               variant="outline" 
                               onClick={() => {
                                 setIsViewMenuModalOpen(false);
                                 setSelectedRestaurant(null);
+                                setFoodItems([]);
                               }}
                             >
                               ปิด
