@@ -13,6 +13,7 @@ const NavigationDropdown = () => {
 
   const navigationItems = [
     { name: "หน้าแรก", path: "/", icon: Home },
+    { name: "แอดมิน", path: "/admin", icon: Shield },
     { name: "หมวดหมู่อาหาร", path: "/food-categories", icon: Utensils },
     { name: "สรุปคำสั่งซื้อ", path: "/order-summary", icon: ClipboardList },
     { name: "ขอบคุณ", path: "/thank-you", icon: CheckCircle },

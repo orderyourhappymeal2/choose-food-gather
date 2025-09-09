@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChefHat, MapPin, Calendar, Clock, Users } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,7 @@ const Welcome = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { planId } = useParams();
+  const [searchParams] = useSearchParams();
 
   // Format date to Thai format with Buddhist Era
   const formatThaiDate = (dateString: string) => {
@@ -33,6 +33,7 @@ const Welcome = () => {
 
   // Fetch plan data from URL parameter
   useEffect(() => {
+    const planId = searchParams.get('planId');
     console.log('Welcome page - planId from URL:', planId);
     
     if (planId) {
@@ -41,7 +42,7 @@ const Welcome = () => {
       console.log('No planId found in URL parameters');
       setIsLoading(false);
     }
-  }, [planId]);
+  }, [searchParams]);
 
   const fetchPlanData = async (planId: string) => {
     console.log('Fetching plan data for planId:', planId);
@@ -71,6 +72,9 @@ const Welcome = () => {
     }
   };
 
+  // Use plan data if available, otherwise show error if no planId
+  const planId = searchParams.get('planId');
+  
   // Show loading state
   if (isLoading) {
     return (

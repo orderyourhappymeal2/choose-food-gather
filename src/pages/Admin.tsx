@@ -446,7 +446,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
 
     try {
       // Generate link to welcome page with plan ID
-      const welcomeUrl = `${window.location.origin}/welcome/${publishingPlan.plan_id}`;
+      const welcomeUrl = `${window.location.origin}/welcome?plan=${publishingPlan.plan_id}`;
       
       const { error } = await supabase
         .from('plan')
