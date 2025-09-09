@@ -23,12 +23,25 @@ interface CachedOrder {
   person_id: string;
 }
 
+interface PreDefinedMeal {
+  meal_id: string;
+  meal_name: string;
+  meal_index: number;
+  food_id: string;
+  food_name: string;
+  price: number;
+  url_pic: string;
+  shop_id: string;
+  shop_name: string;
+}
+
 const OrderSummary = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [orderCache, setOrderCache] = useState<Record<string, CachedOrder>>({});
   const [userInfo, setUserInfo] = useState<any>(null);
   const [planData, setPlanData] = useState<any>(null);
+  const [preDefinedMeals, setPreDefinedMeals] = useState<PreDefinedMeal[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -48,8 +61,9 @@ const OrderSummary = () => {
       setOrderCache(JSON.parse(orderCacheStr));
     }
 
-    // Fetch plan data
+    // Fetch plan data and pre-defined meals
     fetchPlanData(userInfo.plan_id);
+    fetchPreDefinedMeals(userInfo.plan_id);
   }, []);
 
   const fetchPlanData = async (planId: string) => {
@@ -67,15 +81,60 @@ const OrderSummary = () => {
     }
   };
 
+  const fetchPreDefinedMeals = async (planId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('meal')
+        .select(`
+          meal_id,
+          meal_name,
+          meal_index,
+          food_id,
+          food:food_id (
+            food_name,
+            price,
+            url_pic
+          ),
+          shop:shop_id (
+            shop_id,
+            shop_name
+          )
+        `)
+        .eq('plan_id', planId)
+        .not('food_id', 'is', null)
+        .order('meal_index');
+
+      if (error) throw error;
+
+      const formattedMeals = data?.map(meal => ({
+        meal_id: meal.meal_id,
+        meal_name: meal.meal_name,
+        meal_index: meal.meal_index,
+        food_id: meal.food_id,
+        food_name: meal.food?.food_name || '',
+        price: meal.food?.price || 0,
+        url_pic: meal.food?.url_pic || '',
+        shop_id: meal.shop?.shop_id || '',
+        shop_name: meal.shop?.shop_name || ''
+      })) || [];
+
+      setPreDefinedMeals(formattedMeals);
+    } catch (error) {
+      console.error('Error fetching pre-defined meals:', error);
+    }
+  };
+
   const orderItems = Object.values(orderCache);
-  const totalPrice = orderItems.reduce((sum, item) => sum + item.food_price, 0);
+  const preDefinedTotal = preDefinedMeals.reduce((sum, meal) => sum + meal.price, 0);
+  const userOrderTotal = orderItems.reduce((sum, item) => sum + item.food_price, 0);
+  const totalPrice = preDefinedTotal + userOrderTotal;
 
   const handleEdit = () => {
     navigate('/food-categories');
   };
 
   const handleConfirm = async () => {
-    if (!userInfo || orderItems.length === 0) {
+    if (!userInfo || (orderItems.length === 0 && preDefinedMeals.length === 0)) {
       toast({
         title: "ไม่มีรายการสั่งอาหาร",
         variant: "destructive"
@@ -86,7 +145,44 @@ const OrderSummary = () => {
     setIsSubmitting(true);
 
     try {
-      // Save all orders to database
+      // Save pre-defined meal orders to database
+      for (const meal of preDefinedMeals) {
+        // Check if order already exists for this person and food
+        const { data: existingOrder } = await supabase
+          .from('order')
+          .select('order_id')
+          .eq('person_id', userInfo.person_id)
+          .eq('plan_id', userInfo.plan_id)
+          .eq('food_id', meal.food_id)
+          .maybeSingle();
+
+        const orderData = {
+          person_id: userInfo.person_id,
+          food_id: meal.food_id,
+          plan_id: userInfo.plan_id,
+          topping: null,
+          order_note: null
+        };
+
+        if (existingOrder) {
+          // Update existing order
+          const { error } = await supabase
+            .from('order')
+            .update(orderData)
+            .eq('order_id', existingOrder.order_id);
+            
+          if (error) throw error;
+        } else {
+          // Create new order
+          const { error } = await supabase
+            .from('order')
+            .insert(orderData);
+            
+          if (error) throw error;
+        }
+      }
+
+      // Save user-selected orders to database
       for (const item of orderItems) {
         // Check if order already exists for this person, meal, and food
         const { data: existingOrder } = await supabase
@@ -131,6 +227,7 @@ const OrderSummary = () => {
         userInfo,
         planData,
         orderItems,
+        preDefinedMeals,
         totalPrice
       };
       localStorage.setItem('finalOrder', JSON.stringify(finalOrderData));
@@ -204,8 +301,87 @@ const OrderSummary = () => {
           </CardContent>
         </Card>
 
-        {/* Order Items */}
-        {orderItems.length === 0 ? (
+        {/* Pre-defined Meals */}
+        {preDefinedMeals.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-foreground mb-4 px-2">อาหารที่กำหนดไว้แล้ว</h2>
+            <div className="space-y-4">
+              {preDefinedMeals.map((meal, index) => (
+                <Card key={meal.meal_id} className="bg-white/80 backdrop-blur-sm border-2 border-green-500/30">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg">{meal.meal_name}</h3>
+                        <p className="text-sm text-muted-foreground">{meal.shop_name}</p>
+                      </div>
+                      <span className="font-bold text-primary text-lg">฿{meal.price}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg">
+                      <img 
+                        src={meal.url_pic || '/placeholder.svg'} 
+                        alt={meal.food_name}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-lg">{meal.food_name}</p>
+                        <p className="text-sm text-green-600 font-medium">รายการที่กำหนดไว้แล้ว</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* User Selected Orders */}
+        {orderItems.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-foreground mb-4 px-2">อาหารที่เลือกเพิ่ม</h2>
+            <div className="space-y-4">
+              {orderItems.map((item, index) => (
+                <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg">{item.meal_name}</h3>
+                        <p className="text-sm text-muted-foreground">{item.shop_name}</p>
+                      </div>
+                      <span className="font-bold text-primary text-lg">฿{item.food_price}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg mb-3">
+                      <img 
+                        src={item.food_image || '/placeholder.svg'} 
+                        alt={item.food_name}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-lg">{item.food_name}</p>
+                        {item.selected_toppings.length > 0 && (
+                          <div className="mt-1">
+                            <span className="text-sm text-muted-foreground">ท็อปปิ้ง: </span>
+                            <span className="text-sm font-medium">{item.selected_toppings.join(', ')}</span>
+                          </div>
+                        )}
+                        {item.order_note && (
+                          <div className="mt-1">
+                            <span className="text-sm text-muted-foreground">หมายเหตุ: </span>
+                            <span className="text-sm">{item.order_note}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* No Orders Message */}
+        {orderItems.length === 0 && preDefinedMeals.length === 0 && (
           <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-gray-300">
             <CardContent className="p-6 text-center">
               <p className="text-muted-foreground mb-4">ยังไม่มีรายการสั่งอาหาร</p>
@@ -217,61 +393,36 @@ const OrderSummary = () => {
               </Button>
             </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-4 mb-6">
-            {orderItems.map((item, index) => (
-              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-semibold text-lg">{item.meal_name}</h3>
-                      <p className="text-sm text-muted-foreground">{item.shop_name}</p>
-                    </div>
-                    <span className="font-bold text-primary text-lg">฿{item.food_price}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg mb-3">
-                    <img 
-                      src={item.food_image || '/placeholder.svg'} 
-                      alt={item.food_name}
-                      className="w-16 h-16 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium text-lg">{item.food_name}</p>
-                      {item.selected_toppings.length > 0 && (
-                        <div className="mt-1">
-                          <span className="text-sm text-muted-foreground">ท็อปปิ้ง: </span>
-                          <span className="text-sm font-medium">{item.selected_toppings.join(', ')}</span>
-                        </div>
-                      )}
-                      {item.order_note && (
-                        <div className="mt-1">
-                          <span className="text-sm text-muted-foreground">หมายเหตุ: </span>
-                          <span className="text-sm">{item.order_note}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
 
         {/* Total Price */}
-        {orderItems.length > 0 && (
+        {(orderItems.length > 0 || preDefinedMeals.length > 0) && (
           <Card className="mb-6 bg-white/90 backdrop-blur-sm border-2 border-primary/50">
             <CardContent className="p-6">
-              <div className="flex justify-between items-center text-xl font-bold">
-                <span>ยอดรวมทั้งหมด</span>
-                <span className="text-primary">฿{totalPrice}</span>
+              {preDefinedMeals.length > 0 && (
+                <div className="flex justify-between items-center text-sm mb-2">
+                  <span>อาหารที่กำหนดไว้แล้ว</span>
+                  <span>฿{preDefinedTotal}</span>
+                </div>
+              )}
+              {orderItems.length > 0 && (
+                <div className="flex justify-between items-center text-sm mb-2">
+                  <span>อาหารที่เลือกเพิ่ม</span>
+                  <span>฿{userOrderTotal}</span>
+                </div>
+              )}
+              <div className="border-t pt-2">
+                <div className="flex justify-between items-center text-xl font-bold">
+                  <span>ยอดรวมทั้งหมด</span>
+                  <span className="text-primary">฿{totalPrice}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Action Buttons */}
-        {orderItems.length > 0 && (
+        {(orderItems.length > 0 || preDefinedMeals.length > 0) && (
           <div className="grid grid-cols-2 gap-4">
             <Button 
               onClick={handleEdit}
@@ -297,7 +448,7 @@ const OrderSummary = () => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>ยืนยันการสั่งอาหาร</AlertDialogTitle>
                   <AlertDialogDescription>
-                    คุณต้องการยืนยันรายการสั่งอาหารทั้งหมด {orderItems.length} รายการ 
+                    คุณต้องการยืนยันรายการสั่งอาหารทั้งหมด {preDefinedMeals.length + orderItems.length} รายการ 
                     ยอดรวม ฿{totalPrice} หรือไม่?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
