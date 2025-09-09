@@ -1099,16 +1099,72 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
           </DialogHeader>
           
           <ScrollArea className="max-h-[70vh]">
-            <div className="min-h-[500px] border border-brand-pink/10 rounded-lg bg-white/30 p-4">
-              <div className="text-center text-muted-foreground py-8">
-                ฟอร์มเพิ่มมื้ออาหารจะมาตรงนี้
-              </div>
+            <div className="min-h-[500px] border border-brand-pink/10 rounded-lg bg-white/30 p-6">
+              {isLoadingMealData ? (
+                <div className="text-center text-muted-foreground py-8">
+                  กำลังโหลดข้อมูล...
+                </div>
+              ) : (
+                <>
+                  {/* Add meal button */}
+                  <div className="flex justify-center mb-6">
+                    <Button
+                      onClick={addNewMeal}
+                      className="bg-brand-primary hover:bg-brand-primary/90 text-white px-6 py-2 rounded-full"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      เพิ่มช่วงเวลา
+                    </Button>
+                  </div>
+
+                  {/* Meals list with drag and drop */}
+                  <DndContext 
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext 
+                      items={meals.map(meal => meal.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-4">
+                        {meals.length === 0 ? (
+                          <div className="text-center text-muted-foreground py-8 bg-white/20 rounded-lg border border-dashed border-brand-pink/30">
+                            <UtensilsCrossed className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                            <p>ยังไม่มีมื้ออาหาร</p>
+                            <p className="text-sm">กดปุ่ม "+ เพิ่มช่วงเวลา" เพื่อเริ่มต้น</p>
+                          </div>
+                        ) : (
+                          meals.map((meal, index) => (
+                            <SortableMealItem
+                              key={meal.id}
+                              meal={meal}
+                              index={index}
+                              shops={shops}
+                              foods={foods}
+                              onUpdate={updateMeal}
+                              onRemove={removeMeal}
+                            />
+                          ))
+                        )}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </>
+              )}
             </div>
           </ScrollArea>
           
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => setIsAddMealModalOpen(false)}>
-              ปิด
+              ยกเลิก
+            </Button>
+            <Button 
+              onClick={saveMeals}
+              className="bg-brand-primary hover:bg-brand-primary/90 text-white"
+              disabled={meals.length === 0 || meals.every(meal => !meal.name.trim())}
+            >
+              บันทึกมื้ออาหาร
             </Button>
           </DialogFooter>
         </DialogContent>
