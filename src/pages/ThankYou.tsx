@@ -33,7 +33,14 @@ const ThankYou = () => {
     localStorage.removeItem('userInfo');
     localStorage.removeItem('orderItems');
     localStorage.removeItem('finalOrder');
-    navigate('/');
+    
+    // Get plan_id and navigate to the correct plan page
+    const planId = finalOrder?.userInfo?.plan_id || searchParams.get('planId');
+    if (planId) {
+      navigate(`/welcome?planId=${planId}`);
+    } else {
+      navigate('/');
+    }
   };
 
   const handleOrderMore = () => {
@@ -44,7 +51,7 @@ const ThankYou = () => {
     // Get plan_id from finalOrder or URL params
     const planId = finalOrder?.userInfo?.plan_id || searchParams.get('planId');
     if (planId) {
-      navigate(`/?planId=${planId}`);
+      navigate(`/welcome?planId=${planId}`);
     } else {
       navigate('/');
     }
