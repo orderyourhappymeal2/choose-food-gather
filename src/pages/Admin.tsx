@@ -1900,14 +1900,19 @@ const Admin = () => {
                                 <Label htmlFor="foodCategory" className="text-sm font-medium text-foreground">
                                   หมวดอาหาร
                                 </Label>
-                                <Input
-                                  id="foodCategory"
-                                  type="text"
-                                  placeholder="กรอกหมวดอาหาร เช่น จานหลัก, เครื่องดื่ม, ของหวาน"
-                                  value={menuFormData.foodCategory}
-                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, foodCategory: e.target.value }))}
-                                  className="bg-muted/50 border-muted"
-                                />
+                                <Select 
+                                  value={menuFormData.foodCategory} 
+                                  onValueChange={(value) => setMenuFormData(prev => ({ ...prev, foodCategory: value }))}
+                                >
+                                  <SelectTrigger className="bg-muted/50 border-muted">
+                                    <SelectValue placeholder="เลือกหมวดอาหาร" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-background border shadow-lg z-50">
+                                    <SelectItem value="จานหลัก">จานหลัก</SelectItem>
+                                    <SelectItem value="เครื่องดื่ม">เครื่องดื่ม</SelectItem>
+                                    <SelectItem value="ของหวาน">ของหวาน</SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </div>
 
                               {/* Image Upload */}
