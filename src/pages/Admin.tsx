@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -347,7 +347,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMov
 };
 
 // PlanList component
-const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; restaurants?: any[] }) => {
+const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?: string; restaurants?: any[]; refreshRef?: React.MutableRefObject<(() => void) | undefined> }) => {
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingPlan, setEditingPlan] = useState<any>(null);
@@ -417,6 +417,13 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
       setIsLoading(false);
     }
   };
+
+  // Expose fetchPlans to parent component
+  useEffect(() => {
+    if (refreshRef) {
+      refreshRef.current = fetchPlans;
+    }
+  }, [refreshRef]);
 
   useEffect(() => {
     fetchPlans();
@@ -894,6 +901,9 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
       toast.success('บันทึกมื้ออาหารสำเร็จ');
       setIsAddMealModalOpen(false);
       setMeals([]);
+      
+      // Refresh the plans data to show updated information
+      fetchPlans();
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการบันทึกมื้ออาหาร');
     }
@@ -1597,6 +1607,11 @@ const Admin = () => {
   const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
   const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
 
+  // Create refs to access refresh functions from child components
+  const waitingPlansRefreshRef = useRef<() => void>();
+  const publishedPlansRefreshRef = useRef<() => void>();
+  const finishedPlansRefreshRef = useRef<() => void>();
+
   // Meal management states for plan creation
   const [meals, setMeals] = useState<any[]>([]);
 
@@ -1968,6 +1983,11 @@ const Admin = () => {
       planForm.reset();
       setMeals([]); // Reset meals after successful submission
       setIsOrderModalOpen(false);
+      
+      // Refresh all plan lists to show the new plan
+      if (waitingPlansRefreshRef.current) waitingPlansRefreshRef.current();
+      if (publishedPlansRefreshRef.current) publishedPlansRefreshRef.current();
+      if (finishedPlansRefreshRef.current) finishedPlansRefreshRef.current();
     } catch (error) {
       console.error('Error creating plan:', error);
       toast.error('เกิดข้อผิดพลาดในการเพิ่มใบสั่งอาหาร');
@@ -3260,7 +3280,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList filterState="waiting" restaurants={restaurants} />
+                          <PlanList filterState="waiting" restaurants={restaurants} refreshRef={waitingPlansRefreshRef} />
                         </CardContent>
                       </Card>
                     </div>
@@ -3290,7 +3310,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList filterState="published" restaurants={restaurants} />
+                          <PlanList filterState="published" restaurants={restaurants} refreshRef={publishedPlansRefreshRef} />
                         </CardContent>
                       </Card>
                     </div>
@@ -3320,7 +3340,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList filterState="finished" restaurants={restaurants} />
+                          <PlanList filterState="finished" restaurants={restaurants} refreshRef={finishedPlansRefreshRef} />
                         </CardContent>
                       </Card>
                     </div>
