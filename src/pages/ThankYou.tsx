@@ -37,7 +37,7 @@ const ThankYou = () => {
     // Get plan_id and navigate to the correct plan page
     const planId = finalOrder?.userInfo?.plan_id || searchParams.get('planId');
     if (planId) {
-      navigate(`/welcome?planId=${planId}`);
+      navigate(`/welcome/${planId}`);
     } else {
       navigate('/');
     }
@@ -51,7 +51,7 @@ const ThankYou = () => {
     // Get plan_id from finalOrder or URL params
     const planId = finalOrder?.userInfo?.plan_id || searchParams.get('planId');
     if (planId) {
-      navigate(`/welcome?planId=${planId}`);
+      navigate(`/welcome/${planId}`);
     } else {
       navigate('/');
     }
