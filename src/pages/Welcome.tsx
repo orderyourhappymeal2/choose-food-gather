@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChefHat, MapPin, Calendar, Clock, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChefHat, MapPin, Calendar, Clock, Users, Settings } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,6 +18,8 @@ const Welcome = () => {
   });
   const [planData, setPlanData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -187,9 +190,38 @@ const Welcome = () => {
     }
   };
 
+  const handleAdminAccess = () => {
+    if (adminPassword === "innovation-ai") {
+      setIsAdminDialogOpen(false);
+      setAdminPassword("");
+      navigate('/admin');
+    } else {
+      toast({
+        title: "โค้ดไม่ถูกต้อง",
+        description: "กรุณากรอกโค้ดที่ถูกต้อง",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleOpenAdminDialog = () => {
+    setIsAdminDialogOpen(true);
+    setAdminPassword("");
+  };
+
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
       <div className="max-w-md mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
+        
+        {/* Settings Button */}
+        <Button
+          onClick={handleOpenAdminDialog}
+          variant="outline"
+          size="icon"
+          className="fixed sm:absolute sm:bottom-4 sm:right-4 top-4 right-4 z-50 bg-white/80 backdrop-blur-sm hover:bg-white/90 border-2 border-muted/30"
+        >
+          <Settings className="w-5 h-5" />
+        </Button>
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -261,6 +293,45 @@ const Welcome = () => {
           <ChefHat className="w-5 h-5 mr-2" />
           เริ่มสั่งอาหารกัน!
         </Button>
+
+        {/* Admin Access Dialog */}
+        <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>เข้าสู่ระบบแอดมิน</DialogTitle>
+              <DialogDescription>
+                กรุณากรอกรหัสเพื่อเข้าไปยังหน้าแอดมิน
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Input
+                  type="password"
+                  placeholder="กรอกรหัส"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdminAccess()}
+                  className="bg-white border-primary/50 focus:border-primary"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAdminDialogOpen(false)}
+                  className="flex-1"
+                >
+                  ยกเลิก
+                </Button>
+                <Button
+                  onClick={handleAdminAccess}
+                  className="flex-1 bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
+                >
+                  เข้าสู่ระบบ
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
