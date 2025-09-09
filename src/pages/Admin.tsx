@@ -852,9 +852,6 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                         <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => handleAddMeal(plan)}>
                           <Plus className="h-4 w-4 text-green-600" />
                         </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
-                          <FileText className="h-4 w-4 text-gray-800" />
-                        </Button>
                       </>
                     )}
                     {filterState === 'finished' && (
