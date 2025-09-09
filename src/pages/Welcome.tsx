@@ -83,7 +83,7 @@ const Welcome = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.nickname || !formData.code) {
       toast({
         title: "กรุณากรอกข้อมูลให้ครบถ้วน",
@@ -91,10 +91,90 @@ const Welcome = () => {
       });
       return;
     }
-    
-    // Store user data and navigate to food categories
-    localStorage.setItem('userInfo', JSON.stringify(formData));
-    navigate('/food-categories');
+
+    if (!planData) {
+      toast({
+        title: "ไม่พบข้อมูลแผนการจอง",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate password
+    if (formData.code !== planData.plan_pwd) {
+      toast({
+        title: "โค้ดเข้างานไม่ถูกต้อง",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Check current number of people in this plan
+      const { data: currentPeople, error: countError } = await supabase
+        .from('person')
+        .select('person_id')
+        .eq('plan_id', planData.plan_id);
+
+      if (countError) throw countError;
+
+      // Check if adding this person would exceed the limit
+      if (currentPeople && currentPeople.length >= planData.plan_maxp) {
+        toast({
+          title: "จำนวนผู้เข้าร่วมเต็มแล้ว",
+          description: `สามารถรองรับได้สูงสุด ${planData.plan_maxp} คน`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if this person already exists (prevent duplicate entries)
+      const { data: existingPerson } = await supabase
+        .from('person')
+        .select('person_id')
+        .eq('plan_id', planData.plan_id)
+        .eq('person_name', formData.nickname)
+        .single();
+
+      if (existingPerson) {
+        toast({
+          title: "ชื่อเล่นนี้ถูกใช้ไปแล้ว",
+          description: "กรุณาใช้ชื่อเล่นอื่น",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Insert new person
+      const { data: newPerson, error: insertError } = await supabase
+        .from('person')
+        .insert({
+          person_name: formData.nickname,
+          plan_id: planData.plan_id
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Store user data and navigate to food categories
+      const userData = {
+        ...formData,
+        person_id: newPerson.person_id,
+        plan_id: planData.plan_id
+      };
+      
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+      navigate('/food-categories');
+      
+    } catch (error) {
+      console.error('Error creating person:', error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

@@ -1,82 +1,86 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Circle, Sunrise, Coffee, Sun, Cookie, Moon } from "lucide-react";
+import { ArrowRight, ChefHat, Utensils } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const FoodCategories = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [meals, setMeals] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const [selectedMeals, setSelectedMeals] = useState<string[]>([]);
 
   useEffect(() => {
     // Check if user info exists
-    const userInfo = localStorage.getItem('userInfo');
-    if (!userInfo) {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (!storedUserInfo) {
       navigate('/');
       return;
     }
+    
+    const parsedUserInfo = JSON.parse(storedUserInfo);
+    setUserInfo(parsedUserInfo);
+    
+    if (parsedUserInfo.plan_id) {
+      fetchMeals(parsedUserInfo.plan_id);
+    }
   }, []);
 
-  // Mock restaurant data for each meal type
-  const mealCategories = [
-    {
-      id: 'breakfast',
-      name: 'อาหารเช้า',
-      icon: Sunrise,
-      restaurants: [
-        { id: 'rest1', name: 'ร้านอาหารเช้าดีๆ', image: '/placeholder.svg', hasOptions: true }
-      ]
-    },
-    {
-      id: 'morning-break',
-      name: 'เบรคเช้า',
-      icon: Coffee,
-      restaurants: [
-        { id: 'rest2', name: 'ร้านกาแฟสดใส', image: '/placeholder.svg', hasOptions: false }
-      ]
-    },
-    {
-      id: 'lunch',
-      name: 'อาหารกลางวัน',
-      icon: Sun,
-      restaurants: [
-        { id: 'rest3', name: 'ร้านข้าวราดแกง', image: '/placeholder.svg', hasOptions: true },
-        { id: 'rest4', name: 'ร้านก๋วยเตี๋ยว', image: '/placeholder.svg', hasOptions: true }
-      ]
-    },
-    {
-      id: 'afternoon-break',
-      name: 'เบรคบ่าย',
-      icon: Cookie,
-      restaurants: [
-        { id: 'rest5', name: 'ร้านของหวาน', image: '/placeholder.svg', hasOptions: false }
-      ]
-    },
-    {
-      id: 'dinner',
-      name: 'อาหารเย็น',
-      icon: Moon,
-      restaurants: [
-        { id: 'rest6', name: 'ร้านอาหารตามสั่ง', image: '/placeholder.svg', hasOptions: true }
-      ]
-    }
-  ];
+  const fetchMeals = async (planId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('meal')
+        .select(`
+          *,
+          shop:shop_id (
+            shop_id,
+            shop_name,
+            url_pic,
+            description,
+            food_type_1,
+            food_type_2
+          ),
+          food:food_id (
+            food_id,
+            food_name,
+            url_pic,
+            price,
+            description,
+            food_type
+          )
+        `)
+        .eq('plan_id', planId)
+        .order('meal_index');
 
-  const handleRestaurantClick = (categoryId: string, restaurant: any) => {
-    if (restaurant.hasOptions) {
-      try {
-        // Navigate to menu selection with serializable data only
-        navigate(`/menu/${restaurant.id}`, { 
-          state: { 
-            restaurant, 
-            categoryId,
-            categoryName: mealCategories.find(cat => cat.id === categoryId)?.name
-          }
-        });
-      } catch (error) {
-        console.error('Navigation error:', error);
-      }
+      if (error) throw error;
+      
+      setMeals(data || []);
+    } catch (error) {
+      console.error('Error fetching meals:', error);
+      toast({
+        title: "ไม่สามารถโหลดข้อมูลมื้ออาหารได้",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMealClick = (meal: any) => {
+    if (meal.shop_id) {
+      // Navigate to menu selection for this specific meal
+      navigate(`/menu/${meal.shop_id}`, { 
+        state: { 
+          meal,
+          shop: meal.shop,
+          userInfo
+        }
+      });
     }
   };
 
@@ -85,15 +89,16 @@ const FoodCategories = () => {
     navigate('/order-summary');
   };
 
-  const allRequiredMealsSelected = () => {
-    const requiredMeals = mealCategories.filter(cat => 
-      cat.restaurants.some(rest => rest.hasOptions)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--gradient-welcome)] flex items-center justify-center">
+        <div className="text-center">
+          <ChefHat className="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-foreground">กำลังโหลดข้อมูลมื้ออาหาร...</p>
+        </div>
+      </div>
     );
-    return requiredMeals.every(meal => 
-      selectedMeals.includes(meal.id) || 
-      meal.restaurants.every(rest => !rest.hasOptions)
-    );
-  };
+  }
 
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
@@ -106,61 +111,72 @@ const FoodCategories = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">เลือกอาหารตามมื้อ</h1>
-          <p className="text-muted-foreground">กรุณาเลือกร้านอาหารสำหรับแต่ละมื้อ</p>
+          <p className="text-muted-foreground">กรุณาเลือกอาหารสำหรับแต่ละมื้อ</p>
+          {userInfo && (
+            <p className="text-sm text-foreground/80 mt-2">สวัสดี {userInfo.nickname}</p>
+          )}
         </div>
 
         {/* Meal Categories */}
         <div className="space-y-4 mb-8">
-          {mealCategories.map((category) => (
-            <Card key={category.id} className="bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <category.icon className="w-6 h-6 text-primary" />
-                  <h3 className="text-xl font-semibold">{category.name}</h3>
-                </div>
-                
-                <div className="space-y-3">
-                  {category.restaurants.map((restaurant) => (
-                    <div key={restaurant.id} className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-brand-orange/30">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={restaurant.image} 
-                          alt={restaurant.name}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                        <span className="font-medium">{restaurant.name}</span>
-                      </div>
-                      
-                      {restaurant.hasOptions ? (
-                        <Button
-                          onClick={() => handleRestaurantClick(category.id, restaurant)}
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 p-0"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      ) : (
-                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                          <Circle className="w-4 h-4 text-gray-500" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+          {meals.length === 0 ? (
+            <Card className="bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
+              <CardContent className="p-6 text-center">
+                <Utensils className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">ยังไม่มีมื้ออาหารที่กำหนดไว้</p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            meals.map((meal, index) => (
+              <Card key={meal.meal_id} className="bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      {meal.meal_index}
+                    </div>
+                    <h3 className="text-xl font-semibold">{meal.meal_name}</h3>
+                  </div>
+                  
+                  {meal.shop ? (
+                    <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-brand-orange/30">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={meal.shop.url_pic || '/placeholder.svg'} 
+                          alt={meal.shop.shop_name}
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                        <div>
+                          <span className="font-medium block">{meal.shop.shop_name}</span>
+                          <span className="text-sm text-muted-foreground">{meal.shop.food_type_1}</span>
+                        </div>
+                      </div>
+                      
+                      <Button
+                        onClick={() => handleMealClick(meal)}
+                        size="sm"
+                        className="bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 p-0"
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-gray-100 rounded-lg text-center text-muted-foreground">
+                      ให้ผู้ใช้เลือกเอง
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Submit Button */}
-        {allRequiredMealsSelected() && (
-          <Button 
-            onClick={handleFinalSubmit}
-            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
-          >
-            ยืนยันออร์เดอร์
-          </Button>
-        )}
+        <Button 
+          onClick={handleFinalSubmit}
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
+        >
+          ดูสรุปการสั่งอาหาร
+        </Button>
       </div>
     </div>
   );
