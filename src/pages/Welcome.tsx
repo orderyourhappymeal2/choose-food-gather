@@ -33,19 +33,15 @@ const Welcome = () => {
 
   // Fetch plan data from URL parameter
   useEffect(() => {
-    const planId = searchParams.get('planId');
-    console.log('Welcome page - planId from URL:', planId);
-    
+    const planId = searchParams.get('plan');
     if (planId) {
       fetchPlanData(planId);
     } else {
-      console.log('No planId found in URL parameters');
       setIsLoading(false);
     }
   }, [searchParams]);
 
   const fetchPlanData = async (planId: string) => {
-    console.log('Fetching plan data for planId:', planId);
     try {
       const { data, error } = await supabase
         .from('plan')
@@ -53,18 +49,13 @@ const Welcome = () => {
         .eq('plan_id', planId)
         .single();
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Plan data fetched successfully:', data);
       setPlanData(data);
     } catch (error) {
       console.error('Error fetching plan data:', error);
       toast({
         title: "ไม่พบข้อมูลแผนการจอง",
-        description: "กรุณาตรวจสอบลิงก์หรือติดต่อผู้จัดงาน",
         variant: "destructive"
       });
     } finally {
@@ -72,59 +63,21 @@ const Welcome = () => {
     }
   };
 
-  // Use plan data if available, otherwise show error if no planId
-  const planId = searchParams.get('planId');
-  
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[var(--gradient-welcome)] flex items-center justify-center">
-        <div className="text-center">
-          <ChefHat className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-foreground">กำลังโหลดข้อมูลแผนการจอง...</p>
-        </div>
-      </div>
-    );
-  }
+  // Default event data for when no plan is loaded
+  const defaultEventData = {
+    title: "การประชุมประจำเดือน มกราคม 2024",
+    location: "ห้องประชุม A ชั้น 5", 
+    date: "15 มกราคม 2567",
+    time: "09:00 - 16:00 น."
+  };
 
-  // Show error state if no planId
-  if (!planId) {
-    return (
-      <div className="min-h-screen bg-[var(--gradient-welcome)] flex items-center justify-center">
-        <div className="text-center px-4">
-          <ChefHat className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">ไม่พบข้อมูลแผนการจอง</h1>
-          <p className="text-muted-foreground mb-4">กรุณาตรวจสอบลิงก์หรือติดต่อผู้จัดงาน</p>
-          <Button onClick={() => navigate('/')} variant="outline">
-            กลับไปหน้าแรก
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state if planId exists but no plan data found
-  if (!planData) {
-    return (
-      <div className="min-h-screen bg-[var(--gradient-welcome)] flex items-center justify-center">
-        <div className="text-center px-4">
-          <ChefHat className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">ไม่พบข้อมูลแผนการจอง</h1>
-          <p className="text-muted-foreground mb-4">แผนการจองนี้อาจไม่มีอยู่หรือถูกลบไปแล้ว</p>
-          <Button onClick={() => navigate('/')} variant="outline">
-            กลับไปหน้าแรก
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const eventData = {
+  // Use plan data if available, otherwise use default
+  const eventData = planData ? {
     title: planData.plan_name,
     location: planData.plan_location,
     date: formatThaiDate(planData.plan_date),
     time: planData.plan_time + " น."
-  };
+  } : defaultEventData;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
