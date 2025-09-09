@@ -641,6 +641,11 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
       // Process and enrich orders data
       const enrichedOrders = ordersData?.map(order => {
         const shop = shopsData?.find(s => s.shop_id === order.food?.shop_id);
+        // Find associated meal - match by shop_id and food_id if available, otherwise use first meal
+        const associatedMeal = mealsData?.find(m => 
+          m.shop_id === order.food?.shop_id && 
+          (m.food_id === order.food_id || !m.food_id)
+        ) || mealsData?.[0];
         
         return {
           ...order,
@@ -648,7 +653,9 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
           food_name: order.food?.food_name || 'ไม่ระบุ',
           person_name: order.person?.person_name || 'ไม่ระบุ',
           person_agent: order.person?.person_agent || '',
-          shop_id: order.food?.shop_id || ''
+          shop_id: order.food?.shop_id || '',
+          meal_name: associatedMeal?.meal_name || 'ไม่ระบุ',
+          meal_id: associatedMeal?.meal_id || ''
         };
       }) || [];
 
@@ -680,11 +687,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
     }
 
     if (selectedMealFilter !== "all") {
-      filtered = filtered.filter(order => {
-        // Since orders don't directly reference meals, we'll filter by shop for now
-        // This can be enhanced later based on business logic
-        return true;
-      });
+      filtered = filtered.filter(order => order.meal_id === selectedMealFilter);
     }
 
     if (selectedShopFilter !== "all") {
@@ -1356,8 +1359,9 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                 <ScrollArea className="h-full">
                   <div className="p-4 space-y-3">
                     {/* Header */}
-                    <div className="grid grid-cols-1 lg:grid-cols-6 gap-2 lg:gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
+                    <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
                       <div className="lg:col-span-1">ผู้สั่ง</div>
+                      <div className="lg:col-span-1">มื้ออาหาร</div>
                       <div className="lg:col-span-1">ร้านอาหาร</div>
                       <div className="lg:col-span-1">เมนู</div>
                       <div className="lg:col-span-1">หมายเหตุ</div>
@@ -1367,7 +1371,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                     
                     {/* Order Items */}
                     {filteredOrders.map((order, index) => (
-                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-6 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
+                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
                         <div className="lg:col-span-1">
                           <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ผู้สั่ง:</div>
                           <div className="text-sm font-medium">
@@ -1376,6 +1380,11 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                               <div className="text-xs text-muted-foreground">({order.person_agent})</div>
                             )}
                           </div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้ออาหาร:</div>
+                          <div className="text-sm font-medium text-primary">{order.meal_name}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
