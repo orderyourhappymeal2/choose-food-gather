@@ -63,33 +63,52 @@ export type Database = {
           created_at: string
           food_id: string | null
           meal_id: string
+          meal_index: number
           meal_name: string
-          meal_time: string
-          meal_type: string
           plan_id: string
-          shop_id: string
+          shop_id: string | null
         }
         Insert: {
           created_at?: string
           food_id?: string | null
           meal_id?: string
+          meal_index: number
           meal_name: string
-          meal_time: string
-          meal_type: string
           plan_id: string
-          shop_id: string
+          shop_id?: string | null
         }
         Update: {
           created_at?: string
           food_id?: string | null
           meal_id?: string
+          meal_index?: number
           meal_name?: string
-          meal_time?: string
-          meal_type?: string
           plan_id?: string
-          shop_id?: string
+          shop_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "meal_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "food"
+            referencedColumns: ["food_id"]
+          },
+          {
+            foreignKeyName: "meal_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plan"
+            referencedColumns: ["plan_id"]
+          },
+          {
+            foreignKeyName: "meal_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shop"
+            referencedColumns: ["shop_id"]
+          },
+        ]
       }
       plan: {
         Row: {
