@@ -844,9 +844,7 @@ const Admin = () => {
     foodCategory: '',
     menuName: '',
     description: '',
-    addOnDescription: '',
-    addOnCount: '',
-    addOnTitles: [] as string[],
+    addOns: '',
     price: ''
   });
   const [menuImage, setMenuImage] = useState<File | null>(null);
@@ -1155,9 +1153,7 @@ const Admin = () => {
       foodCategory: '',
       menuName: '',
       description: '',
-      addOnDescription: '',
-      addOnCount: '',
-      addOnTitles: [],
+      addOns: '',
       price: ''
     });
     setMenuImage(null);
@@ -1174,22 +1170,6 @@ const Admin = () => {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleAddOnCountChange = (count: string) => {
-    const numCount = parseInt(count) || 0;
-    setMenuFormData(prev => ({
-      ...prev,
-      addOnCount: count,
-      addOnTitles: Array.from({ length: numCount }, (_, i) => prev.addOnTitles[i] || '')
-    }));
-  };
-
-  const handleAddOnTitleChange = (index: number, value: string) => {
-    setMenuFormData(prev => ({
-      ...prev,
-      addOnTitles: prev.addOnTitles.map((title, i) => i === index ? value : title)
-    }));
   };
 
   const handleMenuSubmit = async () => {
@@ -1244,8 +1224,7 @@ const Admin = () => {
         food_category: menuFormData.foodCategory,
         menu_name: menuFormData.menuName,
         description: menuFormData.description,
-        add_on_description: menuFormData.addOnDescription,
-        add_on_titles: menuFormData.addOnTitles,
+        add_ons: menuFormData.addOns,
         price: parseFloat(menuFormData.price),
         image_url: imageUrl
       });
@@ -2008,57 +1987,16 @@ const Admin = () => {
                               </div>
 
                               {/* Add-ons Section */}
-                              <div className="space-y-4 border-t pt-4">
-                                <Label className="text-sm font-medium text-foreground">ส่วนเสริม</Label>
-                                
-                                {/* Add-on Description */}
-                                <div className="space-y-2">
-                                  <Label htmlFor="addOnDescription" className="text-xs text-muted-foreground">
-                                    คำอธิบายส่วนเสริม
-                                  </Label>
-                                  <Input
-                                    id="addOnDescription"
-                                    type="text"
-                                    placeholder="เช่น เลือกความหวาน, เลือกความเผ็ด, เพิ่มผัก"
-                                    value={menuFormData.addOnDescription}
-                                    onChange={(e) => setMenuFormData(prev => ({ ...prev, addOnDescription: e.target.value }))}
-                                    className="bg-muted/50 border-muted"
-                                  />
-                                </div>
-
-                                {/* Add-on Count */}
-                                <div className="space-y-2">
-                                  <Label htmlFor="addOnCount" className="text-xs text-muted-foreground">
-                                    จำนวนส่วนเสริม
-                                  </Label>
-                                  <Input
-                                    id="addOnCount"
-                                    type="number"
-                                    min="0"
-                                    max="10"
-                                    placeholder="กรอกจำนวนส่วนเสริม"
-                                    value={menuFormData.addOnCount}
-                                    onChange={(e) => handleAddOnCountChange(e.target.value)}
-                                    className="bg-muted/50 border-muted"
-                                  />
-                                </div>
-
-                                {/* Dynamic Add-on Title Fields */}
-                                {menuFormData.addOnTitles.map((title, index) => (
-                                  <div key={index} className="space-y-2">
-                                    <Label htmlFor={`addOnTitle${index}`} className="text-xs text-muted-foreground">
-                                      หัวข้อส่วนเสริม {index + 1}
-                                    </Label>
-                                    <Input
-                                      id={`addOnTitle${index}`}
-                                      type="text"
-                                      placeholder={`กรอกหัวข้อส่วนเสริม ${index + 1}`}
-                                      value={title}
-                                      onChange={(e) => handleAddOnTitleChange(index, e.target.value)}
-                                      className="bg-muted/50 border-muted"
-                                    />
-                                  </div>
-                                ))}
+                              <div className="space-y-2 border-t pt-4">
+                                <Label htmlFor="addOns" className="text-sm font-medium text-foreground">ส่วนเสริม</Label>
+                                <Input
+                                  id="addOns"
+                                  type="text"
+                                  placeholder="กรอกส่วนเสริม"
+                                  value={menuFormData.addOns || ''}
+                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, addOns: e.target.value }))}
+                                  className="bg-muted/50 border-muted"
+                                />
                               </div>
 
                               {/* Price */}
