@@ -48,7 +48,38 @@ const MenuSelection = () => {
     
     setUserInfo(JSON.parse(storedUserInfo));
     fetchMenuItems(shop.shop_id);
+
+    // Load existing selection from cache
+    const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
+    const mealKey = `${meal.meal_id}_${shop.shop_id}`;
+    const existingOrder = orderCache[mealKey];
+    
+    if (existingOrder) {
+      // Find the menu item that matches the cached selection
+      // We'll set this after menu items are loaded
+      console.log('Found existing order:', existingOrder);
+    }
   }, [meal, shop]);
+
+  // Load default selection after menu items are fetched
+  useEffect(() => {
+    if (menuItems.length > 0 && meal && shop) {
+      const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
+      const mealKey = `${meal.meal_id}_${shop.shop_id}`;
+      const existingOrder = orderCache[mealKey];
+      
+      if (existingOrder) {
+        // Find the menu item that matches the cached selection
+        const cachedItem = menuItems.find(item => item.food_id === existingOrder.food_id);
+        if (cachedItem) {
+          setSelectedItem(cachedItem);
+          setSelectedToppings(existingOrder.selected_toppings || []);
+          setOrderNote(existingOrder.order_note || '');
+          console.log('Restored selection:', cachedItem.food_name);
+        }
+      }
+    }
+  }, [menuItems, meal, shop]);
 
   const fetchMenuItems = async (shopId: string) => {
     try {

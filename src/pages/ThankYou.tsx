@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Home, Heart, ShoppingCart } from "lucide-react";
+import { CheckCircle, Home, Heart } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { supabase } from "@/integrations/supabase/client";
 
 const ThankYou = () => {
   const navigate = useNavigate();
@@ -28,31 +29,43 @@ const ThankYou = () => {
     setFinalOrder(JSON.parse(orderData));
   }, []);
 
-  const handleBackToHome = () => {
-    // Clear all stored data
-    localStorage.removeItem('userInfo');
-    localStorage.removeItem('orderItems');
-    localStorage.removeItem('finalOrder');
-    
-    // Get plan_id and navigate to the correct plan page
-    const planId = finalOrder?.userInfo?.plan_id || searchParams.get('planId');
-    if (planId) {
-      navigate(`/welcome?planId=${planId}`);
-    } else {
-      navigate('/');
-    }
-  };
+  const handleBackToHome = async () => {
+    try {
+      // Get plan_id from finalOrder
+      const planId = finalOrder?.userInfo?.plan_id;
+      if (!planId) {
+        navigate('/');
+        return;
+      }
 
-  const handleOrderMore = () => {
-    // Keep user context but clear order cache
-    localStorage.removeItem('orderCache');
-    localStorage.removeItem('finalOrder');
-    
-    // Get plan_id from finalOrder or URL params
-    const planId = finalOrder?.userInfo?.plan_id || searchParams.get('planId');
-    if (planId) {
-      navigate(`/welcome?planId=${planId}`);
-    } else {
+      // Fetch plan data to get url_portal
+      const { data: planData, error } = await supabase
+        .from('plan')
+        .select('url_portal')
+        .eq('plan_id', planId)
+        .single();
+
+      if (error) throw error;
+
+      // Clear all stored data
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('orderItems');
+      localStorage.removeItem('finalOrder');
+      localStorage.removeItem('orderCache');
+
+      // Redirect to url_portal if available, otherwise to home
+      if (planData?.url_portal) {
+        window.location.href = planData.url_portal;
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error fetching plan data:', error);
+      // Fallback to home page
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('orderItems');
+      localStorage.removeItem('finalOrder');
+      localStorage.removeItem('orderCache');
       navigate('/');
     }
   };
@@ -111,20 +124,11 @@ const ThankYou = () => {
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
-        <div className="space-y-4">
-          <Button 
-            onClick={handleOrderMore}
-            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
-          >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            ต้องการสั่งเพิ่มอีกรายการ
-          </Button>
-          
+        {/* Action Button */}
+        <div>
           <Button 
             onClick={handleBackToHome}
-            variant="outline"
-            className="w-full h-12 text-lg font-semibold border-2 border-primary text-primary hover:bg-primary/10"
+            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
           >
             <Home className="w-5 h-5 mr-2" />
             กลับไปหน้าแรก
