@@ -169,14 +169,6 @@ const OrderSummary = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/food-categories')}
-              className="p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
             <Receipt className="w-12 h-12 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">สรุปรายการสั่งอาหาร</h1>
@@ -186,7 +178,7 @@ const OrderSummary = () => {
         {/* User Info */}
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold mb-3">ข้อมูลผู้สั่งและงาน</h3>
+            <h3 className="font-semibold mb-3">รายละเอียดผู้สั่ง</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">ชื่อเล่น:</span>
@@ -199,20 +191,12 @@ const OrderSummary = () => {
                     <span className="font-medium">{planData.plan_name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">ผู้จัด:</span>
-                    <span className="font-medium">{planData.plan_editor}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-muted-foreground">สถานที่:</span>
                     <span className="font-medium">{planData.plan_location}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">วันที่:</span>
                     <span className="font-medium">{planData.plan_date}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">เวลา:</span>
-                    <span className="font-medium">{planData.plan_time}</span>
                   </div>
                 </>
               )}

@@ -154,17 +154,7 @@ const FoodCategories = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="p-2"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <ChefHat className="w-12 h-12 text-primary" />
-            </div>
+            <ChefHat className="w-12 h-12 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">เลือกอาหารตามมื้อ</h1>
           <p className="text-muted-foreground">กรุณาเลือกร้านและอาหารสำหรับแต่ละมื้อ</p>
