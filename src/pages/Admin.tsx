@@ -1217,17 +1217,20 @@ const Admin = () => {
         imageUrl = publicUrl;
       }
 
-      // Here you would save to your menu table
-      // This is a placeholder - you'll need to create the menu table structure
-      console.log('Menu data to save:', {
-        shop_id: selectedRestaurant?.shop_id,
-        food_category: menuFormData.foodCategory,
-        menu_name: menuFormData.menuName,
-        description: menuFormData.description,
-        add_ons: menuFormData.addOns,
-        price: parseFloat(menuFormData.price),
-        image_url: imageUrl
-      });
+      // Insert food data into Supabase
+      const { error: insertError } = await supabase
+        .from('food')
+        .insert([{
+          shop_id: selectedRestaurant?.shop_id,
+          food_type: menuFormData.foodCategory,
+          food_name: menuFormData.menuName,
+          description: menuFormData.description,
+          topping: menuFormData.addOns,
+          price: parseFloat(menuFormData.price),
+          url_pic: imageUrl
+        }]);
+
+      if (insertError) throw insertError;
 
       toast.success('เพิ่มรายการอาหารสำเร็จ!');
       resetMenuForm();

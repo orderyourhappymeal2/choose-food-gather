@@ -14,9 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      food: {
+        Row: {
+          created_at: string
+          description: string | null
+          food_id: string
+          food_name: string
+          food_type: string | null
+          price: number
+          shop_id: string
+          topping: string | null
+          url_pic: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          food_id?: string
+          food_name: string
+          food_type?: string | null
+          price: number
+          shop_id: string
+          topping?: string | null
+          url_pic?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          food_id?: string
+          food_name?: string
+          food_type?: string | null
+          price?: number
+          shop_id?: string
+          topping?: string | null
+          url_pic?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shop"
+            referencedColumns: ["shop_id"]
+          },
+        ]
+      }
+      meal: {
+        Row: {
+          created_at: string
+          food_id: string | null
+          meal_id: string
+          meal_name: string
+          meal_time: string
+          meal_type: string
+          plan_id: string
+          shop_id: string
+        }
+        Insert: {
+          created_at?: string
+          food_id?: string | null
+          meal_id?: string
+          meal_name: string
+          meal_time: string
+          meal_type: string
+          plan_id: string
+          shop_id: string
+        }
+        Update: {
+          created_at?: string
+          food_id?: string | null
+          meal_id?: string
+          meal_name?: string
+          meal_time?: string
+          meal_type?: string
+          plan_id?: string
+          shop_id?: string
+        }
+        Relationships: []
+      }
       plan: {
         Row: {
           created_at: string
+          is_open: number
           plan_date: string
           plan_editor: string
           plan_id: string
@@ -30,6 +108,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          is_open?: number
           plan_date: string
           plan_editor: string
           plan_id?: string
@@ -43,6 +122,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          is_open?: number
           plan_date?: string
           plan_editor?: string
           plan_id?: string
