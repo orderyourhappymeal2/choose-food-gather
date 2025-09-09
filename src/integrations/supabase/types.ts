@@ -110,6 +110,90 @@ export type Database = {
           },
         ]
       }
+      order: {
+        Row: {
+          created_at: string
+          food_id: string
+          order_id: string
+          order_note: string | null
+          person_id: string
+          plan_id: string
+          topping: string | null
+        }
+        Insert: {
+          created_at?: string
+          food_id: string
+          order_id?: string
+          order_note?: string | null
+          person_id: string
+          plan_id: string
+          topping?: string | null
+        }
+        Update: {
+          created_at?: string
+          food_id?: string
+          order_id?: string
+          order_note?: string | null
+          person_id?: string
+          plan_id?: string
+          topping?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "food"
+            referencedColumns: ["food_id"]
+          },
+          {
+            foreignKeyName: "order_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "person"
+            referencedColumns: ["person_id"]
+          },
+          {
+            foreignKeyName: "order_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plan"
+            referencedColumns: ["plan_id"]
+          },
+        ]
+      }
+      person: {
+        Row: {
+          created_at: string
+          person_agent: string | null
+          person_id: string
+          person_name: string
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          person_agent?: string | null
+          person_id?: string
+          person_name: string
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          person_agent?: string | null
+          person_id?: string
+          person_name?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plan"
+            referencedColumns: ["plan_id"]
+          },
+        ]
+      }
       plan: {
         Row: {
           created_at: string
