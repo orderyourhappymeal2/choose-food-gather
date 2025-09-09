@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ShoppingCart, ChefHat } from "lucide-react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +25,8 @@ const MenuSelection = () => {
   const { restaurantId } = useParams();
   const { toast } = useToast();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
+  const [orderNote, setOrderNote] = useState("");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -72,6 +76,30 @@ const MenuSelection = () => {
     setSelectedItem(prevSelected => 
       prevSelected?.food_id === item.food_id ? null : item
     );
+    // Reset toppings and note when changing item
+    setSelectedToppings([]);
+    setOrderNote("");
+  };
+
+  const handleToppingChange = (topping: string, checked: boolean) => {
+    if (checked && selectedToppings.length >= 3) {
+      toast({
+        title: "สามารถเลือกได้สูงสุด 3 รายการ",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSelectedToppings(prev => 
+      checked 
+        ? [...prev, topping]
+        : prev.filter(t => t !== topping)
+    );
+  };
+
+  const getToppingsFromItem = (item: MenuItem): string[] => {
+    if (!item.topping) return [];
+    return item.topping.split(',').map(t => t.trim()).filter(t => t.length > 0);
   };
 
   const handleConfirm = async () => {
@@ -92,57 +120,36 @@ const MenuSelection = () => {
     }
 
     try {
-      // Check if order already exists for this person and meal
-      const { data: existingOrder } = await supabase
-        .from('order')
-        .select('order_id')
-        .eq('person_id', userInfo.person_id)
-        .eq('plan_id', userInfo.plan_id)
-        .eq('food_id', selectedItem.food_id)
-        .single();
-
-      let orderResult;
+      // Save to cache instead of database
+      const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
+      const mealKey = `${meal.meal_id}_${shop.shop_id}`;
       
-      if (existingOrder) {
-        // Update existing order
-        const { data, error } = await supabase
-          .from('order')
-          .update({
-            food_id: selectedItem.food_id,
-            topping: selectedItem.topping || null
-          })
-          .eq('order_id', existingOrder.order_id)
-          .select()
-          .single();
-          
-        if (error) throw error;
-        orderResult = data;
-      } else {
-        // Create new order
-        const { data, error } = await supabase
-          .from('order')
-          .insert({
-            person_id: userInfo.person_id,
-            food_id: selectedItem.food_id,
-            plan_id: userInfo.plan_id,
-            topping: selectedItem.topping || null
-          })
-          .select()
-          .single();
-          
-        if (error) throw error;
-        orderResult = data;
-      }
+      orderCache[mealKey] = {
+        meal_id: meal.meal_id,
+        meal_name: meal.meal_name,
+        shop_id: shop.shop_id,
+        shop_name: shop.shop_name,
+        food_id: selectedItem.food_id,
+        food_name: selectedItem.food_name,
+        food_price: selectedItem.price,
+        food_image: selectedItem.url_pic,
+        selected_toppings: selectedToppings,
+        order_note: orderNote,
+        plan_id: userInfo.plan_id,
+        person_id: userInfo.person_id
+      };
+
+      localStorage.setItem('orderCache', JSON.stringify(orderCache));
 
       toast({
-        title: "บันทึกรายการสำเร็จ",
+        title: "เพิ่มรายการสำเร็จ",
         description: `เลือก ${selectedItem.food_name} จาก ${shop.shop_name}`
       });
 
       navigate('/food-categories');
       
     } catch (error) {
-      console.error('Error saving order:', error);
+      console.error('Error saving to cache:', error);
       toast({
         title: "เกิดข้อผิดพลาด",
         description: "ไม่สามารถบันทึกรายการได้ กรุณาลองใหม่อีกครั้ง",
@@ -232,6 +239,44 @@ const MenuSelection = () => {
             </div>
           )}
 
+          {/* Topping Selection */}
+          {selectedItem && getToppingsFromItem(selectedItem).length > 0 && (
+            <Card className="mb-4 bg-white/90 backdrop-blur-sm border-2 border-primary/30">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">เลือกท็อปปิ้ง (สูงสุด 3 รายการ)</h3>
+                <div className="space-y-2">
+                  {getToppingsFromItem(selectedItem).map((topping, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`topping-${index}`}
+                        checked={selectedToppings.includes(topping)}
+                        onCheckedChange={(checked) => handleToppingChange(topping, checked as boolean)}
+                      />
+                      <label htmlFor={`topping-${index}`} className="text-sm font-medium">
+                        {topping}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Order Note */}
+          {selectedItem && (
+            <Card className="mb-4 bg-white/90 backdrop-blur-sm border-2 border-primary/30">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">หมายเหตุ</h3>
+                <Textarea
+                  placeholder="กรอกหมายเหตุเพิ่มเติม (ถ้ามี)"
+                  value={orderNote}
+                  onChange={(e) => setOrderNote(e.target.value)}
+                  className="bg-white border-brand-pink/50 focus:border-primary"
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Summary */}
           {selectedItem && (
             <Card className="mb-4 bg-white/90 backdrop-blur-sm border-2 border-primary/30">
@@ -240,9 +285,21 @@ const MenuSelection = () => {
                   <ShoppingCart className="w-4 h-4" />
                   รายการที่เลือก
                 </h3>
-                <div className="flex justify-between items-center">
-                  <span>{selectedItem.food_name}</span>
-                  <span className="font-semibold">฿{selectedItem.price}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>{selectedItem.food_name}</span>
+                    <span className="font-semibold">฿{selectedItem.price}</span>
+                  </div>
+                  {selectedToppings.length > 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      ท็อปปิ้ง: {selectedToppings.join(', ')}
+                    </div>
+                  )}
+                  {orderNote && (
+                    <div className="text-sm text-muted-foreground">
+                      หมายเหตุ: {orderNote}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -1,32 +1,38 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Edit, Check, Receipt } from "lucide-react";
+import { Edit, Check, Receipt, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { supabase } from "@/integrations/supabase/client";
 
-interface OrderItem {
-  restaurantId: string;
-  restaurantName: string;
-  categoryId: string;
-  categoryName: string;
-  items: Array<{
-    id: string;
-    name: string;
-    price: number;
-    image: string;
-  }>;
+interface CachedOrder {
+  meal_id: string;
+  meal_name: string;
+  shop_id: string;
+  shop_name: string;
+  food_id: string;
+  food_name: string;
+  food_price: number;
+  food_image: string;
+  selected_toppings: string[];
+  order_note: string;
+  plan_id: string;
+  person_id: string;
 }
 
 const OrderSummary = () => {
   const navigate = useNavigate();
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const { toast } = useToast();
+  const [orderCache, setOrderCache] = useState<Record<string, CachedOrder>>({});
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Load user info and order items
+    // Load user info and order cache
     const userInfoStr = localStorage.getItem('userInfo');
-    const orderItemsStr = localStorage.getItem('orderItems');
+    const orderCacheStr = localStorage.getItem('orderCache');
     
     if (!userInfoStr) {
       navigate('/');
@@ -35,37 +41,87 @@ const OrderSummary = () => {
 
     setUserInfo(JSON.parse(userInfoStr));
     
-    if (orderItemsStr) {
-      setOrderItems(JSON.parse(orderItemsStr));
+    if (orderCacheStr) {
+      setOrderCache(JSON.parse(orderCacheStr));
     }
   }, []);
 
-  const totalPrice = orderItems.reduce((total, order) => 
-    total + order.items.reduce((sum, item) => sum + item.price, 0), 0
-  );
+  const orderItems = Object.values(orderCache);
+  const totalPrice = orderItems.reduce((sum, item) => sum + item.food_price, 0);
 
   const handleEdit = () => {
     navigate('/food-categories');
   };
 
-  const handleConfirm = () => {
-    console.log('OrderSummary: handleConfirm called');
-    console.log('OrderSummary: userInfo:', userInfo);
-    console.log('OrderSummary: orderItems:', orderItems);
-    
-    // Store final order data
-    const finalOrder = {
-      userInfo,
-      orderItems,
-      totalPrice,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.log('OrderSummary: finalOrder created:', finalOrder);
-    localStorage.setItem('finalOrder', JSON.stringify(finalOrder));
-    console.log('OrderSummary: finalOrder saved to localStorage');
-    console.log('OrderSummary: navigating to /thank-you');
-    navigate('/thank-you');
+  const handleConfirm = async () => {
+    if (!userInfo || orderItems.length === 0) {
+      toast({
+        title: "ไม่มีรายการสั่งอาหาร",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Save all orders to database
+      for (const item of orderItems) {
+        // Check if order already exists for this person and meal
+        const { data: existingOrder } = await supabase
+          .from('order')
+          .select('order_id')
+          .eq('person_id', item.person_id)
+          .eq('plan_id', item.plan_id)
+          .eq('food_id', item.food_id)
+          .maybeSingle();
+
+        const orderData = {
+          person_id: item.person_id,
+          food_id: item.food_id,
+          plan_id: item.plan_id,
+          topping: item.selected_toppings.length > 0 ? item.selected_toppings.join(', ') : null,
+          order_note: item.order_note || null
+        };
+
+        if (existingOrder) {
+          // Update existing order
+          const { error } = await supabase
+            .from('order')
+            .update(orderData)
+            .eq('order_id', existingOrder.order_id);
+            
+          if (error) throw error;
+        } else {
+          // Create new order
+          const { error } = await supabase
+            .from('order')
+            .insert(orderData);
+            
+          if (error) throw error;
+        }
+      }
+
+      // Clear cache after successful submission
+      localStorage.removeItem('orderCache');
+
+      toast({
+        title: "บันทึกรายการสำเร็จ",
+        description: "รายการสั่งอาหารของคุณได้รับการบันทึกแล้ว"
+      });
+
+      navigate('/thank-you');
+      
+    } catch (error) {
+      console.error('Error saving orders:', error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถบันทึกรายการได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!userInfo) {
@@ -82,7 +138,17 @@ const OrderSummary = () => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <Receipt className="w-16 h-16 text-primary mx-auto mb-4" />
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/food-categories')}
+              className="p-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <Receipt className="w-12 h-12 text-primary" />
+          </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">สรุปรายการสั่งอาหาร</h1>
           <p className="text-muted-foreground">กรุณาตรวจสอบรายการก่อนยืนยัน</p>
         </div>
@@ -91,11 +157,7 @@ const OrderSummary = () => {
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
           <CardContent className="p-6">
             <h3 className="font-semibold mb-3">ข้อมูลผู้สั่ง</h3>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-muted-foreground">ชื่อ:</span>
-                <p className="font-medium">{userInfo.name}</p>
-              </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">ชื่อเล่น:</span>
                 <p className="font-medium">{userInfo.nickname}</p>
@@ -112,10 +174,9 @@ const OrderSummary = () => {
         {orderItems.length === 0 ? (
           <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-gray-300">
             <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">ยังไม่มีรายการสั่งอาหาร</p>
+              <p className="text-muted-foreground mb-4">ยังไม่มีรายการสั่งอาหาร</p>
               <Button 
                 onClick={() => navigate('/food-categories')}
-                className="mt-4"
                 variant="outline"
               >
                 เริ่มสั่งอาหาร
@@ -124,35 +185,38 @@ const OrderSummary = () => {
           </Card>
         ) : (
           <div className="space-y-4 mb-6">
-            {orderItems.map((order, orderIndex) => (
-              <Card key={orderIndex} className="bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
+            {orderItems.map((item, index) => (
+              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="font-semibold">{order.restaurantName}</h3>
-                      <p className="text-sm text-muted-foreground">{order.categoryName}</p>
+                      <h3 className="font-semibold text-lg">{item.meal_name}</h3>
+                      <p className="text-sm text-muted-foreground">{item.shop_name}</p>
                     </div>
+                    <span className="font-bold text-primary text-lg">฿{item.food_price}</span>
                   </div>
                   
-                  <div className="space-y-3">
-                    {order.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex items-center gap-3 p-3 bg-white/60 rounded-lg">
-                        <img 
-                          src={item.image} 
-                          alt={item.name}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{item.name}</p>
+                  <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg mb-3">
+                    <img 
+                      src={item.food_image || '/placeholder.svg'} 
+                      alt={item.food_name}
+                      className="w-16 h-16 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-lg">{item.food_name}</p>
+                      {item.selected_toppings.length > 0 && (
+                        <div className="mt-1">
+                          <span className="text-sm text-muted-foreground">ท็อปปิ้ง: </span>
+                          <span className="text-sm font-medium">{item.selected_toppings.join(', ')}</span>
                         </div>
-                        <p className="font-semibold text-primary">฿{item.price}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="border-t mt-4 pt-3 flex justify-between font-semibold">
-                    <span>รวมต่อร้าน</span>
-                    <span>฿{order.items.reduce((sum, item) => sum + item.price, 0)}</span>
+                      )}
+                      {item.order_note && (
+                        <div className="mt-1">
+                          <span className="text-sm text-muted-foreground">หมายเหตุ: </span>
+                          <span className="text-sm">{item.order_note}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -179,6 +243,7 @@ const OrderSummary = () => {
               onClick={handleEdit}
               variant="outline"
               className="h-14 text-lg font-semibold border-2 border-primary text-primary hover:bg-primary/10"
+              disabled={isSubmitting}
             >
               <Edit className="w-5 h-5 mr-2" />
               แก้ไข
@@ -187,9 +252,10 @@ const OrderSummary = () => {
             <Button 
               onClick={handleConfirm}
               className="h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
+              disabled={isSubmitting}
             >
               <Check className="w-5 h-5 mr-2" />
-              ยืนยัน
+              {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
             </Button>
           </div>
         )}

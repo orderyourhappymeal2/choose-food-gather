@@ -100,6 +100,16 @@ const Welcome = () => {
       return;
     }
 
+    // Validate plan state
+    if (planData.plan_state !== "published") {
+      toast({
+        title: "ยังไม่เปิดรับการลงทะเบียน",
+        description: "งานยังไม่เปิดรับการลงทะเบียน กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Validate password
     if (formData.code !== planData.plan_pwd) {
       toast({
