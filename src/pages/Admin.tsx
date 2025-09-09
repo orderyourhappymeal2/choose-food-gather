@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import NavigationDropdown from "@/components/NavigationDropdown";
 import { useState, useEffect } from "react";
@@ -24,6 +24,24 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 // Plan form schema
 const planFormSchema = z.object({
   plan_name: z.string().min(1, "กรุณากรอกชื่องาน"),
@@ -37,6 +55,202 @@ const planFormSchema = z.object({
 });
 
 type PlanFormData = z.infer<typeof planFormSchema>;
+
+// Sortable Meal Item Component
+const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
+  meal: any;
+  index: number;
+  shops: any[];
+  foods: any[];
+  onUpdate: (id: string, updates: any) => void;
+  onRemove: (id: string) => void;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: meal.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const [selectedShop, setSelectedShop] = useState(meal.shopId || '');
+  const [selectedFood, setSelectedFood] = useState(meal.foodId || '');
+  const [mealName, setMealName] = useState(meal.name || '');
+  const [isEditingFoodText, setIsEditingFoodText] = useState(false);
+  const [customFoodText, setCustomFoodText] = useState(meal.customFoodText || 'ให้ผู้ใช้เลือกเอง');
+
+  const filteredFoods = foods.filter(food => food.shop_id === selectedShop);
+
+  const handleShopChange = (shopId: string) => {
+    setSelectedShop(shopId);
+    setSelectedFood('');
+    onUpdate(meal.id, { shopId, foodId: '', customFoodText });
+  };
+
+  const handleFoodChange = (foodId: string) => {
+    setSelectedFood(foodId);
+    onUpdate(meal.id, { shopId: selectedShop, foodId, customFoodText });
+  };
+
+  const handleMealNameChange = (name: string) => {
+    setMealName(name);
+    onUpdate(meal.id, { name, shopId: selectedShop, foodId: selectedFood, customFoodText });
+  };
+
+  const handleCustomFoodTextChange = (text: string) => {
+    setCustomFoodText(text);
+    onUpdate(meal.id, { name: mealName, shopId: selectedShop, foodId: selectedFood, customFoodText: text });
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="bg-white/50 border border-brand-pink/20 rounded-lg p-4 mb-3">
+      <div className="flex items-start gap-3">
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-8 h-8 bg-brand-primary rounded-full flex items-center justify-center text-white font-semibold text-sm mb-2">
+            {index + 1}
+          </div>
+          <div {...attributes} {...listeners} className="cursor-grab hover:cursor-grabbing p-1">
+            <GripVertical className="w-4 h-4 text-muted-foreground" />
+          </div>
+        </div>
+        
+        <div className="flex-1 space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Meal Name */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">ชื่อมื้ออาหาร</Label>
+              <Input
+                placeholder="ใส่ชื่อมื้ออาหาร"
+                value={mealName}
+                onChange={(e) => handleMealNameChange(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Restaurant Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">เลือกร้านอาหาร</Label>
+              <Select value={selectedShop} onValueChange={handleShopChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="เลือกร้านอาหาร" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <ScrollArea className="h-full">
+                    {shops.slice(0, 5).map((shop) => (
+                      <SelectItem key={shop.shop_id} value={shop.shop_id} className="flex items-center gap-2 p-2">
+                        <div className="flex items-center gap-2 w-full">
+                          {shop.url_pic && (
+                            <img 
+                              src={shop.url_pic} 
+                              alt={shop.shop_name}
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg';
+                              }}
+                            />
+                          )}
+                          <span className="truncate">{shop.shop_name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Food Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">เลือกเมนูอาหาร</Label>
+              {!selectedShop ? (
+                <div className="w-full p-2 text-sm text-muted-foreground bg-muted/30 rounded-md border">
+                  กรุณาเลือกร้านอาหารก่อน
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {isEditingFoodText ? (
+                    <div className="flex gap-2">
+                      <Input
+                        value={customFoodText}
+                        onChange={(e) => handleCustomFoodTextChange(e.target.value)}
+                        className="flex-1"
+                        onBlur={() => setIsEditingFoodText(false)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setIsEditingFoodText(false);
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setIsEditingFoodText(false)}
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="w-full p-2 text-sm bg-background border rounded-md cursor-pointer hover:bg-muted/30 flex items-center justify-between"
+                      onClick={() => setIsEditingFoodText(true)}
+                    >
+                      <span>{customFoodText}</span>
+                      <Edit className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  )}
+                  
+                  <Select value={selectedFood} onValueChange={handleFoodChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="หรือเลือกเมนูเฉพาะ" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <ScrollArea className="h-full">
+                        {filteredFoods.slice(0, 5).map((food) => (
+                          <SelectItem key={food.food_id} value={food.food_id} className="flex items-center gap-2 p-2">
+                            <div className="flex items-center gap-2 w-full">
+                              {food.url_pic && (
+                                <img 
+                                  src={food.url_pic} 
+                                  alt={food.food_name}
+                                  className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.src = '/placeholder.svg';
+                                  }}
+                                />
+                              )}
+                              <div className="flex flex-col items-start flex-1 min-w-0">
+                                <span className="truncate font-medium">{food.food_name}</span>
+                                <span className="text-xs text-muted-foreground">฿{food.price}</span>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+          onClick={() => onRemove(meal.id)}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 // PlanList component
 const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; restaurants?: any[] }) => {
@@ -55,6 +269,12 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
   const [selectedPlanForMeal, setSelectedPlanForMeal] = useState<any>(null);
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [finishingPlan, setFinishingPlan] = useState<any>(null);
+
+  // Meal management states
+  const [meals, setMeals] = useState<any[]>([]);
+  const [shops, setShops] = useState<any[]>([]);
+  const [foods, setFoods] = useState<any[]>([]);
+  const [isLoadingMealData, setIsLoadingMealData] = useState(false);
 
   // Edit form
   const editForm = useForm<PlanFormData>({
@@ -271,10 +491,143 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
     setIsOrderModalOpen(true);
   };
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Fetch shops and foods data
+  const fetchMealData = async () => {
+    setIsLoadingMealData(true);
+    try {
+      const [shopsResponse, foodsResponse] = await Promise.all([
+        supabase.from('shop').select('*').order('shop_name'),
+        supabase.from('food').select('*').order('food_name')
+      ]);
+
+      if (shopsResponse.error) throw shopsResponse.error;
+      if (foodsResponse.error) throw foodsResponse.error;
+
+      setShops(shopsResponse.data || []);
+      setFoods(foodsResponse.data || []);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลร้านอาหาร');
+    } finally {
+      setIsLoadingMealData(false);
+    }
+  };
+
+  // Load existing meals for a plan
+  const loadPlanMeals = async (planId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('meal')
+        .select('*')
+        .eq('plan_id', planId)
+        .order('meal_index');
+
+      if (error) throw error;
+
+      const formattedMeals = (data || []).map((meal, index) => ({
+        id: meal.meal_id,
+        name: meal.meal_name,
+        shopId: meal.shop_id || '',
+        foodId: meal.food_id || '',
+        customFoodText: 'ให้ผู้ใช้เลือกเอง', // Default text, could be stored in DB if needed
+        index: meal.meal_index
+      }));
+
+      setMeals(formattedMeals);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลมื้ออาหาร');
+    }
+  };
+
+  // Add new meal
+  const addNewMeal = () => {
+    const newMeal = {
+      id: `meal-${Date.now()}`,
+      name: '',
+      shopId: '',
+      foodId: '',
+      customFoodText: 'ให้ผู้ใช้เลือกเอง',
+      index: meals.length
+    };
+    setMeals([...meals, newMeal]);
+  };
+
+  // Update meal
+  const updateMeal = (id: string, updates: any) => {
+    setMeals(meals.map(meal => 
+      meal.id === id ? { ...meal, ...updates } : meal
+    ));
+  };
+
+  // Remove meal
+  const removeMeal = (id: string) => {
+    setMeals(meals.filter(meal => meal.id !== id));
+  };
+
+  // Handle drag end
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setMeals((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // Save meals to database
+  const saveMeals = async () => {
+    if (!selectedPlanForMeal) return;
+
+    try {
+      // Delete existing meals for this plan
+      await supabase
+        .from('meal')
+        .delete()
+        .eq('plan_id', selectedPlanForMeal.plan_id);
+
+      // Insert new meals
+      const mealsToInsert = meals.map((meal, index) => ({
+        plan_id: selectedPlanForMeal.plan_id,
+        shop_id: meal.shopId || null,
+        food_id: meal.foodId || null,
+        meal_name: meal.name,
+        meal_index: index + 1
+      })).filter(meal => meal.meal_name.trim() !== '');
+
+      if (mealsToInsert.length > 0) {
+        const { error } = await supabase
+          .from('meal')
+          .insert(mealsToInsert);
+
+        if (error) throw error;
+      }
+
+      toast.success('บันทึกมื้ออาหารสำเร็จ');
+      setIsAddMealModalOpen(false);
+      setMeals([]);
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการบันทึกมื้ออาหาร');
+    }
+  };
+
   // Handle add meal
   const handleAddMeal = (plan: any) => {
     setSelectedPlanForMeal(plan);
+    setMeals([]);
     setIsAddMealModalOpen(true);
+    fetchMealData();
+    loadPlanMeals(plan.plan_id);
   };
 
   // Handle show meal list
