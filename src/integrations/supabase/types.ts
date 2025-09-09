@@ -114,6 +114,7 @@ export type Database = {
         Row: {
           created_at: string
           food_id: string
+          meal_id: string | null
           order_id: string
           order_note: string | null
           person_id: string
@@ -123,6 +124,7 @@ export type Database = {
         Insert: {
           created_at?: string
           food_id: string
+          meal_id?: string | null
           order_id?: string
           order_note?: string | null
           person_id: string
@@ -132,6 +134,7 @@ export type Database = {
         Update: {
           created_at?: string
           food_id?: string
+          meal_id?: string | null
           order_id?: string
           order_note?: string | null
           person_id?: string
@@ -139,6 +142,13 @@ export type Database = {
           topping?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_order_meal"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meal"
+            referencedColumns: ["meal_id"]
+          },
           {
             foreignKeyName: "order_food_id_fkey"
             columns: ["food_id"]

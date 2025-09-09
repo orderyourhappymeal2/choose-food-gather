@@ -83,40 +83,56 @@ const OrderSummary = () => {
 
   const fetchPreDefinedMeals = async (planId: string) => {
     try {
-      const { data, error } = await supabase
+      // First get meals with food_id
+      const { data: mealData, error: mealError } = await supabase
         .from('meal')
-        .select(`
-          meal_id,
-          meal_name,
-          meal_index,
-          food_id,
-          food:food_id (
-            food_name,
-            price,
-            url_pic
-          ),
-          shop:shop_id (
-            shop_id,
-            shop_name
-          )
-        `)
+        .select('meal_id, meal_name, meal_index, food_id, shop_id')
         .eq('plan_id', planId)
         .not('food_id', 'is', null)
         .order('meal_index');
 
-      if (error) throw error;
+      if (mealError) throw mealError;
 
-      const formattedMeals = data?.map(meal => ({
-        meal_id: meal.meal_id,
-        meal_name: meal.meal_name,
-        meal_index: meal.meal_index,
-        food_id: meal.food_id,
-        food_name: meal.food?.food_name || '',
-        price: meal.food?.price || 0,
-        url_pic: meal.food?.url_pic || '',
-        shop_id: meal.shop?.shop_id || '',
-        shop_name: meal.shop?.shop_name || ''
-      })) || [];
+      if (!mealData || mealData.length === 0) {
+        setPreDefinedMeals([]);
+        return;
+      }
+
+      // Get food details for each meal
+      const foodIds = mealData.map(meal => meal.food_id);
+      const { data: foodData, error: foodError } = await supabase
+        .from('food')
+        .select('food_id, food_name, price, url_pic, shop_id')
+        .in('food_id', foodIds);
+
+      if (foodError) throw foodError;
+
+      // Get shop details
+      const shopIds = [...new Set([...mealData.map(meal => meal.shop_id), ...foodData.map(food => food.shop_id)])];
+      const { data: shopData, error: shopError } = await supabase
+        .from('shop')
+        .select('shop_id, shop_name')
+        .in('shop_id', shopIds);
+
+      if (shopError) throw shopError;
+
+      // Combine all data
+      const formattedMeals = mealData.map(meal => {
+        const food = foodData.find(f => f.food_id === meal.food_id);
+        const shop = shopData.find(s => s.shop_id === meal.shop_id || s.shop_id === food?.shop_id);
+
+        return {
+          meal_id: meal.meal_id,
+          meal_name: meal.meal_name,
+          meal_index: meal.meal_index,
+          food_id: meal.food_id,
+          food_name: food?.food_name || '',
+          price: food?.price || 0,
+          url_pic: food?.url_pic || '',
+          shop_id: shop?.shop_id || '',
+          shop_name: shop?.shop_name || ''
+        };
+      });
 
       setPreDefinedMeals(formattedMeals);
     } catch (error) {
@@ -147,19 +163,21 @@ const OrderSummary = () => {
     try {
       // Save pre-defined meal orders to database
       for (const meal of preDefinedMeals) {
-        // Check if order already exists for this person and food
+        // Check if order already exists for this person, meal, and food
         const { data: existingOrder } = await supabase
           .from('order')
           .select('order_id')
           .eq('person_id', userInfo.person_id)
           .eq('plan_id', userInfo.plan_id)
           .eq('food_id', meal.food_id)
+          .eq('meal_id', meal.meal_id)
           .maybeSingle();
 
         const orderData = {
           person_id: userInfo.person_id,
           food_id: meal.food_id,
           plan_id: userInfo.plan_id,
+          meal_id: meal.meal_id,
           topping: null,
           order_note: null
         };
@@ -191,12 +209,14 @@ const OrderSummary = () => {
           .eq('person_id', item.person_id)
           .eq('plan_id', item.plan_id)
           .eq('food_id', item.food_id)
+          .eq('meal_id', item.meal_id)
           .maybeSingle();
 
         const orderData = {
           person_id: item.person_id,
           food_id: item.food_id,
           plan_id: item.plan_id,
+          meal_id: item.meal_id,
           topping: item.selected_toppings.length > 0 ? item.selected_toppings.join(', ') : null,
           order_note: item.order_note || null
         };
