@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DndContext,
   closestCenter,
@@ -57,14 +58,19 @@ const planFormSchema = z.object({
 type PlanFormData = z.infer<typeof planFormSchema>;
 
 // Sortable Meal Item Component
-const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
+const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: {
   meal: any;
   index: number;
   shops: any[];
   foods: any[];
   onUpdate: (id: string, updates: any) => void;
   onRemove: (id: string) => void;
+  onMoveUp: (id: string) => void;
+  onMoveDown: (id: string) => void;
+  isFirst: boolean;
+  isLast: boolean;
 }) => {
+  const isMobile = useIsMobile();
   const {
     attributes,
     listeners,
@@ -104,19 +110,45 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
 
   return (
     <div ref={setNodeRef} style={style} className="bg-white/50 border border-brand-pink/20 rounded-lg p-4 mb-3">
-      <div className="flex items-start gap-3">
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-black font-bold text-lg mb-2 shadow-sm">
-            {index + 1}
+      {isMobile ? (
+        <div className="flex flex-col">
+          {/* Mobile: Index and Controls at Top */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-black font-bold text-lg shadow-sm">
+              {index + 1}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isFirst}
+                onClick={() => onMoveUp(meal.id)}
+                className="p-1 h-8 w-8"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isLast}
+                onClick={() => onMoveDown(meal.id)}
+                className="p-1 h-8 w-8"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white p-1 h-8 w-8"
+                onClick={() => onRemove(meal.id)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <div {...attributes} {...listeners} className="cursor-grab hover:cursor-grabbing p-1">
-            <GripVertical className="w-4 h-4 text-muted-foreground" />
-          </div>
-        </div>
-        
-        <div className="flex-1 space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Meal Name */}
+          
+          {/* Mobile: Form Fields */}
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">ชื่อมื้ออาหาร</Label>
               <Input
@@ -127,7 +159,6 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
               />
             </div>
 
-            {/* Restaurant Selection */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">เลือกร้านอาหาร</Label>
               <Select value={selectedShop} onValueChange={handleShopChange}>
@@ -158,7 +189,6 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
               </Select>
             </div>
 
-            {/* Food Selection */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">เลือกเมนูอาหาร</Label>
               {!selectedShop ? (
@@ -202,16 +232,116 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
             </div>
           </div>
         </div>
+      ) : (
+        <div className="flex items-start gap-3">
+          <div className="flex flex-col items-center justify-center">
+            <div className="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-black font-bold text-lg mb-2 shadow-sm">
+              {index + 1}
+            </div>
+            <div {...attributes} {...listeners} className="cursor-grab hover:cursor-grabbing p-1">
+              <GripVertical className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </div>
+          
+          <div className="flex-1 space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Meal Name */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">ชื่อมื้ออาหาร</Label>
+                <Input
+                  placeholder="ใส่ชื่อมื้ออาหาร"
+                  value={mealName}
+                  onChange={(e) => handleMealNameChange(e.target.value)}
+                  className="w-full"
+                />
+              </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
-          onClick={() => onRemove(meal.id)}
-        >
-          <X className="w-4 h-4" />
-        </Button>
-      </div>
+              {/* Restaurant Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">เลือกร้านอาหาร</Label>
+                <Select value={selectedShop} onValueChange={handleShopChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="เลือกร้านอาหาร" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    <ScrollArea className="h-full">
+                      {shops.slice(0, 5).map((shop) => (
+                        <SelectItem key={shop.shop_id} value={shop.shop_id} className="flex items-center gap-2 p-2">
+                          <div className="flex items-center gap-2 w-full">
+                            {shop.url_pic && (
+                              <img 
+                                src={shop.url_pic} 
+                                alt={shop.shop_name}
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder.svg';
+                                }}
+                              />
+                            )}
+                            <span className="truncate">{shop.shop_name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Food Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">เลือกเมนูอาหาร</Label>
+                {!selectedShop ? (
+                  <div className="w-full p-2 text-sm text-muted-foreground bg-muted/30 rounded-md border">
+                    กรุณาเลือกร้านอาหารก่อน
+                  </div>
+                ) : (
+                  <Select value={selectedFood} onValueChange={handleFoodChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="ให้ผู้ใช้เลือกเอง" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <ScrollArea className="h-full">
+                        <SelectItem value="user-choice" className="p-2">
+                          <span>ให้ผู้ใช้เลือกเอง</span>
+                        </SelectItem>
+                        {filteredFoods.slice(0, 5).map((food) => (
+                          <SelectItem key={food.food_id} value={food.food_id} className="flex items-center gap-2 p-2">
+                            <div className="flex items-center gap-2 w-full">
+                              {food.url_pic && (
+                                <img 
+                                  src={food.url_pic} 
+                                  alt={food.food_name}
+                                  className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.src = '/placeholder.svg';
+                                  }}
+                                />
+                              )}
+                              <div className="flex flex-col items-start flex-1 min-w-0">
+                                <span className="truncate font-medium">{food.food_name}</span>
+                                <span className="text-xs text-muted-foreground">฿{food.price}</span>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+            onClick={() => onRemove(meal.id)}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -535,6 +665,26 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
     setMeals(meals.filter(meal => meal.id !== id));
   };
 
+  // Move meal up
+  const moveMealUp = (id: string) => {
+    const index = meals.findIndex(meal => meal.id === id);
+    if (index > 0) {
+      const newMeals = [...meals];
+      [newMeals[index], newMeals[index - 1]] = [newMeals[index - 1], newMeals[index]];
+      setMeals(newMeals);
+    }
+  };
+
+  // Move meal down
+  const moveMealDown = (id: string) => {
+    const index = meals.findIndex(meal => meal.id === id);
+    if (index < meals.length - 1) {
+      const newMeals = [...meals];
+      [newMeals[index], newMeals[index + 1]] = [newMeals[index + 1], newMeals[index]];
+      setMeals(newMeals);
+    }
+  };
+
   // Handle drag end
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
@@ -552,6 +702,26 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
   // Save meals to database
   const saveMeals = async () => {
     if (!selectedPlanForMeal) return;
+
+    // Validation: Check if all meals have complete data
+    const incompleteItems = [];
+    for (let i = 0; i < meals.length; i++) {
+      const meal = meals[i];
+      if (!meal.name.trim()) {
+        incompleteItems.push(`มื้อที่ ${i + 1}: ไม่มีชื่อมื้ออาหาร`);
+      }
+      if (!meal.shopId) {
+        incompleteItems.push(`มื้อที่ ${i + 1}: ไม่ได้เลือกร้านอาหาร`);
+      }
+      if (!meal.foodId && meal.foodId !== '') {
+        incompleteItems.push(`มื้อที่ ${i + 1}: ไม่ได้เลือกเมนูอาหาร`);
+      }
+    }
+
+    if (incompleteItems.length > 0) {
+      toast.error(`กรุณากรอกข้อมูลให้ครบถ้วน:\n${incompleteItems.join('\n')}`);
+      return;
+    }
 
     try {
       // Delete existing meals for this plan
@@ -1108,6 +1278,10 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                               foods={foods}
                               onUpdate={updateMeal}
                               onRemove={removeMeal}
+                              onMoveUp={moveMealUp}
+                              onMoveDown={moveMealDown}
+                              isFirst={index === 0}
+                              isLast={index === meals.length - 1}
                             />
                           ))
                         )}
@@ -1641,8 +1815,10 @@ const Admin = () => {
       setIsMenuSubmitting(false);
     }
   };
-  return <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-6">
-      <div className="max-w-6xl mx-auto pt-4 sm:pt-8 relative">
+  const isMobile = useIsMobile();
+  
+  return <div className={`min-h-screen bg-[var(--gradient-welcome)] py-4 ${isMobile ? 'px-0' : 'px-0 sm:p-6'}`}>
+      <div className={`max-w-6xl mx-auto pt-4 sm:pt-8 relative ${isMobile ? 'px-0' : ''}`}>
         {/* Navigation Dropdown */}
         <div className="absolute top-0 right-0 p-6 z-50">
           <NavigationDropdown />
