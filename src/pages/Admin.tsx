@@ -81,37 +81,30 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
   const [selectedShop, setSelectedShop] = useState(meal.shopId || '');
   const [selectedFood, setSelectedFood] = useState(meal.foodId || '');
   const [mealName, setMealName] = useState(meal.name || '');
-  const [isEditingFoodText, setIsEditingFoodText] = useState(false);
-  const [customFoodText, setCustomFoodText] = useState(meal.customFoodText || 'ให้ผู้ใช้เลือกเอง');
 
   const filteredFoods = foods.filter(food => food.shop_id === selectedShop);
 
   const handleShopChange = (shopId: string) => {
     setSelectedShop(shopId);
     setSelectedFood('');
-    onUpdate(meal.id, { shopId, foodId: '', customFoodText });
+    onUpdate(meal.id, { shopId, foodId: '' });
   };
 
   const handleFoodChange = (foodId: string) => {
     setSelectedFood(foodId);
-    onUpdate(meal.id, { shopId: selectedShop, foodId, customFoodText });
+    onUpdate(meal.id, { shopId: selectedShop, foodId });
   };
 
   const handleMealNameChange = (name: string) => {
     setMealName(name);
-    onUpdate(meal.id, { name, shopId: selectedShop, foodId: selectedFood, customFoodText });
-  };
-
-  const handleCustomFoodTextChange = (text: string) => {
-    setCustomFoodText(text);
-    onUpdate(meal.id, { name: mealName, shopId: selectedShop, foodId: selectedFood, customFoodText: text });
+    onUpdate(meal.id, { name, shopId: selectedShop, foodId: selectedFood });
   };
 
   return (
     <div ref={setNodeRef} style={style} className="bg-white/50 border border-brand-pink/20 rounded-lg p-4 mb-3">
       <div className="flex items-start gap-3">
         <div className="flex flex-col items-center justify-center">
-          <div className="w-8 h-8 bg-brand-primary rounded-full flex items-center justify-center text-white font-semibold text-sm mb-2">
+          <div className="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-black font-bold text-lg mb-2 shadow-sm">
             {index + 1}
           </div>
           <div {...attributes} {...listeners} className="cursor-grab hover:cursor-grabbing p-1">
@@ -171,69 +164,38 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove }: {
                   กรุณาเลือกร้านอาหารก่อน
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {isEditingFoodText ? (
-                    <div className="flex gap-2">
-                      <Input
-                        value={customFoodText}
-                        onChange={(e) => handleCustomFoodTextChange(e.target.value)}
-                        className="flex-1"
-                        onBlur={() => setIsEditingFoodText(false)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            setIsEditingFoodText(false);
-                          }
-                        }}
-                        autoFocus
-                      />
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => setIsEditingFoodText(false)}
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div 
-                      className="w-full p-2 text-sm bg-background border rounded-md cursor-pointer hover:bg-muted/30 flex items-center justify-between"
-                      onClick={() => setIsEditingFoodText(true)}
-                    >
-                      <span>{customFoodText}</span>
-                      <Edit className="w-3 h-3 text-muted-foreground" />
-                    </div>
-                  )}
-                  
-                  <Select value={selectedFood} onValueChange={handleFoodChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="หรือเลือกเมนูเฉพาะ" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      <ScrollArea className="h-full">
-                        {filteredFoods.slice(0, 5).map((food) => (
-                          <SelectItem key={food.food_id} value={food.food_id} className="flex items-center gap-2 p-2">
-                            <div className="flex items-center gap-2 w-full">
-                              {food.url_pic && (
-                                <img 
-                                  src={food.url_pic} 
-                                  alt={food.food_name}
-                                  className="w-8 h-8 rounded-md object-cover flex-shrink-0"
-                                  onError={(e) => {
-                                    e.currentTarget.src = '/placeholder.svg';
-                                  }}
-                                />
-                              )}
-                              <div className="flex flex-col items-start flex-1 min-w-0">
-                                <span className="truncate font-medium">{food.food_name}</span>
-                                <span className="text-xs text-muted-foreground">฿{food.price}</span>
-                              </div>
+                <Select value={selectedFood} onValueChange={handleFoodChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="ให้ผู้ใช้เลือกเอง" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    <ScrollArea className="h-full">
+                      <SelectItem value="" className="p-2">
+                        <span>ให้ผู้ใช้เลือกเอง</span>
+                      </SelectItem>
+                      {filteredFoods.slice(0, 5).map((food) => (
+                        <SelectItem key={food.food_id} value={food.food_id} className="flex items-center gap-2 p-2">
+                          <div className="flex items-center gap-2 w-full">
+                            {food.url_pic && (
+                              <img 
+                                src={food.url_pic} 
+                                alt={food.food_name}
+                                className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder.svg';
+                                }}
+                              />
+                            )}
+                            <div className="flex flex-col items-start flex-1 min-w-0">
+                              <span className="truncate font-medium">{food.food_name}</span>
+                              <span className="text-xs text-muted-foreground">฿{food.price}</span>
                             </div>
-                          </SelectItem>
-                        ))}
-                      </ScrollArea>
-                    </SelectContent>
-                  </Select>
-                </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
+                  </SelectContent>
+                </Select>
               )}
             </div>
           </div>
@@ -1091,7 +1053,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
 
       {/* Add Meal Modal */}
       <Dialog open={isAddMealModalOpen} onOpenChange={setIsAddMealModalOpen}>
-        <DialogContent className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh]">
+        <DialogContent className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh] sm:mx-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">
               เพิ่มมื้ออาหาร - {selectedPlanForMeal?.plan_name}
@@ -1099,7 +1061,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
           </DialogHeader>
           
           <ScrollArea className="max-h-[70vh]">
-            <div className="min-h-[500px] border border-brand-pink/10 rounded-lg bg-white/30 p-6">
+            <div className="min-h-[500px] border border-brand-pink/10 rounded-lg bg-white/30 p-6 sm:p-2">
               {isLoadingMealData ? (
                 <div className="text-center text-muted-foreground py-8">
                   กำลังโหลดข้อมูล...
@@ -1161,7 +1123,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
             </Button>
             <Button 
               onClick={saveMeals}
-              className="bg-brand-primary hover:bg-brand-primary/90 text-white"
+              className="bg-black hover:bg-gray-800 text-white"
               disabled={meals.length === 0 || meals.every(meal => !meal.name.trim())}
             >
               บันทึกมื้ออาหาร
