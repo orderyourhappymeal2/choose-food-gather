@@ -370,6 +370,17 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
   const [foods, setFoods] = useState<any[]>([]);
   const [isLoadingMealData, setIsLoadingMealData] = useState(false);
 
+  // Order management states
+  const [orders, setOrders] = useState<any[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
+  const [orderPersons, setOrderPersons] = useState<any[]>([]);
+  const [orderMeals, setOrderMeals] = useState<any[]>([]);
+  const [orderShops, setOrderShops] = useState<any[]>([]);
+  const [selectedPersonFilter, setSelectedPersonFilter] = useState<string>("all");
+  const [selectedMealFilter, setSelectedMealFilter] = useState<string>("all");
+  const [selectedShopFilter, setSelectedShopFilter] = useState<string>("all");
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
   // Edit form
   const editForm = useForm<PlanFormData>({
     resolver: zodResolver(planFormSchema),
@@ -580,9 +591,128 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
   };
 
   // Handle show orders
-  const handleShowOrders = (plan: any) => {
+  const handleShowOrders = async (plan: any) => {
     setSelectedPlanForOrder(plan);
     setIsOrderModalOpen(true);
+    await fetchOrders(plan.plan_id);
+  };
+
+  // Fetch orders data
+  const fetchOrders = async (planId: string) => {
+    setIsLoadingOrders(true);
+    try {
+      // Fetch orders with related data
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('order')
+        .select(`
+          *,
+          person:person_id (person_id, person_name, person_agent),
+          food:food_id (food_id, food_name, shop_id)
+        `)
+        .eq('plan_id', planId);
+
+      if (ordersError) throw ordersError;
+
+      // Fetch persons for filter
+      const { data: personsData, error: personsError } = await supabase
+        .from('person')
+        .select('*')
+        .eq('plan_id', planId);
+
+      if (personsError) throw personsError;
+
+      // Fetch meals for filter
+      const { data: mealsData, error: mealsError } = await supabase
+        .from('meal')
+        .select('*')
+        .eq('plan_id', planId);
+
+      if (mealsError) throw mealsError;
+
+      // Fetch shops that have orders
+      const shopIds = [...new Set(ordersData?.map(order => order.food?.shop_id).filter(Boolean))];
+      const { data: shopsData, error: shopsError } = await supabase
+        .from('shop')
+        .select('*')
+        .in('shop_id', shopIds);
+
+      if (shopsError) throw shopsError;
+
+      // Process and enrich orders data
+      const enrichedOrders = ordersData?.map(order => {
+        const shop = shopsData?.find(s => s.shop_id === order.food?.shop_id);
+        
+        return {
+          ...order,
+          shop_name: shop?.shop_name || 'ไม่ระบุ',
+          food_name: order.food?.food_name || 'ไม่ระบุ',
+          person_name: order.person?.person_name || 'ไม่ระบุ',
+          person_agent: order.person?.person_agent || '',
+          shop_id: order.food?.shop_id || ''
+        };
+      }) || [];
+
+      setOrders(enrichedOrders);
+      setFilteredOrders(enrichedOrders);
+      setOrderPersons(personsData || []);
+      setOrderMeals(mealsData || []);
+      setOrderShops(shopsData || []);
+      
+      // Reset filters
+      setSelectedPersonFilter("all");
+      setSelectedMealFilter("all");
+      setSelectedShopFilter("all");
+
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลคำสั่งซื้อ');
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  };
+
+  // Filter orders based on selected filters
+  const filterOrders = () => {
+    let filtered = [...orders];
+
+    if (selectedPersonFilter !== "all") {
+      filtered = filtered.filter(order => order.person_id === selectedPersonFilter);
+    }
+
+    if (selectedMealFilter !== "all") {
+      filtered = filtered.filter(order => {
+        // Since orders don't directly reference meals, we'll filter by shop for now
+        // This can be enhanced later based on business logic
+        return true;
+      });
+    }
+
+    if (selectedShopFilter !== "all") {
+      filtered = filtered.filter(order => order.shop_id === selectedShopFilter);
+    }
+
+    setFilteredOrders(filtered);
+  };
+
+  // Apply filters when filter values change
+  useEffect(() => {
+    filterOrders();
+  }, [selectedPersonFilter, selectedMealFilter, selectedShopFilter, orders]);
+
+  // Format Thai Buddhist date
+  const formatThaiDateTime = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const day = date.getDate();
+      const month = format(date, "MMM", { locale: th });
+      const year = date.getFullYear() + 543;
+      
+      return `${hours}:${minutes} น. ${day} ${month} ${year}`;
+    } catch {
+      return dateString;
+    }
   };
 
   // Drag and drop sensors
@@ -1134,7 +1264,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
 
       {/* Order Modal */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
-        <DialogContent className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
+        <DialogContent className="max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">
               รายการอาหารที่ถูกสั่ง - {selectedPlanForOrder?.plan_name}
@@ -1149,16 +1279,18 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                 <Label className="text-sm font-medium text-foreground mb-2 block">
                   ผู้สั่งอาหาร
                 </Label>
-                <Select defaultValue="all">
+                <Select value={selectedPersonFilter} onValueChange={setSelectedPersonFilter}>
                   <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
                     <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
                   </SelectTrigger>
                   <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
                     <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                     <div className="border-t border-brand-pink/10 my-1"></div>
-                    <SelectItem value="user1">ผู้ใช้ 1</SelectItem>
-                    <SelectItem value="user2">ผู้ใช้ 2</SelectItem>
-                    <SelectItem value="user3">ผู้ใช้ 3</SelectItem>
+                    {orderPersons.map((person) => (
+                      <SelectItem key={person.person_id} value={person.person_id}>
+                        {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -1168,16 +1300,18 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                 <Label className="text-sm font-medium text-foreground mb-2 block">
                   มื้ออาหาร
                 </Label>
-                <Select defaultValue="all">
+                <Select value={selectedMealFilter} onValueChange={setSelectedMealFilter}>
                   <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
                     <SelectValue placeholder="เลือกมื้ออาหาร" />
                   </SelectTrigger>
                   <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
                     <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                     <div className="border-t border-brand-pink/10 my-1"></div>
-                    <SelectItem value="breakfast">เช้า</SelectItem>
-                    <SelectItem value="lunch">เที่ยง</SelectItem>
-                    <SelectItem value="dinner">เย็น</SelectItem>
+                    {orderMeals.map((meal) => (
+                      <SelectItem key={meal.meal_id} value={meal.meal_id}>
+                        {meal.meal_name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -1187,16 +1321,16 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                 <Label className="text-sm font-medium text-foreground mb-2 block">
                   ร้านอาหาร
                 </Label>
-                <Select defaultValue="all">
+                <Select value={selectedShopFilter} onValueChange={setSelectedShopFilter}>
                   <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
                     <SelectValue placeholder="เลือกร้านอาหาร" />
                   </SelectTrigger>
                   <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
                     <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                     <div className="border-t border-brand-pink/10 my-1"></div>
-                    {restaurants.map((restaurant) => (
-                      <SelectItem key={restaurant.shop_id} value={restaurant.shop_id}>
-                        {restaurant.shop_name}
+                    {orderShops.map((shop) => (
+                      <SelectItem key={shop.shop_id} value={shop.shop_id}>
+                        {shop.shop_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1205,11 +1339,86 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
             </div>
             
             {/* Orders content area */}
-            <div className="min-h-[400px] border border-brand-pink/10 rounded-lg bg-white/30 p-4">
-              <div className="text-center text-muted-foreground py-8">
-                เลือกตัวกรองเพื่อดูรายการอาหารที่ถูกสั่ง
-              </div>
+            <div className="min-h-[400px] max-h-[600px] border border-brand-pink/10 rounded-lg bg-white/30 overflow-hidden">
+              {isLoadingOrders ? (
+                <div className="flex items-center justify-center h-40">
+                  <div className="text-center text-muted-foreground">
+                    กำลังโหลดข้อมูล...
+                  </div>
+                </div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="flex items-center justify-center h-40">
+                  <div className="text-center text-muted-foreground">
+                    ไม่พบรายการอาหารที่ถูกสั่ง
+                  </div>
+                </div>
+              ) : (
+                <ScrollArea className="h-full">
+                  <div className="p-4 space-y-3">
+                    {/* Header */}
+                    <div className="grid grid-cols-1 lg:grid-cols-6 gap-2 lg:gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
+                      <div className="lg:col-span-1">ผู้สั่ง</div>
+                      <div className="lg:col-span-1">ร้านอาหาร</div>
+                      <div className="lg:col-span-1">เมนู</div>
+                      <div className="lg:col-span-1">หมายเหตุ</div>
+                      <div className="lg:col-span-1">ท็อปปิ้ง</div>
+                      <div className="lg:col-span-1">เวลาสั่ง</div>
+                    </div>
+                    
+                    {/* Order Items */}
+                    {filteredOrders.map((order, index) => (
+                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-6 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ผู้สั่ง:</div>
+                          <div className="text-sm font-medium">
+                            {order.person_name}
+                            {order.person_agent && (
+                              <div className="text-xs text-muted-foreground">({order.person_agent})</div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้านอาหาร:</div>
+                          <div className="text-sm">{order.shop_name}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เมนู:</div>
+                          <div className="text-sm font-medium">{order.food_name}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">หมายเหตุ:</div>
+                          <div className="text-sm">{order.order_note || '-'}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ท็อปปิ้ง:</div>
+                          <div className="text-sm">{order.topping || '-'}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เวลาสั่ง:</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatThaiDateTime(order.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
             </div>
+            
+            {/* Summary */}
+            {!isLoadingOrders && filteredOrders.length > 0 && (
+              <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg">
+                <div className="text-sm text-muted-foreground">
+                  แสดง {filteredOrders.length} รายการ จากทั้งหมด {orders.length} รายการ
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
