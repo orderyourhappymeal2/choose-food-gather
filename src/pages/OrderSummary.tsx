@@ -88,7 +88,7 @@ const OrderSummary = () => {
     try {
       // Save all orders to database
       for (const item of orderItems) {
-        // Check if order already exists for this person and meal
+        // Check if order already exists for this person, meal, and food
         const { data: existingOrder } = await supabase
           .from('order')
           .select('order_id')

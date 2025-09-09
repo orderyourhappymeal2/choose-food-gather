@@ -641,11 +641,17 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
       // Process and enrich orders data
       const enrichedOrders = ordersData?.map(order => {
         const shop = shopsData?.find(s => s.shop_id === order.food?.shop_id);
-        // Find associated meal - match by shop_id and food_id if available, otherwise use first meal
+        
+        // Find the correct meal based on the food's shop_id
+        // Look for meal that matches the shop and has the specific food, or matches shop with no specific food
         const associatedMeal = mealsData?.find(m => 
           m.shop_id === order.food?.shop_id && 
           (m.food_id === order.food_id || !m.food_id)
-        ) || mealsData?.[0];
+        );
+
+        // If no direct match, find meal by shop only as fallback
+        const fallbackMeal = !associatedMeal ? mealsData?.find(m => m.shop_id === order.food?.shop_id) : null;
+        const finalMeal = associatedMeal || fallbackMeal;
         
         return {
           ...order,
@@ -654,8 +660,13 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
           person_name: order.person?.person_name || 'ไม่ระบุ',
           person_agent: order.person?.person_agent || '',
           shop_id: order.food?.shop_id || '',
-          meal_name: associatedMeal?.meal_name || 'ไม่ระบุ',
-          meal_id: associatedMeal?.meal_id || ''
+          meal_name: finalMeal?.meal_name || 'ไม่ระบุ',
+          meal_id: finalMeal?.meal_id || '',
+          // Add pre-defined food info if available
+          predefined_food: finalMeal?.food_id ? {
+            food_id: finalMeal.food_id,
+            food_name: order.food?.food_name || 'ไม่ระบุ'
+          } : null
         };
       }) || [];
 
@@ -1382,14 +1393,21 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                           </div>
                         </div>
                         
-                        <div className="lg:col-span-1">
+                         <div className="lg:col-span-1">
                           <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้ออาหาร:</div>
-                          <div className="text-sm font-medium text-primary">{order.meal_name}</div>
+                          <div className="text-sm font-medium text-primary">
+                            {order.meal_name}
+                            {order.predefined_food && (
+                              <div className="text-xs text-green-600 mt-1">
+                                ✓ กำหนดไว้: {order.predefined_food.food_name}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="lg:col-span-1">
                           <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้านอาหาร:</div>
-                          <div className="text-sm">{order.shop_name}</div>
+                          <div className="text-sm font-medium text-brand-orange">{order.shop_name}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
@@ -1578,6 +1596,9 @@ const Admin = () => {
   const [completedSortOrder, setCompletedSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [expandedRestaurants, setExpandedRestaurants] = useState<{ [key: string]: boolean }>({});
   const [isPlanSubmitting, setIsPlanSubmitting] = useState(false);
+
+  // Meal management states for plan creation
+  const [meals, setMeals] = useState<any[]>([]);
 
   // Restaurant form states
   const [formData, setFormData] = useState({
@@ -1909,7 +1930,8 @@ const Admin = () => {
       // Store date in CE format for database (same as update function)
       const timeRange = `${data.plan_time_start} - ${data.plan_time_end}`;
 
-      const { error } = await (supabase as any)
+      // First, insert the plan
+      const { data: planData, error: planError } = await supabase
         .from('plan')
         .insert([{
           plan_name: data.plan_name,
@@ -1919,12 +1941,32 @@ const Admin = () => {
           plan_pwd: data.plan_pwd,
           plan_maxp: parseInt(data.plan_maxp),
           plan_editor: data.plan_editor,
-        }]);
+        }])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (planError) throw planError;
+
+      // Then, insert all meals for this plan
+      if (meals.length > 0) {
+        const mealInserts = meals.map((meal, index) => ({
+          plan_id: planData.plan_id,
+          meal_name: meal.name,
+          meal_index: index + 1,
+          shop_id: meal.shopId || null,
+          food_id: meal.foodId || null
+        }));
+
+        const { error: mealsError } = await supabase
+          .from('meal')
+          .insert(mealInserts);
+
+        if (mealsError) throw mealsError;
+      }
 
       toast.success('เพิ่มใบสั่งอาหารสำเร็จ!');
       planForm.reset();
+      setMeals([]); // Reset meals after successful submission
       setIsOrderModalOpen(false);
     } catch (error) {
       console.error('Error creating plan:', error);
