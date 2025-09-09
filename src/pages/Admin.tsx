@@ -1074,7 +1074,7 @@ const PlanList = ({ filterState, restaurants = [] }: { filterState?: string; res
                   <div className="flex justify-center mb-6">
                     <Button
                       onClick={addNewMeal}
-                      className="bg-brand-primary hover:bg-brand-primary/90 text-white px-6 py-2 rounded-full"
+                      className="bg-brand-primary hover:bg-brand-primary/90 text-black px-6 py-2 rounded-full"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       เพิ่มช่วงเวลา
