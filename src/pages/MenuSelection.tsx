@@ -50,6 +50,32 @@ const MenuSelection = () => {
     fetchMenuItems(shop.shop_id);
   }, [meal, shop]);
 
+  // Load previous selections from orderCache after menu items are loaded
+  useEffect(() => {
+    if (menuItems.length > 0 && meal && shop) {
+      const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
+      const mealKey = `${meal.meal_id}_${shop.shop_id}`;
+      const previousOrder = orderCache[mealKey];
+      
+      if (previousOrder) {
+        // Find the previously selected item from current menu items
+        const previouslySelectedItem = menuItems.find(item => item.food_id === previousOrder.food_id);
+        
+        if (previouslySelectedItem) {
+          console.log('Loading previous selection:', previousOrder);
+          setSelectedItem(previouslySelectedItem);
+          setSelectedToppings(previousOrder.selected_toppings || []);
+          setOrderNote(previousOrder.order_note || '');
+          
+          toast({
+            title: "โหลดรายการที่เลือกไว้แล้ว",
+            description: `${previousOrder.food_name} จาก ${shop.shop_name}`
+          });
+        }
+      }
+    }
+  }, [menuItems, meal, shop]);
+
   const fetchMenuItems = async (shopId: string) => {
     try {
       const { data, error } = await supabase
