@@ -5,7 +5,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Edit, Check, Receipt, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import NavigationDropdown from "@/components/NavigationDropdown";
+
 import { supabase } from "@/integrations/supabase/client";
 
 interface CachedOrder {
@@ -278,10 +278,6 @@ const OrderSummary = () => {
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
       <div className="max-w-2xl mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
-        {/* Navigation Dropdown */}
-        <div className="absolute top-0 right-0 p-4 z-50">
-          <NavigationDropdown />
-        </div>
 
         {/* Header */}
         <div className="text-center mb-8">

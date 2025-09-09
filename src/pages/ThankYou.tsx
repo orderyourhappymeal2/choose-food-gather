@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Home, Heart } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import NavigationDropdown from "@/components/NavigationDropdown";
+
 import { supabase } from "@/integrations/supabase/client";
 
 const ThankYou = () => {
@@ -77,10 +77,6 @@ const ThankYou = () => {
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
       <div className="max-w-md mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
-        {/* Navigation Dropdown */}
-        <div className="absolute top-0 right-0 p-4 z-50">
-          <NavigationDropdown />
-        </div>
 
         {/* Success Icon */}
         <div className="text-center mb-8">

@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import NavigationDropdown from "@/components/NavigationDropdown";
+
 
 const NotFound = () => {
   const location = useLocation();
@@ -15,10 +15,6 @@ const NotFound = () => {
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] p-4">
       <div className="max-w-md mx-auto pt-8 relative">
-        {/* Navigation Dropdown */}
-        <div className="absolute top-0 right-0 p-4 z-50">
-          <NavigationDropdown />
-        </div>
 
         <div className="text-center mt-20">
           <h1 className="text-4xl font-bold mb-4 text-foreground">404</h1>

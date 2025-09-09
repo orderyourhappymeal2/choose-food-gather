@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ShoppingCart, ChefHat } from "lucide-react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import NavigationDropdown from "@/components/NavigationDropdown";
+
 import { supabase } from "@/integrations/supabase/client";
 
 interface MenuItem {
@@ -206,10 +206,6 @@ const MenuSelection = () => {
 
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] relative">
-      {/* Navigation Dropdown */}
-      <div className="absolute top-0 right-0 p-4 z-50">
-        <NavigationDropdown />
-      </div>
 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-brand-pink/30 p-4">
