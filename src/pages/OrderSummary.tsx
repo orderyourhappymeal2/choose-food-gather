@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Edit, Check, Receipt, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,7 @@ const OrderSummary = () => {
   const { toast } = useToast();
   const [orderCache, setOrderCache] = useState<Record<string, CachedOrder>>({});
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [planData, setPlanData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -39,12 +41,31 @@ const OrderSummary = () => {
       return;
     }
 
-    setUserInfo(JSON.parse(userInfoStr));
+    const userInfo = JSON.parse(userInfoStr);
+    setUserInfo(userInfo);
     
     if (orderCacheStr) {
       setOrderCache(JSON.parse(orderCacheStr));
     }
+
+    // Fetch plan data
+    fetchPlanData(userInfo.plan_id);
   }, []);
+
+  const fetchPlanData = async (planId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('plan')
+        .select('plan_name, plan_editor, plan_location, plan_date, plan_time')
+        .eq('plan_id', planId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setPlanData(data);
+    } catch (error) {
+      console.error('Error fetching plan data:', error);
+    }
+  };
 
   const orderItems = Object.values(orderCache);
   const totalPrice = orderItems.reduce((sum, item) => sum + item.food_price, 0);
@@ -105,6 +126,15 @@ const OrderSummary = () => {
       // Clear cache after successful submission
       localStorage.removeItem('orderCache');
 
+      // Store final order data for ThankYou page
+      const finalOrderData = {
+        userInfo,
+        planData,
+        orderItems,
+        totalPrice
+      };
+      localStorage.setItem('finalOrder', JSON.stringify(finalOrderData));
+
       toast({
         title: "บันทึกรายการสำเร็จ",
         description: "รายการสั่งอาหารของคุณได้รับการบันทึกแล้ว"
@@ -156,16 +186,36 @@ const OrderSummary = () => {
         {/* User Info */}
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-pink/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold mb-3">ข้อมูลผู้สั่ง</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
+            <h3 className="font-semibold mb-3">ข้อมูลผู้สั่งและงาน</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
                 <span className="text-muted-foreground">ชื่อเล่น:</span>
-                <p className="font-medium">{userInfo.nickname}</p>
+                <span className="font-medium">{userInfo.nickname}</span>
               </div>
-              <div>
-                <span className="text-muted-foreground">รหัส:</span>
-                <p className="font-medium">{userInfo.code}</p>
-              </div>
+              {planData && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">ชื่องาน:</span>
+                    <span className="font-medium">{planData.plan_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">ผู้จัด:</span>
+                    <span className="font-medium">{planData.plan_editor}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">สถานที่:</span>
+                    <span className="font-medium">{planData.plan_location}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">วันที่:</span>
+                    <span className="font-medium">{planData.plan_date}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">เวลา:</span>
+                    <span className="font-medium">{planData.plan_time}</span>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -249,14 +299,32 @@ const OrderSummary = () => {
               แก้ไข
             </Button>
             
-            <Button 
-              onClick={handleConfirm}
-              className="h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
-              disabled={isSubmitting}
-            >
-              <Check className="w-5 h-5 mr-2" />
-              {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  className="h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
+                  disabled={isSubmitting}
+                >
+                  <Check className="w-5 h-5 mr-2" />
+                  {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>ยืนยันการสั่งอาหาร</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    คุณต้องการยืนยันรายการสั่งอาหารทั้งหมด {orderItems.length} รายการ 
+                    ยอดรวม ฿{totalPrice} หรือไม่?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirm} disabled={isSubmitting}>
+                    {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
       </div>

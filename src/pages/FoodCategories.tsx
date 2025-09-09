@@ -12,6 +12,8 @@ interface Meal {
   meal_name: string;
   meal_index: number;
   plan_id: string;
+  shop_id: string | null;
+  food_id: string | null;
 }
 
 interface Shop {
@@ -23,11 +25,19 @@ interface Shop {
   food_type_2: string;
 }
 
+interface Food {
+  food_id: string;
+  food_name: string;
+  price: number;
+  url_pic: string;
+}
+
 const FoodCategories = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>([]);
-  const [shops, setShops] = useState<Shop[]>([]);
+  const [mealShops, setMealShops] = useState<Record<string, Shop>>({});
+  const [mealFoods, setMealFoods] = useState<Record<string, Food>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
   const [orderCache, setOrderCache] = useState<any>({});
@@ -61,15 +71,39 @@ const FoodCategories = () => {
 
       if (mealsError) throw mealsError;
 
-      // Fetch all shops
-      const { data: shopsData, error: shopsError } = await supabase
-        .from('shop')
-        .select('*');
+      const shops: Record<string, Shop> = {};
+      const foods: Record<string, Food> = {};
 
-      if (shopsError) throw shopsError;
+      // For each meal, fetch shop and food data if they exist
+      for (const meal of mealsData || []) {
+        if (meal.shop_id && !shops[meal.shop_id]) {
+          const { data: shopData } = await supabase
+            .from('shop')
+            .select('*')
+            .eq('shop_id', meal.shop_id)
+            .maybeSingle();
+          
+          if (shopData) {
+            shops[meal.shop_id] = shopData;
+          }
+        }
+
+        if (meal.food_id && !foods[meal.food_id]) {
+          const { data: foodData } = await supabase
+            .from('food')
+            .select('food_id, food_name, price, url_pic')
+            .eq('food_id', meal.food_id)
+            .maybeSingle();
+          
+          if (foodData) {
+            foods[meal.food_id] = foodData;
+          }
+        }
+      }
       
       setMeals(mealsData || []);
-      setShops(shopsData || []);
+      setMealShops(shops);
+      setMealFoods(foods);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -82,6 +116,8 @@ const FoodCategories = () => {
   };
 
   const handleShopSelect = (meal: Meal, shop: Shop) => {
+    if (meal.food_id) return; // Prevent selection if food is already set
+    
     navigate(`/menu/${shop.shop_id}`, {
       state: { meal, shop }
     });
@@ -118,15 +154,17 @@ const FoodCategories = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/')}
-              className="p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <ChefHat className="w-12 h-12 text-primary" />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="p-2"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <ChefHat className="w-12 h-12 text-primary" />
+            </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">เลือกอาหารตามมื้อ</h1>
           <p className="text-muted-foreground">กรุณาเลือกร้านและอาหารสำหรับแต่ละมื้อ</p>
@@ -145,86 +183,113 @@ const FoodCategories = () => {
               </CardContent>
             </Card>
           ) : (
-            meals.map((meal) => (
-              <Card key={meal.meal_id} className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-4 text-center">{meal.meal_name}</h2>
-                  
-                  {shops.length === 0 ? (
-                    <div className="text-center py-8">
-                      <ChefHat className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">ยังไม่มีร้านอาหารสำหรับมื้อนี้</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                      {shops.map((shop) => {
-                        const selectedFood = getSelectedFood(meal.meal_id, shop.shop_id);
-                        return (
-                          <Card 
-                            key={shop.shop_id} 
-                            className={`cursor-pointer transition-all hover:scale-[1.02] border-2 ${
-                              selectedFood 
-                                ? 'border-primary bg-primary/5' 
-                                : 'border-brand-pink/30 hover:border-primary/50'
-                            }`}
-                            onClick={() => handleShopSelect(meal, shop)}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-4">
-                                <img 
-                                  src={shop.url_pic || '/placeholder.svg'} 
-                                  alt={shop.shop_name}
-                                  className="w-16 h-16 rounded-lg object-cover"
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold text-lg">{shop.shop_name}</h3>
-                                    {selectedFood && (
-                                      <Check className="w-5 h-5 text-primary" />
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">{shop.description}</p>
-                                  <div className="flex gap-2 mt-1">
-                                    <span className="text-xs bg-brand-pink/20 text-primary px-2 py-1 rounded">
-                                      {shop.food_type_1}
+            meals.map((meal) => {
+              const shop = meal.shop_id ? mealShops[meal.shop_id] : null;
+              const preSelectedFood = meal.food_id ? mealFoods[meal.food_id] : null;
+              const selectedFood = getSelectedFood(meal.meal_id, meal.shop_id || '');
+              const isPreSelected = !!meal.food_id;
+              
+              return (
+                <Card key={meal.meal_id} className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold mb-4 text-center">{meal.meal_name}</h2>
+                    
+                    {!shop ? (
+                      <div className="text-center py-8">
+                        <ChefHat className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground">ยังไม่มีร้านอาหารสำหรับมื้อนี้</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        <Card 
+                          className={`transition-all border-2 ${
+                            isPreSelected 
+                              ? 'border-gray-300 bg-gray-50 opacity-75' 
+                              : selectedFood 
+                                ? 'border-primary bg-primary/5 cursor-pointer hover:scale-[1.02]' 
+                                : 'border-brand-pink/30 hover:border-primary/50 cursor-pointer hover:scale-[1.02]'
+                          }`}
+                          onClick={() => !isPreSelected && handleShopSelect(meal, shop)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-4">
+                              <img 
+                                src={shop.url_pic || '/placeholder.svg'} 
+                                alt={shop.shop_name}
+                                className="w-16 h-16 rounded-lg object-cover"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-semibold text-lg">{shop.shop_name}</h3>
+                                  {(selectedFood || isPreSelected) && (
+                                    <Check className="w-5 h-5 text-primary" />
+                                  )}
+                                  {isPreSelected && (
+                                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                                      กำหนดแล้ว
                                     </span>
-                                    {shop.food_type_2 && (
-                                      <span className="text-xs bg-brand-orange/20 text-secondary px-2 py-1 rounded">
-                                        {shop.food_type_2}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {selectedFood && (
-                                    <div className="mt-2 p-2 bg-white/60 rounded-lg">
-                                      <div className="flex items-center gap-2">
-                                        <img 
-                                          src={selectedFood.food_image || '/placeholder.svg'} 
-                                          alt={selectedFood.food_name}
-                                          className="w-8 h-8 rounded object-cover"
-                                        />
-                                        <div className="flex-1">
-                                          <p className="text-sm font-medium">{selectedFood.food_name}</p>
-                                          {selectedFood.selected_toppings.length > 0 && (
-                                            <p className="text-xs text-muted-foreground">
-                                              ท็อปปิ้ง: {selectedFood.selected_toppings.join(', ')}
-                                            </p>
-                                          )}
-                                        </div>
-                                        <span className="text-sm font-semibold text-primary">฿{selectedFood.food_price}</span>
-                                      </div>
-                                    </div>
                                   )}
                                 </div>
+                                <p className="text-sm text-muted-foreground">{shop.description}</p>
+                                <div className="flex gap-2 mt-1">
+                                  <span className="text-xs bg-brand-pink/20 text-primary px-2 py-1 rounded">
+                                    {shop.food_type_1}
+                                  </span>
+                                  {shop.food_type_2 && (
+                                    <span className="text-xs bg-brand-orange/20 text-secondary px-2 py-1 rounded">
+                                      {shop.food_type_2}
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {/* Show pre-selected food */}
+                                {preSelectedFood && (
+                                  <div className="mt-2 p-2 bg-gray-100 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                      <img 
+                                        src={preSelectedFood.url_pic || '/placeholder.svg'} 
+                                        alt={preSelectedFood.food_name}
+                                        className="w-8 h-8 rounded object-cover"
+                                      />
+                                      <div className="flex-1">
+                                        <p className="text-sm font-medium">{preSelectedFood.food_name}</p>
+                                      </div>
+                                      <span className="text-sm font-semibold text-primary">฿{preSelectedFood.price}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Show user-selected food */}
+                                {selectedFood && !isPreSelected && (
+                                  <div className="mt-2 p-2 bg-white/60 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                      <img 
+                                        src={selectedFood.food_image || '/placeholder.svg'} 
+                                        alt={selectedFood.food_name}
+                                        className="w-8 h-8 rounded object-cover"
+                                      />
+                                      <div className="flex-1">
+                                        <p className="text-sm font-medium">{selectedFood.food_name}</p>
+                                        {selectedFood.selected_toppings.length > 0 && (
+                                          <p className="text-xs text-muted-foreground">
+                                            ท็อปปิ้ง: {selectedFood.selected_toppings.join(', ')}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <span className="text-sm font-semibold text-primary">฿{selectedFood.food_price}</span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
 
