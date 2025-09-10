@@ -237,10 +237,9 @@ const FoodCategories = () => {
                                         alt={preSelectedFood.food_name}
                                         className="w-8 h-8 rounded object-cover"
                                       />
-                                      <div className="flex-1">
-                                        <p className="text-sm font-medium">{preSelectedFood.food_name}</p>
-                                      </div>
-                                      <span className="text-sm font-semibold text-primary">฿{preSelectedFood.price}</span>
+                                       <div className="flex-1">
+                                         <p className="text-sm font-medium">{preSelectedFood.food_name}</p>
+                                       </div>
                                     </div>
                                   </div>
                                 )}
@@ -261,8 +260,7 @@ const FoodCategories = () => {
                                             ท็อปปิ้ง: {selectedFood.selected_toppings.join(', ')}
                                           </p>
                                         )}
-                                      </div>
-                                      <span className="text-sm font-semibold text-primary">฿{selectedFood.food_price}</span>
+                                       </div>
                                     </div>
                                   </div>
                                 )}

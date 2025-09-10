@@ -256,7 +256,6 @@ const MenuSelection = () => {
                       className="w-full h-32 object-cover rounded-lg mb-3"
                     />
                     <h3 className="font-medium text-sm mb-1">{item.food_name}</h3>
-                    <p className="text-primary font-semibold">฿{item.price}</p>
                     {item.description && (
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
                     )}
@@ -315,7 +314,6 @@ const MenuSelection = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span>{selectedItem.food_name}</span>
-                    <span className="font-semibold">฿{selectedItem.price}</span>
                   </div>
                   {selectedToppings.length > 0 && (
                     <div className="text-sm text-muted-foreground">

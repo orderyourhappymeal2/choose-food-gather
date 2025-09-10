@@ -330,7 +330,6 @@ const OrderSummary = () => {
                         <h3 className="font-semibold text-lg">{meal.meal_name}</h3>
                         <p className="text-sm text-muted-foreground">{meal.shop_name}</p>
                       </div>
-                      <span className="font-bold text-primary text-lg">฿{meal.price}</span>
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg">
@@ -364,7 +363,6 @@ const OrderSummary = () => {
                         <h3 className="font-semibold text-lg">{item.meal_name}</h3>
                         <p className="text-sm text-muted-foreground">{item.shop_name}</p>
                       </div>
-                      <span className="font-bold text-primary text-lg">฿{item.food_price}</span>
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg mb-3">
@@ -411,31 +409,6 @@ const OrderSummary = () => {
           </Card>
         )}
 
-        {/* Total Price */}
-        {(orderItems.length > 0 || preDefinedMeals.length > 0) && (
-          <Card className="mb-6 bg-white/90 backdrop-blur-sm border-2 border-primary/50">
-            <CardContent className="p-6">
-              {preDefinedMeals.length > 0 && (
-                <div className="flex justify-between items-center text-sm mb-2">
-                  <span>อาหารที่กำหนดไว้แล้ว</span>
-                  <span>฿{preDefinedTotal}</span>
-                </div>
-              )}
-              {orderItems.length > 0 && (
-                <div className="flex justify-between items-center text-sm mb-2">
-                  <span>อาหารที่เลือกเพิ่ม</span>
-                  <span>฿{userOrderTotal}</span>
-                </div>
-              )}
-              <div className="border-t pt-2">
-                <div className="flex justify-between items-center text-xl font-bold">
-                  <span>ยอดรวมทั้งหมด</span>
-                  <span className="text-primary">฿{totalPrice}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Action Buttons */}
         {(orderItems.length > 0 || preDefinedMeals.length > 0) && (
