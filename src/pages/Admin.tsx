@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
@@ -669,7 +669,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           person_name: order.person?.person_name || 'ไม่ระบุ',
           person_agent: order.person?.person_agent || '',
           shop_id: order.food?.shop_id || '',
-          meal_name: (order as any).order_type === 'custom' ? 'รายการเลือกเอง' : (finalMeal?.meal_name || 'ไม่ระบุ'),
+          meal_name: finalMeal?.meal_name || 'ไม่ระบุ',
           meal_id: finalMeal?.meal_id || '',
           is_custom: (order as any).order_type === 'custom',
           // Add pre-defined food info if available
@@ -1488,14 +1488,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                             <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้ออาหาร:</div>
                             <div className="text-sm font-medium text-primary flex items-center gap-2">
                               {order.meal_name}
-                              {order.is_custom ? (
-                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800 border-orange-200">
-                                  เลือกเอง
-                                </Badge>
-                              ) : (
-                                <Badge variant="default" className="text-xs bg-green-100 text-green-800 border-green-200">
-                                  กำหนดไว้
-                                </Badge>
+                              {!order.is_custom && (
+                                <Check className="h-4 w-4 text-green-600" />
                               )}
                               {order.predefined_food && (
                                 <div className="text-xs text-green-600 mt-1">
