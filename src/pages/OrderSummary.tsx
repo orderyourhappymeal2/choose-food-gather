@@ -441,8 +441,7 @@ const OrderSummary = () => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>ยืนยันการสั่งอาหาร</AlertDialogTitle>
                   <AlertDialogDescription>
-                    คุณต้องการยืนยันรายการสั่งอาหารทั้งหมด {preDefinedMeals.length + orderItems.length} รายการ 
-                    ยอดรวม ฿{totalPrice} หรือไม่?
+                    คุณต้องการยืนยันรายการสั่งอาหารทั้งหมด {preDefinedMeals.length + orderItems.length} รายการ หรือไม่?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
