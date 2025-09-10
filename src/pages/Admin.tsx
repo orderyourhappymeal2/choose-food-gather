@@ -1362,167 +1362,165 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-hidden p-4">
-            <div className="space-y-4 h-full">
-              {/* Filter Container */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
-                {/* ผู้สั่งอาหาร Filter */}
-                <div>
-                  <Label className="text-sm font-medium text-foreground mb-2 block">
-                    ผู้สั่งอาหาร
-                  </Label>
-                  <Select value={selectedPersonFilter} onValueChange={setSelectedPersonFilter}>
-                    <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                      <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
-                      <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                      <div className="border-t border-brand-pink/10 my-1"></div>
-                      {orderPersons.map((person) => (
-                        <SelectItem key={person.person_id} value={person.person_id}>
-                          {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* มื้ออาหาร Filter */}
-                <div>
-                  <Label className="text-sm font-medium text-foreground mb-2 block">
-                    มื้ออาหาร
-                  </Label>
-                  <Select value={selectedMealFilter} onValueChange={setSelectedMealFilter}>
-                    <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                      <SelectValue placeholder="เลือกมื้ออาหาร" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
-                      <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                      <div className="border-t border-brand-pink/10 my-1"></div>
-                      {orderMeals.map((meal) => (
-                        <SelectItem key={meal.meal_id} value={meal.meal_id}>
-                          {meal.meal_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* ร้านอาหาร Filter */}
-                <div>
-                  <Label className="text-sm font-medium text-foreground mb-2 block">
-                    ร้านอาหาร
-                  </Label>
-                  <Select value={selectedShopFilter} onValueChange={setSelectedShopFilter}>
-                    <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                      <SelectValue placeholder="เลือกร้านอาหาร" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
-                      <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                      <div className="border-t border-brand-pink/10 my-1"></div>
-                      {orderShops.map((shop) => (
-                        <SelectItem key={shop.shop_id} value={shop.shop_id}>
-                          {shop.shop_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <div className="flex flex-col h-full p-4 gap-4">
+            {/* Filter Container */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
+              {/* ผู้สั่งอาหาร Filter */}
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  ผู้สั่งอาหาร
+                </Label>
+                <Select value={selectedPersonFilter} onValueChange={setSelectedPersonFilter}>
+                  <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                    <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                    <div className="border-t border-brand-pink/10 my-1"></div>
+                    {orderPersons.map((person) => (
+                      <SelectItem key={person.person_id} value={person.person_id}>
+                        {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              
-              {/* Orders content area */}
-              <div className="flex-1 border border-brand-pink/10 rounded-lg bg-white/30 overflow-hidden">
-                {isLoadingOrders ? (
-                  <div className="flex items-center justify-center h-40">
-                    <div className="text-center text-muted-foreground">
-                      กำลังโหลดข้อมูล...
-                    </div>
+
+              {/* มื้ออาหาร Filter */}
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  มื้ออาหาร
+                </Label>
+                <Select value={selectedMealFilter} onValueChange={setSelectedMealFilter}>
+                  <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                    <SelectValue placeholder="เลือกมื้ออาหาร" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                    <div className="border-t border-brand-pink/10 my-1"></div>
+                    {orderMeals.map((meal) => (
+                      <SelectItem key={meal.meal_id} value={meal.meal_id}>
+                        {meal.meal_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* ร้านอาหาร Filter */}
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  ร้านอาหาร
+                </Label>
+                <Select value={selectedShopFilter} onValueChange={setSelectedShopFilter}>
+                  <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                    <SelectValue placeholder="เลือกร้านอาหาร" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                    <div className="border-t border-brand-pink/10 my-1"></div>
+                    {orderShops.map((shop) => (
+                      <SelectItem key={shop.shop_id} value={shop.shop_id}>
+                        {shop.shop_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Orders content area */}
+            <div className="flex-1 min-h-0">
+              {isLoadingOrders ? (
+                <div className="flex items-center justify-center h-40">
+                  <div className="text-center text-muted-foreground">
+                    กำลังโหลดข้อมูล...
                   </div>
-                ) : filteredOrders.length === 0 ? (
-                  <div className="flex items-center justify-center h-40">
-                    <div className="text-center text-muted-foreground">
-                      ไม่พบรายการอาหารที่ถูกสั่ง
-                    </div>
+                </div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="flex items-center justify-center h-40">
+                  <div className="text-center text-muted-foreground">
+                    ไม่พบรายการอาหารที่ถูกสั่ง
                   </div>
-                ) : (
-                  <ScrollArea className="h-full">
-                    <div className="p-4 space-y-3">
-                      {/* Header - Hidden on mobile */}
-                      <div className="hidden lg:grid grid-cols-7 gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
-                        <div>ผู้สั่ง</div>
-                        <div>มื้ออาหาร</div>
-                        <div>ร้านอาหาร</div>
-                        <div>เมนู</div>
-                        <div>หมายเหตุ</div>
-                        <div>ท็อปปิ้ง</div>
-                        <div>เวลาสั่ง</div>
-                      </div>
-                      
-                      {/* Order Items */}
-                      {filteredOrders.map((order, index) => (
-                        <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ผู้สั่ง:</div>
-                            <div className="text-sm font-medium">
-                              {order.person_name}
-                              {order.person_agent && (
-                                <div className="text-xs text-muted-foreground">({order.person_agent})</div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้ออาหาร:</div>
-                            <div className="text-sm font-medium text-primary flex items-center gap-2">
-                              {order.meal_name}
-                              {!order.is_custom && (
-                                <Check className="h-4 w-4 text-green-600" />
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้านอาหาร:</div>
-                            <div className="text-sm font-medium text-brand-orange">{order.shop_name}</div>
-                          </div>
-                          
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เมนู:</div>
-                            <div className="text-sm font-medium">{order.food_name}</div>
-                          </div>
-                          
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">หมายเหตุ:</div>
-                            <div className="text-sm">{order.order_note || '-'}</div>
-                          </div>
-                          
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ท็อปปิ้ง:</div>
-                            <div className="text-sm">{order.topping || '-'}</div>
-                          </div>
-                          
-                          <div className="lg:col-span-1">
-                            <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เวลาสั่ง:</div>
-                            <div className="text-xs text-muted-foreground">
-                              {formatThaiDateTime(order.created_at)}
-                            </div>
+                </div>
+              ) : (
+                <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30">
+                  <div className="p-4 space-y-3">
+                    {/* Header - Hidden on mobile */}
+                    <div className="hidden lg:grid grid-cols-7 gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
+                      <div>ผู้สั่ง</div>
+                      <div>มื้ออาหาร</div>
+                      <div>ร้านอาหาร</div>
+                      <div>เมนู</div>
+                      <div>หมายเหตุ</div>
+                      <div>ท็อปปิ้ง</div>
+                      <div>เวลาสั่ง</div>
+                    </div>
+                    
+                    {/* Order Items */}
+                    {filteredOrders.map((order, index) => (
+                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ผู้สั่ง:</div>
+                          <div className="text-sm font-medium">
+                            {order.person_name}
+                            {order.person_agent && (
+                              <div className="text-xs text-muted-foreground">({order.person_agent})</div>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-              </div>
-              
-              {/* Summary */}
-              {!isLoadingOrders && filteredOrders.length > 0 && (
-                <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg flex-shrink-0">
-                  <div className="text-sm text-muted-foreground">
-                    แสดง {filteredOrders.length} รายการ จากทั้งหมด {orders.length} รายการ
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้ออาหาร:</div>
+                          <div className="text-sm font-medium text-primary flex items-center gap-2">
+                            {order.meal_name}
+                            {!order.is_custom && (
+                              <Check className="h-4 w-4 text-green-600" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้านอาหาร:</div>
+                          <div className="text-sm font-medium text-brand-orange">{order.shop_name}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เมนู:</div>
+                          <div className="text-sm font-medium">{order.food_name}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">หมายเหตุ:</div>
+                          <div className="text-sm">{order.order_note || '-'}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ท็อปปิ้ง:</div>
+                          <div className="text-sm">{order.topping || '-'}</div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เวลาสั่ง:</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatThaiDateTime(order.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                </ScrollArea>
               )}
             </div>
+            
+            {/* Summary */}
+            {!isLoadingOrders && filteredOrders.length > 0 && (
+              <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg flex-shrink-0">
+                <div className="text-sm text-muted-foreground">
+                  แสดง {filteredOrders.length} รายการ จากทั้งหมด {orders.length} รายการ
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter className="p-4 border-t bg-white/90">
