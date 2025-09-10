@@ -651,16 +651,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       const enrichedOrders = ordersData?.map(order => {
         const shop = shopsData?.find(s => s.shop_id === order.food?.shop_id);
         
-        // Find the correct meal based on the food's shop_id
-        // Look for meal that matches the shop and has the specific food, or matches shop with no specific food
-        const associatedMeal = mealsData?.find(m => 
-          m.shop_id === order.food?.shop_id && 
-          (m.food_id === order.food_id || !m.food_id)
-        );
-
-        // If no direct match, find meal by shop only as fallback
-        const fallbackMeal = !associatedMeal ? mealsData?.find(m => m.shop_id === order.food?.shop_id) : null;
-        const finalMeal = associatedMeal || fallbackMeal;
+        // Find the correct meal using meal_id directly from the order
+        const finalMeal = mealsData?.find(m => m.meal_id === order.meal_id);
         
         return {
           ...order,
@@ -671,12 +663,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           shop_id: order.food?.shop_id || '',
           meal_name: finalMeal?.meal_name || 'ไม่ระบุ',
           meal_id: finalMeal?.meal_id || '',
-          is_custom: (order as any).order_type === 'custom',
-          // Add pre-defined food info if available
-          predefined_food: finalMeal?.food_id ? {
-            food_id: finalMeal.food_id,
-            food_name: order.food?.food_name || 'ไม่ระบุ'
-          } : null
+          is_custom: (order as any).order_type === 'custom'
         };
       }) || [];
 
@@ -1490,11 +1477,6 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                               {order.meal_name}
                               {!order.is_custom && (
                                 <Check className="h-4 w-4 text-green-600" />
-                              )}
-                              {order.predefined_food && (
-                                <div className="text-xs text-green-600 mt-1">
-                                  ✓ {order.predefined_food.food_name}
-                                </div>
                               )}
                             </div>
                           </div>
