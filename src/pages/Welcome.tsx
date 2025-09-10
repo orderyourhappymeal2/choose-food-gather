@@ -68,7 +68,7 @@ const Welcome = () => {
 
   // Default event data for when no plan is loaded
   const defaultEventData = {
-    title: "การประชุมประจำเดือน มกราคม 2024",
+    title: "การประชุมประจำเดือน มกราคม 2024 (เข้าหน้าแอดมิน เพื่อสร้างแบบฟอร์ม)",
     location: "ห้องประชุม A ชั้น 5", 
     date: "15 มกราคม 2567",
     time: "09:00 - 16:00 น."
@@ -151,8 +151,8 @@ const Welcome = () => {
 
       if (existingPerson) {
         toast({
-          title: "ชื่อเล่นนี้ถูกใช้ไปแล้ว",
-          description: "กรุณาใช้ชื่อเล่นอื่น",
+          title: "ชื่อนี้ถูกใช้ไปแล้ว",
+          description: "กรุณาใช้ชื่ออื่น",
           variant: "destructive"
         });
         return;
