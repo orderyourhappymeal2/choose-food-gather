@@ -1018,16 +1018,28 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         </>
                       )}
                       {filterState === 'finished' && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
-                              <FileText className="h-4 w-4 text-gray-800" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>ดูรายการมื้ออาหาร</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
+                                <FileText className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>ดูรายการมื้ออาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
+                                <ShoppingCart className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>ดูรายการสั่งอาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
                       )}
                       {filterState === 'waiting' && (
                         <>
