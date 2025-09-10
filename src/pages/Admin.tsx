@@ -3587,16 +3587,17 @@ const Admin = () => {
                             <span className="hidden md:inline">เพิ่มใบสั่งอาหาร</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] flex flex-col">
+                        <DialogContent className="w-[95vw] max-w-[500px] p-0 overflow-hidden">
                           <DialogHeader className="p-4 pb-2 border-b bg-white/90">
                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
                               เพิ่มใบสั่งอาหาร
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="flex-1 min-h-0">
-                            <Form {...planForm}>
-                              <form onSubmit={planForm.handleSubmit(handlePlanSubmit)} className="space-y-6 p-4">
+                          <ScrollArea className="max-h-[calc(90vh-10rem)] px-4">
+                            <div className="space-y-6 p-4">
+                              <Form {...planForm}>
+                                <form onSubmit={planForm.handleSubmit(handlePlanSubmit)} className="space-y-6">
                                 
                                 {/* Plan Name */}
                                 <div className="grid grid-cols-1 gap-4">
@@ -3828,11 +3829,12 @@ const Admin = () => {
                                   </div>
                                 </div>
 
-                              </form>
-                            </Form>
+                                </form>
+                              </Form>
+                            </div>
                           </ScrollArea>
                           
-                          <DialogFooter className="gap-2 p-4 border-t bg-white/90">
+                          <DialogFooter className="gap-2 p-4 border-t bg-white/90 mt-auto">
                             <Button 
                               variant="outline" 
                               onClick={() => {
