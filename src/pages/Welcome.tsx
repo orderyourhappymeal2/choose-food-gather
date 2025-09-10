@@ -68,10 +68,10 @@ const Welcome = () => {
 
   // Default event data for when no plan is loaded
   const defaultEventData = {
-    title: "การประชุมประจำเดือน มกราคม 2024 (เข้าหน้าแอดมิน เพื่อสร้างแบบฟอร์ม)",
-    location: "ห้องประชุม A ชั้น 5", 
-    date: "15 มกราคม 2567",
-    time: "09:00 - 16:00 น."
+    title: "(เข้าหน้าแอดมิน เพื่อสร้างแบบฟอร์ม)",
+    location: "สถานที่จัดงาน", 
+    date: "วัน เดือน ปี ที่จัดงาน",
+    time: "เวลาที่จัดงาน"
   };
 
   // Use plan data if available, otherwise use default
@@ -152,7 +152,7 @@ const Welcome = () => {
       if (existingPerson) {
         toast({
           title: "ชื่อนี้ถูกใช้ไปแล้ว",
-          description: "กรุณาใช้ชื่ออื่น",
+          description: "อาจมีผู้เข้าร่วมมีชื่อที่ซ้ำกัน อาจรบกวนให้ (กลุ่ม/หน่วยงาน) ในชื่อของท่านด้วยค่ะ",
           variant: "destructive"
         });
         return;
@@ -197,8 +197,8 @@ const Welcome = () => {
       navigate('/admin');
     } else {
       toast({
-        title: "โค้ดไม่ถูกต้อง",
-        description: "กรุณากรอกโค้ดที่ถูกต้อง",
+        title: "รหัสไม่ถูกต้อง",
+        description: "กรุณากรอกรหัสที่ถูกต้อง",
         variant: "destructive"
       });
     }
