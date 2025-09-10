@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -1001,47 +1002,112 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                   )}
                   
                   <div className="flex gap-2 pt-2 overflow-hidden justify-center">
-                    {filterState === 'waiting' && (
-                      <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => handleAddMeal(plan)}>
-                          <Plus className="h-4 w-4 text-green-600" />
-                        </Button>
-                      </>
-                    )}
-                    {filterState === 'finished' && (
-                      <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
-                        <FileText className="h-4 w-4 text-gray-800" />
-                      </Button>
-                    )}
-                    {filterState === 'waiting' && (
-                      <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleEdit(plan)}>
-                          <Edit className="h-4 w-4 text-gray-800" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handlePublish(plan)}>
-                          <Send className="h-4 w-4 text-gray-800" />
-                        </Button>
-                      </>
-                    )}
-                    {filterState === 'published' && (
-                      <>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-blue-600 hover:bg-blue-600 hover:border-blue-600" onClick={() => handleFinishPlan(plan)}>
-                          <CheckCircle className="h-4 w-4 text-blue-600" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
-                          <FileText className="h-4 w-4 text-gray-800" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
-                          <ShoppingCart className="h-4 w-4 text-gray-800" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleCopyLink(plan)}>
-                          <Link className="h-4 w-4 text-gray-800" />
-                        </Button>
-                      </>
-                    )}
-                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600" onClick={() => handleDelete(plan)}>
-                      <Trash2 className="h-4 w-4 text-red-600" />
-                    </Button>
+                    <TooltipProvider>
+                      {filterState === 'waiting' && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => handleAddMeal(plan)}>
+                                <Plus className="h-4 w-4 text-green-600" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>เพิ่มมื้ออาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
+                      {filterState === 'finished' && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
+                              <FileText className="h-4 w-4 text-gray-800" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>ดูรายการมื้ออาหาร</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      {filterState === 'waiting' && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleEdit(plan)}>
+                                <Edit className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>แก้ไขใบสั่งอาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handlePublish(plan)}>
+                                <Send className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>เผยแพร่ใบสั่งอาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
+                      {filterState === 'published' && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-blue-600 hover:bg-blue-600 hover:border-blue-600" onClick={() => handleFinishPlan(plan)}>
+                                <CheckCircle className="h-4 w-4 text-blue-600" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>ปิดใบสั่งอาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
+                                <FileText className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>ดูรายการมื้ออาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
+                                <ShoppingCart className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>ดูรายการสั่งอาหาร</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleCopyLink(plan)}>
+                                <Link className="h-4 w-4 text-gray-800" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>คัดลอกลิงก์</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600" onClick={() => handleDelete(plan)}>
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>ลบใบสั่งอาหาร</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               </CardContent>
@@ -1633,7 +1699,9 @@ const Admin = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewMenuModalOpen, setIsViewMenuModalOpen] = useState(false);
   const [isAddMenuModalOpen, setIsAddMenuModalOpen] = useState(false);
+  const [isEditFoodModalOpen, setIsEditFoodModalOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
+  const [selectedFood, setSelectedFood] = useState<any>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -1652,6 +1720,16 @@ const Admin = () => {
   const [menuImage, setMenuImage] = useState<File | null>(null);
   const [menuImagePreview, setMenuImagePreview] = useState<string | null>(null);
   const [isMenuSubmitting, setIsMenuSubmitting] = useState(false);
+
+  // Edit Food Form state
+  const [editFoodFormData, setEditFoodFormData] = useState({
+    foodCategory: '',
+    menuName: '',
+    description: '',
+    addOns: '',
+    price: ''
+  });
+  const [selectedMenuImage, setSelectedMenuImage] = useState<File | null>(null);
 
   const foodTypes = ['จานหลัก', 'เครื่องดื่ม', 'ของหวาน'];
 
@@ -2009,6 +2087,33 @@ const Admin = () => {
     setMenuImagePreview(null);
   };
 
+  // Edit Food form handlers
+  const resetEditFoodForm = () => {
+    setEditFoodFormData({
+      foodCategory: '',
+      menuName: '',
+      description: '',
+      addOns: '',
+      price: ''
+    });
+    setSelectedMenuImage(null);
+    setMenuImagePreview(null);
+  };
+
+  const handleEditFood = (food: any) => {
+    setSelectedFood(food);
+    setEditFoodFormData({
+      foodCategory: food.food_type || '',
+      menuName: food.food_name || '',
+      description: food.description || '',
+      addOns: food.topping || '',
+      price: food.price?.toString() || ''
+    });
+    setMenuImagePreview(food.url_pic || null);
+    setSelectedMenuImage(null);
+    setIsEditFoodModalOpen(true);
+  };
+
   const handleMenuImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -2088,6 +2193,79 @@ const Admin = () => {
     } catch (error) {
       console.error('Error adding menu:', error);
       toast.error('เกิดข้อผิดพลาดในการเพิ่มรายการอาหาร');
+    } finally {
+      setIsMenuSubmitting(false);
+    }
+  };
+
+  const handleEditFoodSubmit = async () => {
+    // Validation
+    if (!editFoodFormData.foodCategory.trim()) {
+      toast.error('กรุณากรอกหมวดอาหาร');
+      return;
+    }
+    if (!editFoodFormData.menuName.trim()) {
+      toast.error('กรุณากรอกชื่อเมนูอาหาร');
+      return;
+    }
+    if (!editFoodFormData.description.trim()) {
+      toast.error('กรุณากรอกรายละเอียด');
+      return;
+    }
+    if (!editFoodFormData.price.trim()) {
+      toast.error('กรุณากรอกราคา');
+      return;
+    }
+
+    setIsMenuSubmitting(true);
+    try {
+      let imageUrl = selectedFood?.url_pic || null;
+
+      // Upload new image if selected
+      if (selectedMenuImage) {
+        const fileExt = selectedMenuImage.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `shop/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('shop')
+          .upload(filePath, selectedMenuImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('shop')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
+      // Update food item
+      const { error: updateError } = await supabase
+        .from('food')
+        .update({
+          food_type: editFoodFormData.foodCategory,
+          food_name: editFoodFormData.menuName,
+          description: editFoodFormData.description,
+          topping: editFoodFormData.addOns,
+          price: parseFloat(editFoodFormData.price),
+          url_pic: imageUrl
+        })
+        .eq('food_id', selectedFood?.food_id);
+
+      if (updateError) throw updateError;
+
+      toast.success('แก้ไขรายการอาหารสำเร็จ!');
+      resetEditFoodForm();
+      setIsEditFoodModalOpen(false);
+      setSelectedFood(null);
+      // Refresh food items list
+      if (selectedRestaurant) {
+        fetchFoodItems(selectedRestaurant.shop_id);
+      }
+    } catch (error) {
+      console.error('Error updating food:', error);
+      toast.error('เกิดข้อผิดพลาดในการแก้ไขรายการอาหาร');
     } finally {
       setIsMenuSubmitting(false);
     }
@@ -2426,60 +2604,89 @@ const Admin = () => {
                                     </div>
 
                                     {/* Action Buttons Container */}
-                                    <div className="flex justify-center pt-3 border-t border-brand-pink/10">
-                                      <div className="flex gap-2">
-                                        {/* Add Menu Button */}
-                                         <Button
-                                           size="sm"
-                                           variant="outline"
-                                           className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600"
-                                           onClick={() => {
-                                             setSelectedRestaurant(restaurant);
-                                             setIsAddMenuModalOpen(true);
-                                           }}
-                                         >
-                                           <Plus className="h-4 w-4 text-green-600" />
-                                         </Button>
+                                     <div className="flex justify-center pt-3 border-t border-brand-pink/10">
+                                       <div className="flex gap-2">
+                                         <TooltipProvider>
+                                           {/* Add Menu Button */}
+                                           <Tooltip>
+                                             <TooltipTrigger asChild>
+                                               <Button
+                                                 size="sm"
+                                                 variant="outline"
+                                                 className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600"
+                                                 onClick={() => {
+                                                   setSelectedRestaurant(restaurant);
+                                                   setIsAddMenuModalOpen(true);
+                                                 }}
+                                               >
+                                                 <Plus className="h-4 w-4 text-green-600" />
+                                               </Button>
+                                             </TooltipTrigger>
+                                             <TooltipContent>
+                                               <p>เพิ่มรายการอาหาร</p>
+                                             </TooltipContent>
+                                           </Tooltip>
 
-                                         {/* Edit Button */}
-                                         <Button
-                                           size="sm"
-                                           variant="outline"
-                                           className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
-                                           onClick={() => handleEditRestaurant(restaurant)}
-                                         >
-                                           <Edit className="h-4 w-4 text-gray-800" />
-                                         </Button>
+                                           {/* Edit Button */}
+                                           <Tooltip>
+                                             <TooltipTrigger asChild>
+                                               <Button
+                                                 size="sm"
+                                                 variant="outline"
+                                                 className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
+                                                 onClick={() => handleEditRestaurant(restaurant)}
+                                               >
+                                                 <Edit className="h-4 w-4 text-gray-800" />
+                                               </Button>
+                                             </TooltipTrigger>
+                                             <TooltipContent>
+                                               <p>แก้ไขร้านอาหาร</p>
+                                             </TooltipContent>
+                                           </Tooltip>
 
-                                         {/* View Menu Button */}
-                                         <Button
-                                           size="sm"
-                                           variant="outline"
-                                           className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
-                                           onClick={() => {
-                                             setSelectedRestaurant(restaurant);
-                                             setIsViewMenuModalOpen(true);
-                                             fetchFoodItems(restaurant.shop_id);
-                                           }}
-                                         >
-                                           <Eye className="h-4 w-4 text-gray-800" />
-                                         </Button>
+                                           {/* View Menu Button */}
+                                           <Tooltip>
+                                             <TooltipTrigger asChild>
+                                               <Button
+                                                 size="sm"
+                                                 variant="outline"
+                                                 className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
+                                                 onClick={() => {
+                                                   setSelectedRestaurant(restaurant);
+                                                   setIsViewMenuModalOpen(true);
+                                                   fetchFoodItems(restaurant.shop_id);
+                                                 }}
+                                               >
+                                                 <Eye className="h-4 w-4 text-gray-800" />
+                                               </Button>
+                                             </TooltipTrigger>
+                                             <TooltipContent>
+                                               <p>ดูรายการอาหาร</p>
+                                             </TooltipContent>
+                                           </Tooltip>
 
-                                         {/* Delete Button */}
-                                         <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
-                                           <AlertDialogTrigger asChild>
-                                             <Button
-                                               size="sm"
-                                               variant="outline"
-                                               className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600"
-                                               onClick={() => {
-                                                 setSelectedRestaurant(restaurant);
-                                                 setIsDeleteConfirmOpen(true);
-                                               }}
-                                             >
-                                               <Trash2 className="h-4 w-4 text-red-600" />
-                                             </Button>
-                                           </AlertDialogTrigger>
+                                           {/* Delete Button */}
+                                           <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
+                                             <Tooltip>
+                                               <TooltipTrigger asChild>
+                                                 <AlertDialogTrigger asChild>
+                                                   <Button
+                                                     size="sm"
+                                                     variant="outline"
+                                                     className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600"
+                                                     onClick={() => {
+                                                       setSelectedRestaurant(restaurant);
+                                                       setIsDeleteConfirmOpen(true);
+                                                     }}
+                                                   >
+                                                     <Trash2 className="h-4 w-4 text-red-600" />
+                                                   </Button>
+                                                 </AlertDialogTrigger>
+                                               </TooltipTrigger>
+                                               <TooltipContent>
+                                                 <p>ลบร้านอาหาร</p>
+                                               </TooltipContent>
+                                             </Tooltip>
                                           <AlertDialogContent>
                                             <AlertDialogHeader>
                                               <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
@@ -2509,10 +2716,11 @@ const Admin = () => {
                                                 ลบร้านอาหาร
                                               </AlertDialogAction>
                                             </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
-                                      </div>
-                                    </div>
+                                           </AlertDialogContent>
+                                         </AlertDialog>
+                                         </TooltipProvider>
+                                       </div>
+                                     </div>
                                   </div>
                                 </div>
                               </CardContent>
@@ -2943,34 +3151,55 @@ const Admin = () => {
                                         </div>
                                       </div>
                                       
-                                      {/* Food Info */}
-                                      <div className="flex-1 min-w-0 space-y-2">
-                                        <div>
-                                          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
-                                            {food.food_name}
-                                          </h3>
-                                          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 mt-1">
-                                            <span className="inline-block px-2 py-1 bg-brand-pink/20 text-brand-pink text-xs rounded-full text-center whitespace-nowrap">
-                                              {food.food_type}
-                                            </span>
-                                            <span className="font-bold text-green-600 text-sm sm:text-base mt-1 sm:mt-0">
-                                              ฿{food.price?.toLocaleString() || '0'}
-                                            </span>
-                                          </div>
-                                        </div>
-                                        
-                                        {food.description && (
-                                          <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2">
-                                            {food.description}
-                                          </p>
-                                        )}
-                                        
-                                        {food.topping && (
-                                          <p className="text-muted-foreground text-xs">
-                                            <span className="font-medium">ส่วนเสริม:</span> {food.topping}
-                                          </p>
-                                        )}
-                                      </div>
+                                       {/* Food Info */}
+                                       <div className="flex-1 min-w-0 space-y-2">
+                                         <div>
+                                           <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
+                                             {food.food_name}
+                                           </h3>
+                                           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 mt-1">
+                                             <span className="inline-block px-2 py-1 bg-brand-pink/20 text-brand-pink text-xs rounded-full text-center whitespace-nowrap">
+                                               {food.food_type}
+                                             </span>
+                                             <span className="font-bold text-green-600 text-sm sm:text-base mt-1 sm:mt-0">
+                                               ฿{food.price?.toLocaleString() || '0'}
+                                             </span>
+                                           </div>
+                                         </div>
+                                         
+                                         {food.description && (
+                                           <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2">
+                                             {food.description}
+                                           </p>
+                                         )}
+                                         
+                                         {food.topping && (
+                                           <p className="text-muted-foreground text-xs">
+                                             <span className="font-medium">ส่วนเสริม:</span> {food.topping}
+                                           </p>
+                                         )}
+                                       </div>
+                                       
+                                       {/* Edit Button */}
+                                       <div className="flex-shrink-0 flex items-center">
+                                         <TooltipProvider>
+                                           <Tooltip>
+                                             <TooltipTrigger asChild>
+                                               <Button
+                                                 size="sm"
+                                                 variant="outline"
+                                                 className="h-8 w-8 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
+                                                 onClick={() => handleEditFood(food)}
+                                               >
+                                                 <Edit className="h-3 w-3 text-gray-800" />
+                                               </Button>
+                                             </TooltipTrigger>
+                                             <TooltipContent>
+                                               <p>แก้ไขรายการอาหาร</p>
+                                             </TooltipContent>
+                                           </Tooltip>
+                                         </TooltipProvider>
+                                       </div>
                                     </div>
                                   ))}
                                 </div>
@@ -2990,9 +3219,187 @@ const Admin = () => {
                               ปิด
                             </Button>
                           </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                         </DialogContent>
+                       </Dialog>
+
+                       {/* Edit Food Modal */}
+                       <Dialog open={isEditFoodModalOpen} onOpenChange={setIsEditFoodModalOpen}>
+                         <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh]">
+                           <DialogHeader>
+                             <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                               แก้ไขรายการอาหาร - {selectedRestaurant?.shop_name}
+                             </DialogTitle>
+                           </DialogHeader>
+                           
+                           <ScrollArea className="flex-1 max-h-[calc(90vh-12rem)] overflow-auto p-4">
+                             <div className="space-y-6">
+                               {/* Food Category */}
+                               <div>
+                                 <Label htmlFor="edit_food_category" className="text-sm font-medium text-foreground">
+                                   หมวดอาหาร *
+                                 </Label>
+                                 <Select 
+                                   value={editFoodFormData.foodCategory} 
+                                   onValueChange={(value) => setEditFoodFormData(prev => ({ ...prev, foodCategory: value }))}
+                                 >
+                                   <SelectTrigger className="bg-muted/50 border-muted">
+                                     <SelectValue placeholder="เลือกหมวดอาหาร" />
+                                   </SelectTrigger>
+                                   <SelectContent>
+                                     {foodTypes.map((type) => (
+                                       <SelectItem key={type} value={type}>
+                                         {type}
+                                       </SelectItem>
+                                     ))}
+                                   </SelectContent>
+                                 </Select>
+                               </div>
+
+                               {/* Menu Name */}
+                               <div>
+                                 <Label htmlFor="edit_menu_name" className="text-sm font-medium text-foreground">
+                                   ชื่อเมนูอาหาร *
+                                 </Label>
+                                 <Input
+                                   id="edit_menu_name"
+                                   type="text"
+                                   placeholder="กรอกชื่อเมนูอาหาร"
+                                   value={editFoodFormData.menuName}
+                                   onChange={(e) => setEditFoodFormData(prev => ({ ...prev, menuName: e.target.value }))}
+                                   className="bg-muted/50 border-muted"
+                                 />
+                               </div>
+
+                               {/* Description */}
+                               <div>
+                                 <Label htmlFor="edit_description" className="text-sm font-medium text-foreground">
+                                   รายละเอียด *
+                                 </Label>
+                                 <Textarea
+                                   id="edit_description"
+                                   placeholder="กรอกรายละเอียดอาหาร"
+                                   value={editFoodFormData.description}
+                                   onChange={(e) => setEditFoodFormData(prev => ({ ...prev, description: e.target.value }))}
+                                   className="bg-muted/50 border-muted min-h-[80px]"
+                                 />
+                               </div>
+
+                               {/* Add-ons */}
+                               <div>
+                                 <Label htmlFor="edit_add_ons" className="text-sm font-medium text-foreground">
+                                   ส่วนเสริม
+                                 </Label>
+                                 <Input
+                                   id="edit_add_ons"
+                                   type="text"
+                                   placeholder="กรอกส่วนเสริม"
+                                   value={editFoodFormData.addOns || ''}
+                                   onChange={(e) => setEditFoodFormData(prev => ({ ...prev, addOns: e.target.value }))}
+                                   className="bg-muted/50 border-muted"
+                                 />
+                               </div>
+
+                               {/* Price */}
+                               <div>
+                                 <Label htmlFor="edit_price" className="text-sm font-medium text-foreground">
+                                   ราคา (บาท) *
+                                 </Label>
+                                 <Input
+                                   id="edit_price"
+                                   type="number"
+                                   step="0.01"
+                                   placeholder="กรอกราคา"
+                                   value={editFoodFormData.price}
+                                   onChange={(e) => setEditFoodFormData(prev => ({ ...prev, price: e.target.value }))}
+                                   className="bg-muted/50 border-muted"
+                                 />
+                               </div>
+
+                               {/* Image Upload */}
+                               <div>
+                                 <Label htmlFor="edit_menu_image" className="text-sm font-medium text-foreground">
+                                   รูปภาพอาหาร {selectedFood?.url_pic && menuImagePreview === selectedFood.url_pic && "(รูปปัจจุบัน)"}
+                                 </Label>
+                                 <div className="mt-1">
+                                   <div className="border-2 border-dashed border-muted rounded-lg p-4 bg-muted/20">
+                                     <input
+                                       id="edit_menu_image"
+                                       type="file"
+                                       accept="image/*"
+                                       onChange={handleMenuImageChange}
+                                       className="hidden"
+                                     />
+                                     <label
+                                       htmlFor="edit_menu_image"
+                                       className="cursor-pointer flex flex-col items-center justify-center space-y-2"
+                                     >
+                                       {menuImagePreview ? (
+                                         <div className="relative">
+                                           <img
+                                             src={menuImagePreview}
+                                             alt="รูปภาพอาหาร"
+                                             className="w-full max-w-[200px] h-32 object-cover rounded-lg border"
+                                           />
+                                           {menuImagePreview === selectedFood?.url_pic && (
+                                             <div className="absolute -top-1 -left-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                               รูปปัจจุบัน
+                                             </div>
+                                           )}
+                                           <Button
+                                             type="button"
+                                             variant="destructive"
+                                             size="sm"
+                                             className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                                             onClick={(e) => {
+                                               e.preventDefault();
+                                               setSelectedMenuImage(null);
+                                               setMenuImagePreview(selectedFood?.url_pic || null);
+                                             }}
+                                           >
+                                             <X className="h-3 w-3" />
+                                           </Button>
+                                         </div>
+                                       ) : (
+                                         <>
+                                           <Upload className="h-8 w-8 text-muted-foreground" />
+                                           <div className="text-center">
+                                             <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพ</span>
+                                             <p className="text-xs text-muted-foreground mt-1">
+                                               รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
+                                             </p>
+                                           </div>
+                                         </>
+                                       )}
+                                     </label>
+                                   </div>
+                                 </div>
+                               </div>
+                             </div>
+                           </ScrollArea>
+                           
+                           <DialogFooter className="flex justify-end gap-2 pt-4 border-t">
+                             <Button 
+                               variant="outline" 
+                               onClick={() => {
+                                 resetEditFoodForm();
+                                 setIsEditFoodModalOpen(false);
+                                 setSelectedFood(null);
+                               }}
+                               className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                             >
+                               ยกเลิก
+                             </Button>
+                             <Button 
+                               onClick={handleEditFoodSubmit}
+                               disabled={isMenuSubmitting}
+                               className="bg-green-600 hover:bg-green-700 text-white"
+                             >
+                               {isMenuSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
+                             </Button>
+                           </DialogFooter>
+                         </DialogContent>
+                       </Dialog>
+                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
