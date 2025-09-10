@@ -141,9 +141,6 @@ const OrderSummary = () => {
   };
 
   const orderItems = Object.values(orderCache);
-  const preDefinedTotal = preDefinedMeals.reduce((sum, meal) => sum + meal.price, 0);
-  const userOrderTotal = orderItems.reduce((sum, item) => sum + item.food_price, 0);
-  const totalPrice = preDefinedTotal + userOrderTotal;
 
   const handleEdit = () => {
     navigate('/food-categories');
@@ -251,8 +248,7 @@ const OrderSummary = () => {
         userInfo,
         planData,
         orderItems,
-        preDefinedMeals,
-        totalPrice
+        preDefinedMeals
       };
       localStorage.setItem('finalOrder', JSON.stringify(finalOrderData));
 
