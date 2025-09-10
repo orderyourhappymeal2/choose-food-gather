@@ -110,11 +110,7 @@ const ThankYou = () => {
               </div>
               <div className="flex justify-between">
                 <span>จำนวนรายการ:</span>
-                <span className="font-medium">{finalOrder.orderItems.length} รายการ</span>
-              </div>
-              <div className="flex justify-between">
-                <span>ยอดรวม:</span>
-                <span className="font-medium text-primary">฿{finalOrder.totalPrice}</span>
+                <span className="font-medium">{finalOrder.orderItems.length + finalOrder.preDefinedMeals.length} รายการ</span>
               </div>
             </div>
           </CardContent>
