@@ -167,7 +167,8 @@ const MenuSelection = () => {
         selected_toppings: selectedToppings,
         order_note: orderNote,
         plan_id: userInfo.plan_id,
-        person_id: userInfo.person_id
+        person_id: userInfo.person_id,
+        order_type: "custom"
       };
 
       localStorage.setItem('orderCache', JSON.stringify(orderCache));

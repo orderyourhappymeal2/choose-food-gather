@@ -163,28 +163,30 @@ const OrderSummary = () => {
     try {
       // Save pre-defined meal orders to database
       for (const meal of preDefinedMeals) {
-        // Check if order already exists for this person, meal, and food
-        const { data: existingOrder } = await supabase
+        // Check if order already exists for this person, meal, food, and order_type
+        const { data: existingOrder } = await (supabase as any)
           .from('order')
           .select('order_id')
           .eq('person_id', userInfo.person_id)
           .eq('plan_id', userInfo.plan_id)
           .eq('food_id', meal.food_id)
           .eq('meal_id', meal.meal_id)
+          .eq('order_type', 'predefined')
           .maybeSingle();
 
-        const orderData = {
+        const orderData: any = {
           person_id: userInfo.person_id,
           food_id: meal.food_id,
           plan_id: userInfo.plan_id,
           meal_id: meal.meal_id,
+          order_type: 'predefined',
           topping: null,
           order_note: null
         };
 
         if (existingOrder) {
           // Update existing order
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('order')
             .update(orderData)
             .eq('order_id', existingOrder.order_id);
@@ -192,7 +194,7 @@ const OrderSummary = () => {
           if (error) throw error;
         } else {
           // Create new order
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('order')
             .insert(orderData);
             
@@ -202,28 +204,30 @@ const OrderSummary = () => {
 
       // Save user-selected orders to database
       for (const item of orderItems) {
-        // Check if order already exists for this person, meal, and food
-        const { data: existingOrder } = await supabase
+        // Check if order already exists for this person, meal, food, and order_type
+        const { data: existingOrder } = await (supabase as any)
           .from('order')
           .select('order_id')
           .eq('person_id', item.person_id)
           .eq('plan_id', item.plan_id)
           .eq('food_id', item.food_id)
           .eq('meal_id', item.meal_id)
+          .eq('order_type', 'custom')
           .maybeSingle();
 
-        const orderData = {
+        const orderData: any = {
           person_id: item.person_id,
           food_id: item.food_id,
           plan_id: item.plan_id,
           meal_id: item.meal_id,
+          order_type: 'custom',
           topping: item.selected_toppings.length > 0 ? item.selected_toppings.join(', ') : null,
           order_note: item.order_note || null
         };
 
         if (existingOrder) {
           // Update existing order
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('order')
             .update(orderData)
             .eq('order_id', existingOrder.order_id);
@@ -231,7 +235,7 @@ const OrderSummary = () => {
           if (error) throw error;
         } else {
           // Create new order
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('order')
             .insert(orderData);
             
