@@ -13,7 +13,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { Switch } from "@/components/ui/switch";
 
 import { useState, useEffect, useRef } from "react";
@@ -395,6 +396,80 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       return format(date, "d MMM yyyy", { locale: th }).replace(/\d{4}/, (year) => (parseInt(year) + 543).toString());
     } catch {
       return dateString;
+    }
+  };
+
+  // Export to Excel function
+  const exportToExcel = async (plan: any) => {
+    try {
+      setIsLoadingOrders(true);
+      
+      // Fetch orders for the plan
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('order')
+        .select(`
+          *,
+          person:person_id (person_name, person_agent),
+          food:food_id (food_name, price, url_pic, shop_id),
+          meal:meal_id (meal_name),
+          shop:food(shop:shop_id(shop_name))
+        `)
+        .eq('plan_id', plan.plan_id)
+        .order('created_at', { ascending: false });
+
+      if (ordersError) throw ordersError;
+
+      // Format data for Excel
+      const excelData = ordersData.map((order: any, index: number) => ({
+        'ลำดับ': index + 1,
+        'ผู้สั่งอาหาร': order.person?.person_name || '-',
+        'ตัวแทน': order.person?.person_agent || '-',
+        'มื้ออาหาร': order.meal?.meal_name || '-',
+        'ชื่ออาหาร': order.food?.food_name || '-',
+        'ราคา': order.food?.price || 0,
+        'ร้านอาหาร': order.food?.shop_name || '-',
+        'ท็อปปิ้ง': order.topping || '-',
+        'หมายเหตุ': order.order_note || '-',
+        'เวลาสั่ง': formatThaiDateTime(order.created_at),
+        'ประเภท': order.order_type === 'custom' ? 'สั่งเพิ่ม' : 'กำหนดไว้'
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },   // ลำดับ
+        { wch: 20 },  // ผู้สั่งอาหาร
+        { wch: 15 },  // ตัวแทน
+        { wch: 20 },  // มื้ออาหาร
+        { wch: 30 },  // ชื่ออาหาร
+        { wch: 10 },  // ราคา
+        { wch: 25 },  // ร้านอาหาร
+        { wch: 20 },  // ท็อปปิ้ง
+        { wch: 30 },  // หมายเหตุ
+        { wch: 20 },  // เวลาสั่ง
+        { wch: 15 }   // ประเภท
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'รายการสั่งอาหาร');
+
+      // Generate filename with plan name and date
+      const currentDate = new Date().toLocaleDateString('th-TH');
+      const filename = `รายการสั่งอาหาร_${plan.plan_name}_${currentDate}.xlsx`;
+
+      // Export file
+      XLSX.writeFile(wb, filename);
+      
+      toast.success('ส่งออกไฟล์ Excel สำเร็จ');
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error('เกิดข้อผิดพลาดในการส่งออกไฟล์ Excel');
+    } finally {
+      setIsLoadingOrders(false);
     }
   };
 
@@ -1010,6 +1085,16 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         <>
                           <Tooltip>
                             <TooltipTrigger asChild>
+                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:text-white" onClick={() => exportToExcel(plan)}>
+                                <FileSpreadsheet className="h-4 w-4 text-green-600 hover:text-white" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>ส่งออก Excel</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
                                 <FileText className="h-4 w-4 text-gray-800" />
                               </Button>
@@ -1362,70 +1447,157 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex flex-col h-full p-4 gap-4">
+          <div className="flex flex-col h-full p-4 gap-4 min-h-0">
             {/* Filter Container */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
-              {/* ผู้สั่งอาหาร Filter */}
-              <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">
-                  ผู้สั่งอาหาร
-                </Label>
-                <Select value={selectedPersonFilter} onValueChange={setSelectedPersonFilter}>
-                  <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                    <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
-                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                    <div className="border-t border-brand-pink/10 my-1"></div>
-                    {orderPersons.map((person) => (
-                      <SelectItem key={person.person_id} value={person.person_id}>
-                        {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="flex-shrink-0">
+              {/* Mobile Filter Icons */}
+              <div className="md:hidden flex gap-2 mb-4">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="p-2">
+                      <User className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2 bg-white border border-brand-pink/20 shadow-lg" align="start">
+                    <Label className="text-sm font-medium text-foreground mb-2 block">
+                      ผู้สั่งอาหาร
+                    </Label>
+                    <Select value={selectedPersonFilter} onValueChange={setSelectedPersonFilter}>
+                      <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                        <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                        <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                        <div className="border-t border-brand-pink/10 my-1"></div>
+                        {orderPersons.map((person) => (
+                          <SelectItem key={person.person_id} value={person.person_id}>
+                            {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="p-2">
+                      <UtensilsIcon className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2 bg-white border border-brand-pink/20 shadow-lg" align="start">
+                    <Label className="text-sm font-medium text-foreground mb-2 block">
+                      มื้ออาหาร
+                    </Label>
+                    <Select value={selectedMealFilter} onValueChange={setSelectedMealFilter}>
+                      <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                        <SelectValue placeholder="เลือกมื้ออาหาร" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                        <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                        <div className="border-t border-brand-pink/10 my-1"></div>
+                        {orderMeals.map((meal) => (
+                          <SelectItem key={meal.meal_id} value={meal.meal_id}>
+                            {meal.meal_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="p-2">
+                      <Store className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2 bg-white border border-brand-pink/20 shadow-lg" align="start">
+                    <Label className="text-sm font-medium text-foreground mb-2 block">
+                      ร้านอาหาร
+                    </Label>
+                    <Select value={selectedShopFilter} onValueChange={setSelectedShopFilter}>
+                      <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                        <SelectValue placeholder="เลือกร้านอาหาร" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                        <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                        <div className="border-t border-brand-pink/10 my-1"></div>
+                        {orderShops.map((shop) => (
+                          <SelectItem key={shop.shop_id} value={shop.shop_id}>
+                            {shop.shop_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </PopoverContent>
+                </Popover>
               </div>
 
-              {/* มื้ออาหาร Filter */}
-              <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">
-                  มื้ออาหาร
-                </Label>
-                <Select value={selectedMealFilter} onValueChange={setSelectedMealFilter}>
-                  <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                    <SelectValue placeholder="เลือกมื้ออาหาร" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
-                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                    <div className="border-t border-brand-pink/10 my-1"></div>
-                    {orderMeals.map((meal) => (
-                      <SelectItem key={meal.meal_id} value={meal.meal_id}>
-                        {meal.meal_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Desktop Filter Grid */}
+              <div className="hidden md:grid grid-cols-3 gap-4">
+                {/* ผู้สั่งอาหาร Filter */}
+                <div>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                    ผู้สั่งอาหาร
+                  </Label>
+                  <Select value={selectedPersonFilter} onValueChange={setSelectedPersonFilter}>
+                    <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                      <SelectValue placeholder="เลือกผู้สั่งอาหาร" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                      <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                      <div className="border-t border-brand-pink/10 my-1"></div>
+                      {orderPersons.map((person) => (
+                        <SelectItem key={person.person_id} value={person.person_id}>
+                          {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* ร้านอาหาร Filter */}
-              <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">
-                  ร้านอาหาร
-                </Label>
-                <Select value={selectedShopFilter} onValueChange={setSelectedShopFilter}>
-                  <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
-                    <SelectValue placeholder="เลือกร้านอาหาร" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
-                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                    <div className="border-t border-brand-pink/10 my-1"></div>
-                    {orderShops.map((shop) => (
-                      <SelectItem key={shop.shop_id} value={shop.shop_id}>
-                        {shop.shop_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* มื้ออาหาร Filter */}
+                <div>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                    มื้ออาหาร
+                  </Label>
+                  <Select value={selectedMealFilter} onValueChange={setSelectedMealFilter}>
+                    <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                      <SelectValue placeholder="เลือกมื้ออาหาร" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                      <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                      <div className="border-t border-brand-pink/10 my-1"></div>
+                      {orderMeals.map((meal) => (
+                        <SelectItem key={meal.meal_id} value={meal.meal_id}>
+                          {meal.meal_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* ร้านอาหาร Filter */}
+                <div>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                    ร้านอาหาร
+                  </Label>
+                  <Select value={selectedShopFilter} onValueChange={setSelectedShopFilter}>
+                    <SelectTrigger className="bg-white/80 border-brand-pink/20 focus:border-primary">
+                      <SelectValue placeholder="เลือกร้านอาหาร" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
+                      <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                      <div className="border-t border-brand-pink/10 my-1"></div>
+                      {orderShops.map((shop) => (
+                        <SelectItem key={shop.shop_id} value={shop.shop_id}>
+                          {shop.shop_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             
@@ -1540,65 +1712,65 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-hidden p-4">
-            <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-4 sm:p-6">
-              {isLoadingMealData ? (
-                <div className="text-center text-muted-foreground py-8">
+          <div className="flex-1 min-h-0 overflow-auto p-4">
+            {isLoadingMealData ? (
+              <div className="flex items-center justify-center h-40">
+                <div className="text-center text-muted-foreground">
                   กำลังโหลดข้อมูล...
                 </div>
-              ) : (
-                <>
-                  {/* Add meal button */}
-                  <div className="flex justify-center mb-6">
-                    <Button
-                      onClick={addNewMeal}
-                      className="bg-brand-primary hover:bg-brand-primary/90 text-black px-6 py-2 rounded-full"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      เพิ่มช่วงเวลา
-                    </Button>
-                  </div>
-
-                  {/* Meals list with drag and drop */}
-                  <DndContext 
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
+              </div>
+            ) : (
+              <>
+                {/* Add meal button */}
+                <div className="flex justify-center mb-6 sticky top-0 bg-white/80 backdrop-blur-sm py-2 z-10">
+                  <Button
+                    onClick={addNewMeal}
+                    className="bg-brand-primary hover:bg-brand-primary/90 text-black px-6 py-2 rounded-full"
                   >
-                    <SortableContext 
-                      items={meals.map(meal => meal.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-4">
-                        {meals.length === 0 ? (
-                          <div className="text-center text-muted-foreground py-8 bg-white/20 rounded-lg border border-dashed border-brand-pink/30">
-                            <UtensilsCrossed className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-                            <p>ยังไม่มีมื้ออาหาร</p>
-                            <p className="text-sm">กดปุ่ม "+ เพิ่มช่วงเวลา" เพื่อเริ่มต้น</p>
-                          </div>
-                        ) : (
-                          meals.map((meal, index) => (
-                            <SortableMealItem
-                              key={meal.id}
-                              meal={meal}
-                              index={index}
-                              shops={shops}
-                              foods={foods}
-                              onUpdate={updateMeal}
-                              onRemove={removeMeal}
-                              onMoveUp={moveMealUp}
-                              onMoveDown={moveMealDown}
-                              isFirst={index === 0}
-                              isLast={index === meals.length - 1}
-                            />
-                          ))
-                        )}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                </>
-              )}
-            </ScrollArea>
+                    <Plus className="w-4 h-4 mr-2" />
+                    เพิ่มช่วงเวลา
+                  </Button>
+                </div>
+
+                {/* Meals list with drag and drop */}
+                <DndContext 
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext 
+                    items={meals.map(meal => meal.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-4 pb-4">
+                      {meals.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8 bg-white/20 rounded-lg border border-dashed border-brand-pink/30">
+                          <UtensilsCrossed className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                          <p>ยังไม่มีมื้ออาหาร</p>
+                          <p className="text-sm">กดปุ่ม "+ เพิ่มช่วงเวลา" เพื่อเริ่มต้น</p>
+                        </div>
+                      ) : (
+                        meals.map((meal, index) => (
+                          <SortableMealItem
+                            key={meal.id}
+                            meal={meal}
+                            index={index}
+                            shops={shops}
+                            foods={foods}
+                            onUpdate={updateMeal}
+                            onRemove={removeMeal}
+                            onMoveUp={moveMealUp}
+                            onMoveDown={moveMealDown}
+                            isFirst={index === 0}
+                            isLast={index === meals.length - 1}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </>
+            )}
           </div>
           
           <DialogFooter className="flex flex-col sm:flex-row gap-2 p-4 border-t bg-white/90">
