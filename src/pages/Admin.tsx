@@ -1355,17 +1355,17 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       {/* Order Modal */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
-        <DialogContent className="w-[95vw] max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh] overflow-hidden">
-          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
+        <DialogContent className="w-[95vw] max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[90vh] flex flex-col">
+          <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               รายการอาหารที่ถูกสั่ง - {selectedPlanForOrder?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1 max-h-[calc(90vh-8rem)]">
-            <div className="space-y-4 p-4">
+          <div className="flex-1 overflow-hidden p-4">
+            <div className="space-y-4 h-full">
               {/* Filter Container */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
                 {/* ผู้สั่งอาหาร Filter */}
                 <div>
                   <Label className="text-sm font-medium text-foreground mb-2 block">
@@ -1431,7 +1431,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
               </div>
               
               {/* Orders content area */}
-              <div className="min-h-[300px] border border-brand-pink/10 rounded-lg bg-white/30 overflow-hidden">
+              <div className="flex-1 border border-brand-pink/10 rounded-lg bg-white/30 overflow-hidden">
                 {isLoadingOrders ? (
                   <div className="flex items-center justify-center h-40">
                     <div className="text-center text-muted-foreground">
@@ -1445,7 +1445,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                     </div>
                   </div>
                 ) : (
-                  <ScrollArea className="h-full max-h-[400px]">
+                  <ScrollArea className="h-full">
                     <div className="p-4 space-y-3">
                       {/* Header - Hidden on mobile */}
                       <div className="hidden lg:grid grid-cols-7 gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
@@ -1516,14 +1516,14 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
               
               {/* Summary */}
               {!isLoadingOrders && filteredOrders.length > 0 && (
-                <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg flex-shrink-0">
                   <div className="text-sm text-muted-foreground">
                     แสดง {filteredOrders.length} รายการ จากทั้งหมด {orders.length} รายการ
                   </div>
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
           
           <DialogFooter className="p-4 border-t bg-white/90">
             <Button variant="outline" onClick={() => setIsOrderModalOpen(false)} className="w-full sm:w-auto">
@@ -1535,15 +1535,15 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       {/* Add Meal Modal */}
       <Dialog open={isAddMealModalOpen} onOpenChange={setIsAddMealModalOpen}>
-        <DialogContent className="w-[95vw] max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh] overflow-hidden">
-          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
+        <DialogContent className="w-[95vw] max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[90vh] flex flex-col">
+          <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               เพิ่มมื้ออาหาร - {selectedPlanForMeal?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1 max-h-[calc(90vh-8rem)]">
-            <div className="min-h-[400px] border border-brand-pink/10 rounded-lg bg-white/30 p-4 sm:p-6 mx-4">
+          <div className="flex-1 overflow-hidden p-4">
+            <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-4 sm:p-6">
               {isLoadingMealData ? (
                 <div className="text-center text-muted-foreground py-8">
                   กำลังโหลดข้อมูล...
@@ -1600,8 +1600,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                   </DndContext>
                 </>
               )}
-            </div>
-          </ScrollArea>
+            </ScrollArea>
+          </div>
           
           <DialogFooter className="flex flex-col sm:flex-row gap-2 p-4 border-t bg-white/90">
             <Button variant="outline" onClick={() => setIsAddMealModalOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
@@ -1620,20 +1620,20 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       {/* Meal List Modal */}
       <Dialog open={isMealListModalOpen} onOpenChange={setIsMealListModalOpen}>
-        <DialogContent className="w-[95vw] max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg max-h-[90vh] overflow-hidden">
-          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
+        <DialogContent className="w-[95vw] max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[90vh] flex flex-col">
+          <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               รายการมื้ออาหาร - {selectedPlanForMeal?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1 max-h-[calc(90vh-8rem)]">
-            <div className="min-h-[400px] border border-brand-pink/10 rounded-lg bg-white/30 p-4">
+          <div className="flex-1 overflow-hidden p-4">
+            <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-4">
               <div className="text-center text-muted-foreground py-8">
                 รายการมื้ออาหารจะมาตรงนี้
               </div>
-            </div>
-          </ScrollArea>
+            </ScrollArea>
+          </div>
           
           <DialogFooter className="p-4 border-t bg-white/90">
             <Button variant="outline" onClick={() => setIsMealListModalOpen(false)} className="w-full sm:w-auto">
