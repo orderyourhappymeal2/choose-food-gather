@@ -132,6 +132,36 @@ const FoodCategories = () => {
     return Object.keys(orderCache).length > 0;
   };
 
+  const hasCompletedAllRequiredSelections = () => {
+    // Check all meals to see if they are properly selected
+    for (const meal of meals) {
+      // Pre-defined meals (have food_id) are already complete
+      if (meal.food_id) {
+        continue;
+      }
+      
+      // Custom meals (have shop_id but no food_id) must have selection in orderCache
+      if (meal.shop_id && !meal.food_id) {
+        const selectedFood = getSelectedFood(meal.meal_id, meal.shop_id);
+        if (!selectedFood) {
+          return false; // This meal is not selected
+        }
+      }
+    }
+    return true;
+  };
+
+  const getMissingSelections = () => {
+    return meals.filter(meal => {
+      if (meal.food_id) return false; // Pre-defined meals are complete
+      if (meal.shop_id && !meal.food_id) {
+        const selectedFood = getSelectedFood(meal.meal_id, meal.shop_id);
+        return !selectedFood; // Return true if not selected
+      }
+      return false;
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[var(--gradient-welcome)] flex items-center justify-center">
@@ -193,7 +223,9 @@ const FoodCategories = () => {
                               ? 'border-gray-300 bg-gray-50 opacity-75' 
                               : selectedFood 
                                 ? 'border-primary bg-primary/5 cursor-pointer hover:scale-[1.02]' 
-                                : 'border-brand-pink/30 hover:border-primary/50 cursor-pointer hover:scale-[1.02]'
+                                : getMissingSelections().some(m => m.meal_id === meal.meal_id)
+                                  ? 'border-red-300 bg-red-50 hover:border-red-400 cursor-pointer hover:scale-[1.02]'
+                                  : 'border-brand-pink/30 hover:border-primary/50 cursor-pointer hover:scale-[1.02]'
                           }`}
                           onClick={() => !isPreSelected && handleShopSelect(meal, shop)}
                         >
@@ -214,9 +246,14 @@ const FoodCategories = () => {
                                     <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
                                       กำหนดแล้ว
                                     </span>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">{shop.description}</p>
+                                   )}
+                                   {!isPreSelected && !selectedFood && getMissingSelections().some(m => m.meal_id === meal.meal_id) && (
+                                     <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                       กรุณาเลือกอาหาร
+                                     </span>
+                                   )}
+                                 </div>
+                                 <p className="text-sm text-muted-foreground">{shop.description}</p>
                                 <div className="flex gap-2 mt-1">
                                   <span className="text-xs bg-brand-pink/20 text-primary px-2 py-1 rounded">
                                     {shop.food_type_1}
@@ -255,11 +292,13 @@ const FoodCategories = () => {
                                       />
                                       <div className="flex-1">
                                         <p className="text-sm font-medium">{selectedFood.food_name}</p>
-                                        {selectedFood.selected_toppings.length > 0 && (
-                                          <p className="text-xs text-muted-foreground">
-                                            ท็อปปิ้ง: {selectedFood.selected_toppings.join(', ')}
-                                          </p>
-                                        )}
+                                         {selectedFood.selected_toppings && (
+                                           <p className="text-xs text-muted-foreground">
+                                             ท็อปปิ้ง: {Array.isArray(selectedFood.selected_toppings) 
+                                               ? selectedFood.selected_toppings.join(', ')
+                                               : selectedFood.selected_toppings}
+                                           </p>
+                                         )}
                                        </div>
                                     </div>
                                   </div>
@@ -278,14 +317,26 @@ const FoodCategories = () => {
         </div>
 
         {/* Order Summary Button */}
-        {hasAnyOrders() && (
+        {hasCompletedAllRequiredSelections() && (
           <Button 
             onClick={() => navigate('/order-summary')}
             className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
           >
             <Receipt className="w-5 h-5 mr-2" />
-            ดูสรุปรายการ ({Object.keys(orderCache).length})
+            ดูสรุปรายการ
           </Button>
+        )}
+        
+        {/* Show message if not all selections are complete */}
+        {!hasCompletedAllRequiredSelections() && getMissingSelections().length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600 text-sm">
+              กรุณาเลือกอาหารให้ครบทุกมื้อก่อนดูสรุปรายการ
+            </p>
+            <p className="text-red-500 text-xs mt-1">
+              ยังต้องเลือกอีก {getMissingSelections().length} มื้อ
+            </p>
+          </div>
         )}
       </div>
     </div>

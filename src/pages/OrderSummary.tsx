@@ -17,7 +17,7 @@ interface CachedOrder {
   food_name: string;
   food_price: number;
   food_image: string;
-  selected_toppings: string[];
+  selected_toppings: string[] | string;
   order_note: string;
   plan_id: string;
   person_id: string;
@@ -218,7 +218,9 @@ const OrderSummary = () => {
           plan_id: item.plan_id,
           meal_id: item.meal_id,
           order_type: 'custom',
-          topping: item.selected_toppings.length > 0 ? item.selected_toppings.join(', ') : null,
+          topping: Array.isArray(item.selected_toppings) 
+            ? (item.selected_toppings.length > 0 ? item.selected_toppings.join(', ') : null)
+            : (item.selected_toppings || null),
           order_note: item.order_note || null
         };
 
@@ -373,10 +375,15 @@ const OrderSummary = () => {
                       />
                       <div className="flex-1">
                         <p className="font-medium text-lg">{item.food_name}</p>
-                        {item.selected_toppings.length > 0 && (
+                        {((Array.isArray(item.selected_toppings) && item.selected_toppings.length > 0) || 
+                          (!Array.isArray(item.selected_toppings) && item.selected_toppings)) && (
                           <div className="mt-1">
                             <span className="text-sm text-muted-foreground">ท็อปปิ้ง: </span>
-                            <span className="text-sm font-medium">{item.selected_toppings.join(', ')}</span>
+                            <span className="text-sm font-medium">
+                              {Array.isArray(item.selected_toppings) 
+                                ? item.selected_toppings.join(', ') 
+                                : item.selected_toppings}
+                            </span>
                           </div>
                         )}
                         {item.order_note && (

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ShoppingCart, ChefHat } from "lucide-react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
@@ -25,7 +26,7 @@ const MenuSelection = () => {
   const { restaurantId } = useParams();
   const { toast } = useToast();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
+  const [selectedTopping, setSelectedTopping] = useState<string>("");
   const [orderNote, setOrderNote] = useState("");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +74,13 @@ const MenuSelection = () => {
         const cachedItem = menuItems.find(item => item.food_id === existingOrder.food_id);
         if (cachedItem) {
           setSelectedItem(cachedItem);
-          setSelectedToppings(existingOrder.selected_toppings || []);
+          // Handle both old array format and new string format
+          const toppings = existingOrder.selected_toppings;
+          if (Array.isArray(toppings)) {
+            setSelectedTopping(toppings[0] || ""); // Take first item from old array format
+          } else {
+            setSelectedTopping(toppings || ""); // Use string format
+          }
           setOrderNote(existingOrder.order_note || '');
           console.log('Restored selection:', cachedItem.food_name);
         }
@@ -108,24 +115,12 @@ const MenuSelection = () => {
       prevSelected?.food_id === item.food_id ? null : item
     );
     // Reset toppings and note when changing item
-    setSelectedToppings([]);
+    setSelectedTopping("");
     setOrderNote("");
   };
 
-  const handleToppingChange = (topping: string, checked: boolean) => {
-    if (checked && selectedToppings.length >= 3) {
-      toast({
-        title: "สามารถเลือกได้สูงสุด 3 รายการ",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setSelectedToppings(prev => 
-      checked 
-        ? [...prev, topping]
-        : prev.filter(t => t !== topping)
-    );
+  const handleToppingChange = (topping: string) => {
+    setSelectedTopping(topping);
   };
 
   const getToppingsFromItem = (item: MenuItem): string[] => {
@@ -164,7 +159,7 @@ const MenuSelection = () => {
         food_name: selectedItem.food_name,
         food_price: selectedItem.price,
         food_image: selectedItem.url_pic,
-        selected_toppings: selectedToppings,
+        selected_toppings: selectedTopping,
         order_note: orderNote,
         plan_id: userInfo.plan_id,
         person_id: userInfo.person_id,
@@ -270,21 +265,17 @@ const MenuSelection = () => {
           {selectedItem && getToppingsFromItem(selectedItem).length > 0 && (
             <Card className="mb-4 bg-white/90 backdrop-blur-sm border-2 border-primary/30">
               <CardContent className="p-4">
-                <h3 className="font-semibold mb-3">เลือกท็อปปิ้ง (สูงสุด 3 รายการ)</h3>
-                <div className="space-y-2">
+                <h3 className="font-semibold mb-3">เลือกท็อปปิ้ง (เลือกได้ 1 รายการ)</h3>
+                <RadioGroup value={selectedTopping} onValueChange={handleToppingChange}>
                   {getToppingsFromItem(selectedItem).map((topping, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`topping-${index}`}
-                        checked={selectedToppings.includes(topping)}
-                        onCheckedChange={(checked) => handleToppingChange(topping, checked as boolean)}
-                      />
-                      <label htmlFor={`topping-${index}`} className="text-sm font-medium">
+                      <RadioGroupItem value={topping} id={`topping-${index}`} />
+                      <Label htmlFor={`topping-${index}`} className="text-sm font-medium">
                         {topping}
-                      </label>
+                      </Label>
                     </div>
                   ))}
-                </div>
+                </RadioGroup>
               </CardContent>
             </Card>
           )}
@@ -316,9 +307,9 @@ const MenuSelection = () => {
                   <div className="flex justify-between items-center">
                     <span>{selectedItem.food_name}</span>
                   </div>
-                  {selectedToppings.length > 0 && (
+                  {selectedTopping && (
                     <div className="text-sm text-muted-foreground">
-                      ท็อปปิ้ง: {selectedToppings.join(', ')}
+                      ท็อปปิ้ง: {selectedTopping}
                     </div>
                   )}
                   {orderNote && (
