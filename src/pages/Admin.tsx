@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -1283,7 +1284,15 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                             <Calendar
                               mode="single"
                               selected={field.value}
-                              onSelect={field.onChange}
+                              onSelect={(date) => {
+                                if (date) {
+                                  // Create a date with Thailand timezone to prevent 1-day rollback
+                                  const thailandDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+                                  field.onChange(thailandDate);
+                                } else {
+                                  field.onChange(date);
+                                }
+                              }}
                               initialFocus
                               className="pointer-events-auto"
                             />
@@ -3809,13 +3818,21 @@ const Admin = () => {
                                               </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0" align="start">
-                                               <Calendar
-                                                 mode="single"
-                                                 selected={field.value}
-                                                 onSelect={field.onChange}
-                                                 initialFocus
-                                                 className="pointer-events-auto"
-                                               />
+                                                <Calendar
+                                                  mode="single"
+                                                  selected={field.value}
+                                                  onSelect={(date) => {
+                                                    if (date) {
+                                                      // Create a date with Thailand timezone to prevent 1-day rollback
+                                                      const thailandDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+                                                      field.onChange(thailandDate);
+                                                    } else {
+                                                      field.onChange(date);
+                                                    }
+                                                  }}
+                                                  initialFocus
+                                                  className="pointer-events-auto"
+                                                />
                                             </PopoverContent>
                                           </Popover>
                                           <FormMessage />
