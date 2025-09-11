@@ -367,6 +367,9 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [finishingPlan, setFinishingPlan] = useState<any>(null);
 
+  // Delete confirmation states
+  const [planDeleteConfirmName, setPlanDeleteConfirmName] = useState('');
+
   // Meal management states
   const [meals, setMeals] = useState<any[]>([]);
   const [shops, setShops] = useState<any[]>([]);
@@ -1139,18 +1142,28 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                           </Tooltip>
                         </>
                       )}
-                      {filterState === 'published' && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-blue-600 hover:bg-blue-600 hover:border-blue-600" onClick={() => handleFinishPlan(plan)}>
-                                <CheckCircle className="h-4 w-4 text-blue-600" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>ปิดใบสั่งอาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
+                       {filterState === 'published' && (
+                         <>
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:text-white" onClick={() => exportToExcel(plan)}>
+                                 <FileSpreadsheet className="h-4 w-4 text-green-600 hover:text-white" />
+                               </Button>
+                             </TooltipTrigger>
+                             <TooltipContent>
+                               <p>ส่งออก Excel</p>
+                             </TooltipContent>
+                           </Tooltip>
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-blue-600 hover:bg-blue-600 hover:border-blue-600" onClick={() => handleFinishPlan(plan)}>
+                                 <CheckCircle className="h-4 w-4 text-blue-600" />
+                               </Button>
+                             </TooltipTrigger>
+                             <TooltipContent>
+                               <p>ปิดใบสั่งอาหาร</p>
+                             </TooltipContent>
+                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
@@ -1404,14 +1417,34 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           <AlertDialogHeader>
             <AlertDialogTitle>ยืนยันการลบแผน</AlertDialogTitle>
             <AlertDialogDescription>
+              <span className="text-red-600 font-medium">
+                ⚠️ การดำเนินการนี้มีผลกระทบสูง
+              </span>
+              <br />
               หากลบแผน "{deletingPlan?.plan_name}" แผนการสั่งจองทั้งหมดจะถูกลบออกไปด้วย
               <br />
-              คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?
+              <span className="text-red-600 font-medium">
+                การกระทำนี้ไม่สามารถย้อนกลับได้
+              </span>
+              <br /><br />
+              พิมพ์ชื่องาน <strong>"{deletingPlan?.plan_name}"</strong> เพื่อยืนยันการลบ:
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="px-6 pb-4">
+            <Input
+              value={planDeleteConfirmName}
+              onChange={(e) => setPlanDeleteConfirmName(e.target.value)}
+              placeholder={`พิมพ์ "${deletingPlan?.plan_name}" เพื่อยืนยัน`}
+              className="mt-2"
+            />
+          </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogCancel onClick={() => setPlanDeleteConfirmName('')}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete} 
+              disabled={planDeleteConfirmName !== deletingPlan?.plan_name}
+              className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               ลบแผน
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1876,6 +1909,12 @@ const Admin = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Delete confirmation states
+  const [restaurantDeleteConfirmName, setRestaurantDeleteConfirmName] = useState('');
+  const [planDeleteConfirmName, setPlanDeleteConfirmName] = useState('');
+  const [isFoodDeleteConfirmOpen, setIsFoodDeleteConfirmOpen] = useState(false);
+  const [deletingFood, setDeletingFood] = useState<any>(null);
+  
   // Food items for view menu modal
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [isFoodLoading, setIsFoodLoading] = useState(false);
@@ -2283,6 +2322,36 @@ const Admin = () => {
     setMenuImagePreview(food.url_pic || null);
     setSelectedMenuImage(null);
     setIsEditFoodModalOpen(true);
+  };
+
+  const handleDeleteFood = (food: any) => {
+    setDeletingFood(food);
+    setIsFoodDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteFood = async () => {
+    if (!deletingFood) return;
+
+    try {
+      const { error } = await supabase
+        .from('food')
+        .delete()
+        .eq('food_id', deletingFood.food_id);
+
+      if (error) throw error;
+
+      toast.success('ลบรายการอาหารสำเร็จ');
+      setIsFoodDeleteConfirmOpen(false);
+      setDeletingFood(null);
+      
+      // Refresh food items list
+      if (selectedRestaurant) {
+        fetchFoodItems(selectedRestaurant.shop_id);
+      }
+    } catch (error) {
+      console.error('Error deleting food:', error);
+      toast.error('เกิดข้อผิดพลาดในการลบรายการอาหาร');
+    }
   };
 
   const handleMenuImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2858,36 +2927,50 @@ const Admin = () => {
                                                  <p>ลบร้านอาหาร</p>
                                                </TooltipContent>
                                              </Tooltip>
-                                          <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                                คุณแน่ใจหรือไม่ที่จะลบร้าน "{restaurant.shop_name}"? 
-                                                <br />
-                                                <span className="text-red-600 font-medium">
-                                                  หากลบร้านอาหาร รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
-                                                </span>
-                                                <br />
-                                                การกระทำนี้ไม่สามารถย้อนกลับได้
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel 
-                                                onClick={() => {
-                                                  setIsDeleteConfirmOpen(false);
-                                                  setSelectedRestaurant(null);
-                                                }}
-                                              >
-                                                ยกเลิก
-                                              </AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={handleDeleteRestaurant}
-                                                className="bg-red-600 hover:bg-red-700"
-                                              >
-                                                ลบร้านอาหาร
-                                              </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                           </AlertDialogContent>
+                                           <AlertDialogContent>
+                                             <AlertDialogHeader>
+                                               <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
+                                               <AlertDialogDescription>
+                                                 <span className="text-red-600 font-medium">
+                                                   ⚠️ การดำเนินการนี้มีผลกระทบสูง
+                                                 </span>
+                                                 <br />
+                                                 หากลบร้าน "{restaurant.shop_name}" แล้ว รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
+                                                 <br />
+                                                 <span className="text-red-600 font-medium">
+                                                   การกระทำนี้ไม่สามารถย้อนกลับได้
+                                                 </span>
+                                                 <br /><br />
+                                                 พิมพ์ชื่อร้าน <strong>"{restaurant.shop_name}"</strong> เพื่อยืนยันการลบ:
+                                               </AlertDialogDescription>
+                                             </AlertDialogHeader>
+                                             <div className="px-6 pb-4">
+                                               <Input
+                                                 value={restaurantDeleteConfirmName}
+                                                 onChange={(e) => setRestaurantDeleteConfirmName(e.target.value)}
+                                                 placeholder={`พิมพ์ "${restaurant.shop_name}" เพื่อยืนยัน`}
+                                                 className="mt-2"
+                                               />
+                                             </div>
+                                             <AlertDialogFooter>
+                                               <AlertDialogCancel 
+                                                 onClick={() => {
+                                                   setIsDeleteConfirmOpen(false);
+                                                   setSelectedRestaurant(null);
+                                                   setRestaurantDeleteConfirmName('');
+                                                 }}
+                                               >
+                                                 ยกเลิก
+                                               </AlertDialogCancel>
+                                               <AlertDialogAction
+                                                 onClick={handleDeleteRestaurant}
+                                                 disabled={restaurantDeleteConfirmName !== restaurant.shop_name}
+                                                 className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                               >
+                                                 ลบร้านอาหาร
+                                               </AlertDialogAction>
+                                             </AlertDialogFooter>
+                                            </AlertDialogContent>
                                          </AlertDialog>
                                          </TooltipProvider>
                                        </div>
@@ -3351,26 +3434,44 @@ const Admin = () => {
                                          )}
                                        </div>
                                        
-                                       {/* Edit Button */}
-                                       <div className="flex-shrink-0 flex items-center">
-                                         <TooltipProvider>
-                                           <Tooltip>
-                                             <TooltipTrigger asChild>
-                                               <Button
-                                                 size="sm"
-                                                 variant="outline"
-                                                 className="h-8 w-8 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
-                                                 onClick={() => handleEditFood(food)}
-                                               >
-                                                 <Edit className="h-3 w-3 text-gray-800" />
-                                               </Button>
-                                             </TooltipTrigger>
-                                             <TooltipContent>
-                                               <p>แก้ไขรายการอาหาร</p>
-                                             </TooltipContent>
-                                           </Tooltip>
-                                         </TooltipProvider>
-                                       </div>
+                                        {/* Action Buttons */}
+                                        <div className="flex-shrink-0 flex items-center gap-2">
+                                          <TooltipProvider>
+                                            {/* Edit Button */}
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  className="h-8 w-8 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
+                                                  onClick={() => handleEditFood(food)}
+                                                >
+                                                  <Edit className="h-3 w-3 text-gray-800" />
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                <p>แก้ไขรายการอาหาร</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                            
+                                            {/* Delete Food Button */}
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  className="h-8 w-8 p-0 border-red-600 hover:bg-red-600 hover:border-red-600"
+                                                  onClick={() => handleDeleteFood(food)}
+                                                >
+                                                  <Trash2 className="h-3 w-3 text-red-600" />
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                <p>ลบรายการอาหาร</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        </div>
                                     </div>
                                   ))}
                                 </div>
@@ -3393,17 +3494,17 @@ const Admin = () => {
                          </DialogContent>
                        </Dialog>
 
-                       {/* Edit Food Modal */}
-                        <Dialog open={isEditFoodModalOpen} onOpenChange={setIsEditFoodModalOpen}>
-                          <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] overflow-hidden">
-                            <DialogHeader className="p-4 pb-2 border-b bg-white/90">
-                              <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                                แก้ไขรายการอาหาร - {selectedRestaurant?.shop_name}
-                              </DialogTitle>
-                            </DialogHeader>
-                            
-                            <ScrollArea className="flex-1 max-h-[calc(90vh-8rem)] overflow-auto">
-                              <div className="space-y-6 p-4">
+                        {/* Edit Food Modal */}
+                         <Dialog open={isEditFoodModalOpen} onOpenChange={setIsEditFoodModalOpen}>
+                           <DialogContent className="w-[95vw] max-w-[700px] p-0 overflow-hidden">
+                             <DialogHeader className="p-4 pb-2 border-b bg-white/90">
+                               <DialogTitle className="text-xl font-semibold text-center text-foreground">
+                                 แก้ไขรายการอาหาร - {selectedRestaurant?.shop_name}
+                               </DialogTitle>
+                             </DialogHeader>
+                             
+                             <ScrollArea className="max-h-[calc(90vh-10rem)] px-4">
+                               <div className="space-y-6 py-4">
                                {/* Food Category */}
                                <div>
                                  <Label htmlFor="edit_food_category" className="text-sm font-medium text-foreground">
@@ -3569,8 +3670,36 @@ const Admin = () => {
                               </Button>
                             </DialogFooter>
                          </DialogContent>
-                       </Dialog>
-                     </div>
+                         </Dialog>
+
+                         {/* Delete Food Confirmation Dialog */}
+                         <AlertDialog open={isFoodDeleteConfirmOpen} onOpenChange={setIsFoodDeleteConfirmOpen}>
+                           <AlertDialogContent>
+                             <AlertDialogHeader>
+                               <AlertDialogTitle>ยืนยันการลบรายการอาหาร</AlertDialogTitle>
+                               <AlertDialogDescription>
+                                 คุณแน่ใจหรือไม่ที่จะลบรายการอาหาร "{deletingFood?.food_name}" 
+                                 <br />
+                                 การกระทำนี้ไม่สามารถย้อนกลับได้
+                               </AlertDialogDescription>
+                             </AlertDialogHeader>
+                             <AlertDialogFooter>
+                               <AlertDialogCancel onClick={() => {
+                                 setIsFoodDeleteConfirmOpen(false);
+                                 setDeletingFood(null);
+                               }}>
+                                 ยกเลิก
+                               </AlertDialogCancel>
+                               <AlertDialogAction
+                                 onClick={confirmDeleteFood}
+                                 className="bg-red-600 hover:bg-red-700"
+                               >
+                                 ลบรายการอาหาร
+                               </AlertDialogAction>
+                             </AlertDialogFooter>
+                           </AlertDialogContent>
+                         </AlertDialog>
+                      </div>
                   </CardContent>
                 </Card>
               </TabsContent>
