@@ -125,7 +125,14 @@ const MenuSelection = () => {
 
   const getToppingsFromItem = (item: MenuItem): string[] => {
     if (!item.topping) return [];
-    return item.topping.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    
+    // ตรวจสอบว่า topping เป็น "-" ให้ถือว่าไม่มี topping
+    if (item.topping.trim() === "-") return [];
+    
+    return item.topping
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t.length > 0 && t !== "-");
   };
 
   const handleConfirm = async () => {
