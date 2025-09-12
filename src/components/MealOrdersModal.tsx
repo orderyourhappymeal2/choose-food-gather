@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, UtensilsCrossed } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { ChevronDown, ChevronUp, UtensilsCrossed, Store, ChefHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -21,27 +23,32 @@ interface OrderData {
   };
   food: {
     food_name: string;
+    url_pic: string | null;
   };
   meal: {
     meal_name: string;
     meal_index: number;
     shop: {
       shop_name: string;
+      url_pic: string | null;
     };
   };
 }
 
 interface FoodVariant {
   food_name: string;
+  food_url_pic: string | null;
   topping: string | null;
   order_note: string | null;
   persons: string[];
   count: number;
+  index: number;
 }
 
 interface MealSection {
   meal_name: string;
   shop_name: string;
+  shop_url_pic: string | null;
   meal_index: number;
   food_variants: FoodVariant[];
 }
@@ -73,13 +80,15 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
             person_name
           ),
           food:food_id (
-            food_name
+            food_name,
+            url_pic
           ),
           meal:meal_id (
             meal_name,
             meal_index,
             shop:shop_id (
-              shop_name
+              shop_name,
+              url_pic
             )
           )
         `)
@@ -119,6 +128,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     const mealShopMap = new Map<string, {
       meal_name: string;
       shop_name: string;
+      shop_url_pic: string | null;
       meal_index: number;
       orders: OrderData[];
     }>();
@@ -132,6 +142,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
         mealShopMap.set(key, {
           meal_name: order.meal.meal_name,
           shop_name: order.meal.shop.shop_name,
+          shop_url_pic: order.meal.shop.url_pic,
           meal_index: order.meal.meal_index,
           orders: []
         });
@@ -152,10 +163,12 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
         if (!foodVariantMap.has(variantKey)) {
           foodVariantMap.set(variantKey, {
             food_name: order.food.food_name,
+            food_url_pic: order.food.url_pic,
             topping: order.topping,
             order_note: order.order_note,
             persons: [],
-            count: 0
+            count: 0,
+            index: 0
           });
         }
         
@@ -164,13 +177,21 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
         variant.count++;
       });
 
+      const sortedVariants = Array.from(foodVariantMap.values()).sort((a, b) => 
+        a.food_name.localeCompare(b.food_name, 'th')
+      );
+      
+      // Add index to each food variant
+      sortedVariants.forEach((variant, index) => {
+        variant.index = index + 1;
+      });
+
       return {
         meal_name: section.meal_name,
         shop_name: section.shop_name,
+        shop_url_pic: section.shop_url_pic,
         meal_index: section.meal_index,
-        food_variants: Array.from(foodVariantMap.values()).sort((a, b) => 
-          a.food_name.localeCompare(b.food_name, 'th')
-        )
+        food_variants: sortedVariants
       };
     });
 
@@ -227,25 +248,31 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
               <Collapsible open={isOpen} onOpenChange={() => toggleSection(sectionKey)}>
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-brand-pink/5 transition-colors pb-3">
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 bg-primary text-primary-foreground rounded-full text-sm font-bold">
-                          {section.meal_index}
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-                          <span className="font-semibold text-foreground truncate">
-                            {section.meal_name}
-                          </span>
-                          <span className="text-sm text-muted-foreground">-</span>
-                          <span className="text-base font-medium text-foreground truncate">
-                            {section.shop_name}
-                          </span>
+                    <CardTitle className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        {section.shop_url_pic && (
+                          <Avatar className="h-12 w-12 flex-shrink-0">
+                            <AvatarImage src={section.shop_url_pic} alt={section.shop_name} />
+                            <AvatarFallback>
+                              <Store className="h-6 w-6" />
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-semibold text-lg text-foreground">
+                              {section.meal_name}
+                            </span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {section.shop_name}
+                            </span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs w-fit">
+                            {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
+                          </Badge>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
-                        </Badge>
+                      <div className="flex-shrink-0">
                         {isOpen ? (
                           <ChevronUp className="h-5 w-5 text-muted-foreground" />
                         ) : (
@@ -264,33 +291,51 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                           key={index}
                           className="bg-white/60 border border-brand-pink/10 rounded-lg p-4"
                         >
-                          <div className="space-y-2">
-                            <div className="font-medium text-foreground">
-                              {variant.food_name}
-                            </div>
-                            
-                            {variant.topping && variant.topping !== "-" && (
-                              <div className="text-sm text-muted-foreground">
-                                <span className="font-medium">เสริม:</span> {variant.topping}
+                          <div className="flex gap-3">
+                            {variant.food_url_pic && (
+                              <div className="flex-shrink-0 w-16 h-16">
+                                <AspectRatio ratio={1}>
+                                  <img 
+                                    src={variant.food_url_pic} 
+                                    alt={variant.food_name}
+                                    className="rounded-lg object-cover w-full h-full"
+                                  />
+                                </AspectRatio>
                               </div>
                             )}
-                            
-                            {variant.order_note && (
-                              <div className="text-sm text-muted-foreground">
-                                <span className="font-medium">หมายเหตุ:</span> {variant.order_note}
+                            <div className="flex-1 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <span className="text-sm font-bold text-muted-foreground bg-secondary px-2 py-1 rounded text-xs">
+                                  {variant.index}
+                                </span>
+                                <div className="font-medium text-foreground">
+                                  {variant.food_name}
+                                </div>
                               </div>
-                            )}
-                            
-                            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-brand-pink/10">
-                              <span className="text-sm font-medium text-muted-foreground">
-                                สั่งโดย ({variant.count}):
-                              </span>
-                              <div className="flex flex-wrap gap-1">
-                                {variant.persons.map((person, personIndex) => (
-                                  <Badge key={personIndex} variant="outline" className="text-xs">
-                                    {person}
-                                  </Badge>
-                                ))}
+                              
+                              {variant.topping && variant.topping !== "-" && (
+                                <div className="text-sm text-muted-foreground">
+                                  <span className="font-medium">add-on:</span> {variant.topping}
+                                </div>
+                              )}
+                              
+                              {variant.order_note && (
+                                <div className="text-sm text-muted-foreground">
+                                  <span className="font-medium">หมายเหตุ:</span> {variant.order_note}
+                                </div>
+                              )}
+                              
+                              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-brand-pink/10">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  สั่งโดย ({variant.count}):
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {variant.persons.map((person, personIndex) => (
+                                    <Badge key={personIndex} variant="outline" className="text-xs">
+                                      {person}
+                                    </Badge>
+                                  ))}
+                                </div>
                               </div>
                             </div>
                           </div>
