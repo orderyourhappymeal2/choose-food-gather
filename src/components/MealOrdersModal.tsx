@@ -8,6 +8,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ChevronDown, ChevronUp, UtensilsCrossed, Store, ChefHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MealOrdersModalProps {
   plan: any;
@@ -57,6 +58,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   const [mealSections, setMealSections] = useState<MealSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (plan?.plan_id) {
@@ -237,21 +239,21 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   }
 
   return (
-    <div className="w-full max-w-none">
+    <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
       <div className="grid gap-4 md:gap-6">
         {mealSections.map((section) => {
           const sectionKey = `${section.meal_index}-${section.meal_name}-${section.shop_name}`;
           const isOpen = openSections.has(sectionKey);
 
           return (
-            <Card key={sectionKey} className="border border-brand-pink/20 bg-white/80">
+            <Card key={sectionKey} className={`border border-brand-pink/20 bg-white/80 ${isMobile ? 'relative' : ''}`}>
               <Collapsible open={isOpen} onOpenChange={() => toggleSection(sectionKey)}>
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-brand-pink/5 transition-colors pb-3">
                     <CardTitle className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         {section.shop_url_pic && (
-                          <Avatar className="h-12 w-12 flex-shrink-0">
+                          <Avatar className={isMobile ? "h-10 w-10 flex-shrink-0" : "h-12 w-12 flex-shrink-0"}>
                             <AvatarImage src={section.shop_url_pic} alt={section.shop_name} />
                             <AvatarFallback>
                               <Store className="h-6 w-6" />
@@ -259,20 +261,33 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                           </Avatar>
                         )}
                         <div className="flex flex-col gap-1 min-w-0 flex-1">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-semibold text-lg text-foreground">
-                              {section.meal_name}
-                            </span>
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {section.shop_name}
-                            </span>
-                          </div>
-                          <Badge variant="secondary" className="text-xs w-fit">
-                            {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
-                          </Badge>
+                          {isMobile ? (
+                            <div className="space-y-1">
+                              <div className="text-sm font-semibold text-foreground">
+                                มื้อ: {section.meal_name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                ร้าน: {section.shop_name} ({section.food_variants.reduce((total, variant) => total + variant.count, 0)})
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              <span className="font-semibold text-lg text-foreground">
+                                {section.meal_name}
+                              </span>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {section.shop_name}
+                              </span>
+                            </div>
+                          )}
+                          {!isMobile && (
+                            <Badge variant="secondary" className="text-xs w-fit">
+                              {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                      <div className="flex-shrink-0">
+                      <div className={`flex-shrink-0 ${isMobile ? 'absolute top-2 right-2' : ''}`}>
                         {isOpen ? (
                           <ChevronUp className="h-5 w-5 text-muted-foreground" />
                         ) : (
@@ -286,61 +301,70 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                 <CollapsibleContent>
                   <CardContent className="pt-0">
                     <div className="space-y-3">
-                      {section.food_variants.map((variant, index) => (
-                        <div
-                          key={index}
-                          className="bg-white/60 border border-brand-pink/10 rounded-lg p-4"
-                        >
-                          <div className="flex gap-3">
-                            {variant.food_url_pic && (
-                              <div className="flex-shrink-0 w-16 h-16">
-                                <AspectRatio ratio={1}>
-                                  <img 
-                                    src={variant.food_url_pic} 
-                                    alt={variant.food_name}
-                                    className="rounded-lg object-cover w-full h-full"
-                                  />
-                                </AspectRatio>
-                              </div>
-                            )}
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-start gap-2">
-                                <span className="text-sm font-bold text-muted-foreground bg-secondary px-2 py-1 rounded text-xs">
-                                  {variant.index}
-                                </span>
-                                <div className="font-medium text-foreground">
-                                  {variant.food_name}
-                                </div>
-                              </div>
-                              
-                              {variant.topping && variant.topping !== "-" && (
-                                <div className="text-sm text-muted-foreground">
-                                  <span className="font-medium">add-on:</span> {variant.topping}
+                      {section.food_variants.map((variant, index) => {
+                        // Calculate global index across all sections
+                        let globalIndex = 0;
+                        for (let i = 0; i < mealSections.indexOf(section); i++) {
+                          globalIndex += mealSections[i].food_variants.length;
+                        }
+                        globalIndex += index + 1;
+
+                        return (
+                          <div
+                            key={index}
+                            className="bg-white/60 border border-brand-pink/10 rounded-lg p-4"
+                          >
+                            <div className={isMobile ? "flex flex-col gap-3" : "flex gap-3"}>
+                              {variant.food_url_pic && (
+                                <div className={`flex-shrink-0 ${isMobile ? 'w-12 h-12 self-start' : 'w-16 h-16'}`}>
+                                  <AspectRatio ratio={1}>
+                                    <img 
+                                      src={variant.food_url_pic} 
+                                      alt={variant.food_name}
+                                      className="rounded-lg object-cover w-full h-full"
+                                    />
+                                  </AspectRatio>
                                 </div>
                               )}
-                              
-                              {variant.order_note && (
-                                <div className="text-sm text-muted-foreground">
-                                  <span className="font-medium">หมายเหตุ:</span> {variant.order_note}
+                              <div className="flex-1 space-y-2">
+                                <div className={`flex items-start gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
+                                  <span className="text-sm font-bold text-muted-foreground bg-secondary px-2 py-1 rounded text-xs flex-shrink-0">
+                                    {globalIndex}
+                                  </span>
+                                  <div className={`font-medium text-foreground ${isMobile ? 'text-sm' : ''}`}>
+                                    {variant.food_name}
+                                  </div>
                                 </div>
-                              )}
-                              
-                              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-brand-pink/10">
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  สั่งโดย ({variant.count}):
-                                </span>
-                                <div className="flex flex-wrap gap-1">
-                                  {variant.persons.map((person, personIndex) => (
-                                    <Badge key={personIndex} variant="outline" className="text-xs">
-                                      {person}
-                                    </Badge>
-                                  ))}
+                                
+                                {variant.topping && variant.topping !== "-" && (
+                                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                    <span className="font-medium">add-on:</span> {variant.topping}
+                                  </div>
+                                )}
+                                
+                                {variant.order_note && (
+                                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                    <span className="font-medium">หมายเหตุ:</span> {variant.order_note}
+                                  </div>
+                                )}
+                                
+                                <div className={`flex flex-wrap items-center gap-2 pt-2 border-t border-brand-pink/10 ${isMobile ? 'text-xs' : ''}`}>
+                                  <span className={`font-medium text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                    สั่งโดย ({variant.count}):
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {variant.persons.map((person, personIndex) => (
+                                      <Badge key={personIndex} variant="outline" className={isMobile ? "text-xs px-1 py-0" : "text-xs"}>
+                                        {person}
+                                      </Badge>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </CollapsibleContent>

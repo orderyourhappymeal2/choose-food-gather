@@ -1494,7 +1494,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
             {/* Filter Container */}
             <div className="flex-shrink-0">
               {/* Mobile Filter Icons */}
-              <div className="md:hidden flex gap-2 mb-4">
+              <div className="md:hidden flex gap-2 mb-4 justify-center">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="p-2">
@@ -1833,15 +1833,15 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       {/* Meal List Modal */}
       <Dialog open={isMealListModalOpen} onOpenChange={setIsMealListModalOpen}>
-        <DialogContent className="w-[95vw] max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[90vh] flex flex-col">
+        <DialogContent className="w-[98vw] max-w-5xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[92vh] flex flex-col">
           <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               รายการมื้ออาหาร - {selectedPlanForMeal?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-hidden p-4">
-            <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-4">
+          <div className="flex-1 overflow-hidden px-2 md:px-4 py-2">
+            <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-2 md:p-4">
               <MealOrdersModal plan={selectedPlanForMeal} />
             </ScrollArea>
           </div>
