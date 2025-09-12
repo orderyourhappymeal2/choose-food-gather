@@ -29,6 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import MealOrdersModal from "@/components/MealOrdersModal";
 import {
   DndContext,
   closestCenter,
@@ -1841,9 +1842,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           
           <div className="flex-1 overflow-hidden p-4">
             <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-4">
-              <div className="text-center text-muted-foreground py-8">
-                รายการมื้ออาหารจะมาตรงนี้
-              </div>
+              <MealOrdersModal plan={selectedPlanForMeal} />
             </ScrollArea>
           </div>
           
