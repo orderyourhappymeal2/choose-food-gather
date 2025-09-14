@@ -1726,7 +1726,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                 <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30">
                   <div className="p-4 space-y-3">
                     {/* Header - Hidden on mobile */}
-                    <div className="hidden lg:grid grid-cols-7 gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
+                    <div className="hidden lg:grid grid-cols-8 gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
+                      <div>#</div>
                       <div>ผู้สั่ง</div>
                       <div>มื้ออาหาร</div>
                       <div>ร้านอาหาร</div>
@@ -1738,9 +1739,16 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                     
                     {/* Order Items */}
                     {filteredOrders.map((order, index) => (
-                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
+                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-8 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ผู้สั่ง:</div>
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">#:</div>
+                          <div className="text-sm font-bold text-primary">
+                            {index + 1}
+                          </div>
+                        </div>
+                        
+                        <div className="lg:col-span-1">
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">คน:</div>
                           <div className="text-sm font-medium">
                             {order.person_name}
                             {order.person_agent && (
@@ -1750,7 +1758,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้ออาหาร:</div>
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้อ:</div>
                           <div className="text-sm font-medium text-primary flex items-center gap-2">
                             {order.meal_name}
                             {!order.is_custom && (
@@ -1760,7 +1768,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้านอาหาร:</div>
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้าน:</div>
                           <div className="text-sm font-medium text-brand-orange">{order.shop_name}</div>
                         </div>
                         
@@ -1770,17 +1778,17 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">หมายเหตุ:</div>
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">โน๊ต:</div>
                           <div className="text-sm">{order.order_note || '-'}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ท็อปปิ้ง:</div>
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ท็อป:</div>
                           <div className="text-sm">{order.topping || '-'}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เวลาสั่ง:</div>
+                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เวลา:</div>
                           <div className="text-xs text-muted-foreground">
                             {formatThaiDateTime(order.created_at)}
                           </div>
