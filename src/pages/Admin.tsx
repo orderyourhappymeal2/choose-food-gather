@@ -1741,15 +1741,24 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                     {filteredOrders.map((order, index) => (
                       <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-8 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">#:</div>
-                          <div className="text-sm font-bold text-primary">
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">#:</span>
+                            <span className="text-sm font-bold text-primary">{index + 1}</span>
+                          </div>
+                          <div className="hidden lg:block text-sm font-bold text-primary">
                             {index + 1}
                           </div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">คน:</div>
-                          <div className="text-sm font-medium">
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">คน:</span>
+                            <span className="text-sm font-medium">
+                              {order.person_name}
+                              {order.person_agent && ` (${order.person_agent})`}
+                            </span>
+                          </div>
+                          <div className="hidden lg:block text-sm font-medium">
                             {order.person_name}
                             {order.person_agent && (
                               <div className="text-xs text-muted-foreground">({order.person_agent})</div>
@@ -1758,38 +1767,57 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">มื้อ:</div>
-                          <div className="text-sm font-medium text-primary flex items-center gap-2">
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">มื้อ:</span>
+                            <span className="text-sm font-medium text-primary inline-flex items-center gap-2">
+                              {order.meal_name}
+                              {!order.is_custom && <Check className="h-4 w-4 text-green-600" />}
+                            </span>
+                          </div>
+                          <div className="hidden lg:block text-sm font-medium text-primary flex items-center gap-2">
                             {order.meal_name}
-                            {!order.is_custom && (
-                              <Check className="h-4 w-4 text-green-600" />
-                            )}
+                            {!order.is_custom && <Check className="h-4 w-4 text-green-600" />}
                           </div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ร้าน:</div>
-                          <div className="text-sm font-medium text-brand-orange">{order.shop_name}</div>
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">ร้าน:</span>
+                            <span className="text-sm font-medium text-brand-orange">{order.shop_name}</span>
+                          </div>
+                          <div className="hidden lg:block text-sm font-medium text-brand-orange">{order.shop_name}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เมนู:</div>
-                          <div className="text-sm font-medium">{order.food_name}</div>
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">เมนู:</span>
+                            <span className="text-sm font-medium">{order.food_name}</span>
+                          </div>
+                          <div className="hidden lg:block text-sm font-medium">{order.food_name}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">โน๊ต:</div>
-                          <div className="text-sm">{order.order_note || '-'}</div>
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">โน๊ต:</span>
+                            <span className="text-sm">{order.order_note || '-'}</span>
+                          </div>
+                          <div className="hidden lg:block text-sm">{order.order_note || '-'}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">ท็อป:</div>
-                          <div className="text-sm">{order.topping || '-'}</div>
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">ท็อป:</span>
+                            <span className="text-sm">{order.topping || '-'}</span>
+                          </div>
+                          <div className="hidden lg:block text-sm">{order.topping || '-'}</div>
                         </div>
                         
                         <div className="lg:col-span-1">
-                          <div className="lg:hidden font-medium text-xs text-muted-foreground mb-1">เวลา:</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="lg:hidden">
+                            <span className="font-medium text-xs text-muted-foreground mr-2">เวลา:</span>
+                            <span className="text-xs text-muted-foreground">{formatThaiDateTime(order.created_at)}</span>
+                          </div>
+                          <div className="hidden lg:block text-xs text-muted-foreground">
                             {formatThaiDateTime(order.created_at)}
                           </div>
                         </div>
