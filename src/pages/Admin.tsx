@@ -1014,23 +1014,54 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           ยังไม่มีแผนการจองอาหาร
         </div>
       ) : (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <Card key={plan.plan_id} className="bg-gradient-to-r from-brand-cream/20 to-transparent border border-brand-pink/10 overflow-hidden">
-              <CardContent className="p-4 min-w-0">
-                <div className="space-y-3 min-w-0">
-                  <div className="space-y-2">
-                    <div className="flex flex-col space-y-1 min-w-0">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-0 md:px-4">
+          {plans.map((plan) => {
+            const getTopBarColor = () => {
+              switch(filterState) {
+                case 'waiting': return 'bg-brand-yellow border-brand-yellow/30';
+                case 'published': return 'bg-brand-orange border-brand-orange/30';
+                case 'finished': return 'bg-brand-pink border-brand-pink/30';
+                default: return 'bg-brand-cream border-brand-cream/30';
+              }
+            };
+            
+            const getOrderNumber = (planId: string) => planId.slice(-8).toUpperCase();
+            
+            return (
+            <Card key={plan.plan_id} className={`bg-white/80 backdrop-blur-sm shadow-lg shadow-black/5 border ${getTopBarColor().split(' ')[1]} overflow-hidden relative`}>
+              {/* Top colored bar */}
+              <div className={`h-1 w-full ${getTopBarColor().split(' ')[0]}`} />
+              
+              <CardContent className="p-2 md:p-4 min-w-0">
+                {/* Order number badge - top right */}
+                <div className="absolute top-3 right-2 md:right-4">
+                  <div className="bg-muted/50 text-muted-foreground text-xs px-2 py-1 rounded-full font-mono">
+                    #{getOrderNumber(plan.plan_id)}
+                  </div>
+                </div>
+                
+                <div className="space-y-2 md:space-y-3 min-w-0 pr-16 md:pr-20">
+                  <div className="space-y-1 md:space-y-2">
+                    {/* Mobile: Inline layout, Desktop: Stacked layout */}
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
                       <div className="text-sm font-semibold text-foreground truncate">{plan.plan_name}</div>
                     </div>
+                    <div className="md:hidden flex items-center space-x-2 min-w-0">
+                      <span className="text-xs font-medium text-muted-foreground shrink-0">งาน:</span>
+                      <div className="text-sm font-semibold text-foreground truncate">{plan.plan_name}</div>
+                    </div>
                     
-                    <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
                       <div className="text-sm text-foreground truncate">{plan.plan_location}</div>
                     </div>
+                    <div className="md:hidden flex items-center space-x-2 min-w-0">
+                      <span className="text-xs font-medium text-muted-foreground shrink-0">ที่:</span>
+                      <div className="text-sm text-foreground truncate">{plan.plan_location}</div>
+                    </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="hidden md:grid md:grid-cols-1 sm:md:grid-cols-2 md:gap-2">
                       <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
                         <div className="text-sm text-foreground truncate">{formatThaiDate(plan.plan_date)}</div>
@@ -1040,8 +1071,18 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         <div className="text-sm text-foreground truncate">{plan.plan_time}</div>
                       </div>
                     </div>
+                    <div className="md:hidden flex items-center space-x-4 min-w-0">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <span className="text-xs font-medium text-muted-foreground shrink-0">วัน:</span>
+                        <div className="text-sm text-foreground truncate">{formatThaiDate(plan.plan_date).replace(/\s+/g, '')}</div>
+                      </div>
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <span className="text-xs font-medium text-muted-foreground shrink-0">เวลา:</span>
+                        <div className="text-sm text-foreground truncate">{plan.plan_time}</div>
+                      </div>
+                    </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="hidden md:grid md:grid-cols-1 sm:md:grid-cols-2 md:gap-2">
                       <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
                         <div className="text-sm text-foreground truncate">{plan.plan_pwd}</div>
@@ -1051,9 +1092,23 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         <div className="text-sm text-foreground truncate">{plan.plan_maxp} คน</div>
                       </div>
                     </div>
+                    <div className="md:hidden flex items-center space-x-4 min-w-0">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <span className="text-xs font-medium text-muted-foreground shrink-0">รหัส:</span>
+                        <div className="text-sm text-foreground truncate">{plan.plan_pwd}</div>
+                      </div>
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <span className="text-xs font-medium text-muted-foreground shrink-0">คน:</span>
+                        <div className="text-sm text-foreground truncate">{plan.plan_maxp}</div>
+                      </div>
+                    </div>
                     
-                    <div className="flex flex-col space-y-1 min-w-0">
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
+                      <div className="text-sm text-foreground truncate">{plan.plan_editor}</div>
+                    </div>
+                    <div className="md:hidden flex items-center space-x-2 min-w-0">
+                      <span className="text-xs font-medium text-muted-foreground shrink-0">สร้างโดย:</span>
                       <div className="text-sm text-foreground truncate">{plan.plan_editor}</div>
                     </div>
                   </div>
@@ -1213,7 +1268,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
