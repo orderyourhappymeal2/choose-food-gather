@@ -1737,9 +1737,9 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       <div>เวลาสั่ง</div>
                     </div>
                     
-                    {/* Order Items */}
-                    {filteredOrders.map((order, index) => (
-                      <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-8 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/60'} hover:bg-white/70 transition-colors border border-white/50`}>
+                     {/* Order Items */}
+                     {filteredOrders.map((order, index) => (
+                       <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-8 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-gradient-to-r from-white/50 to-brand-pink/5' : 'bg-gradient-to-r from-brand-orange/5 to-white/50'} hover:bg-gradient-to-r hover:from-brand-pink/10 hover:to-brand-orange/10 transition-all duration-200 border-2 border-brand-pink/30 shadow-sm`}>
                         <div className="lg:col-span-1">
                           <div className="lg:hidden">
                             <span className="font-medium text-xs text-muted-foreground mr-2">#:</span>
