@@ -249,7 +249,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
             <Card key={sectionKey} className={`border border-brand-pink/20 bg-white/80 ${isMobile ? 'relative' : ''}`}>
               <Collapsible open={isOpen} onOpenChange={() => toggleSection(sectionKey)}>
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-brand-pink/5 transition-colors pb-3">
+                  <CardHeader className="cursor-pointer hover:bg-brand-pink/5 transition-colors pb-3 border-b border-brand-pink/10">
                     <CardTitle className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         {section.shop_url_pic && (
@@ -266,24 +266,27 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                               <div className="text-sm font-semibold text-foreground">
                                 มื้อ: {section.meal_name}
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                ร้าน: {section.shop_name} ({section.food_variants.reduce((total, variant) => total + variant.count, 0)})
+                              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                <span>ร้าน: {section.shop_name}</span>
+                                <Badge variant="destructive" className="text-xs px-2">
+                                  {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
+                                </Badge>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-2">
                               <span className="font-semibold text-lg text-foreground">
                                 {section.meal_name}
                               </span>
-                              <span className="text-sm font-medium text-muted-foreground">
-                                {section.shop_name}
-                              </span>
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {section.shop_name}
+                                </span>
+                                <Badge variant="destructive" className="text-sm font-bold">
+                                  รวม {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
+                                </Badge>
+                              </div>
                             </div>
-                          )}
-                          {!isMobile && (
-                            <Badge variant="secondary" className="text-xs w-fit">
-                              {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
-                            </Badge>
                           )}
                         </div>
                       </div>
@@ -312,52 +315,75 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                         return (
                           <div
                             key={index}
-                            className="bg-white/60 border border-brand-pink/10 rounded-lg p-4"
+                            className="bg-gradient-to-r from-white via-white to-brand-pink/5 border-2 border-brand-pink/15 rounded-lg p-4 shadow-sm"
                           >
-                            <div className={isMobile ? "flex flex-col gap-3" : "flex gap-3"}>
+                            <div className={isMobile ? "flex flex-col gap-3" : "flex gap-4"}>
                               {variant.food_url_pic && (
                                 <div className={`flex-shrink-0 ${isMobile ? 'w-12 h-12 self-start' : 'w-16 h-16'}`}>
                                   <AspectRatio ratio={1}>
                                     <img 
                                       src={variant.food_url_pic} 
                                       alt={variant.food_name}
-                                      className="rounded-lg object-cover w-full h-full"
+                                      className="rounded-lg object-cover w-full h-full border border-brand-pink/20"
                                     />
                                   </AspectRatio>
                                 </div>
                               )}
-                              <div className="flex-1 space-y-2">
-                                <div className={`flex items-start gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
-                                  <span className="text-sm font-bold text-muted-foreground bg-secondary px-2 py-1 rounded text-xs flex-shrink-0">
-                                    {globalIndex}
-                                  </span>
-                                  <div className={`font-medium text-foreground ${isMobile ? 'text-sm' : ''}`}>
-                                    {variant.food_name}
+                              <div className="flex-1">
+                                {/* Header Section with Index and Name */}
+                                <div className="bg-brand-pink/10 rounded-lg p-3 mb-3 border-l-4 border-brand-pink/60">
+                                  <div className={`flex items-center justify-between ${isMobile ? 'flex-col gap-2' : ''}`}>
+                                    <div className="flex items-center gap-3">
+                                      <span className="bg-brand-pink/80 text-white font-bold px-3 py-1 rounded-full text-sm min-w-[32px] text-center">
+                                        {globalIndex}
+                                      </span>
+                                      <div className={`font-semibold text-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                        {variant.food_name}
+                                      </div>
+                                    </div>
+                                    <div className="bg-brand-orange/20 border border-brand-orange/40 rounded-lg px-3 py-2">
+                                      <div className={`text-center ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                        <div className="font-bold text-brand-orange text-xl">{variant.count}</div>
+                                        <div className="text-xs text-muted-foreground font-medium">จำนวน</div>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                                 
-                                {variant.topping && variant.topping !== "-" && (
-                                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                    <span className="font-medium">add-on:</span> {variant.topping}
+                                {/* Details Section */}
+                                {(variant.topping || variant.order_note) && (
+                                  <div className="bg-muted/30 rounded-lg p-3 mb-3 space-y-2">
+                                    {variant.topping && variant.topping !== "-" && (
+                                      <div className={`flex items-start gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                        <span className="font-medium text-brand-orange min-w-fit">add-on:</span>
+                                        <span className="text-foreground">{variant.topping}</span>
+                                      </div>
+                                    )}
+                                    
+                                    {variant.order_note && (
+                                      <div className={`flex items-start gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                        <span className="font-medium text-brand-orange min-w-fit">หมายเหตุ:</span>
+                                        <span className="text-foreground">{variant.order_note}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                                 
-                                {variant.order_note && (
-                                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                    <span className="font-medium">หมายเหตุ:</span> {variant.order_note}
-                                  </div>
-                                )}
-                                
-                                <div className={`flex flex-wrap items-center gap-2 pt-2 border-t border-brand-pink/10 ${isMobile ? 'text-xs' : ''}`}>
-                                  <span className={`font-medium text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                    สั่งโดย ({variant.count}):
-                                  </span>
-                                  <div className="flex flex-wrap gap-1">
-                                    {variant.persons.map((person, personIndex) => (
-                                      <Badge key={personIndex} variant="outline" className={isMobile ? "text-xs px-1 py-0" : "text-xs"}>
-                                        {person}
-                                      </Badge>
-                                    ))}
+                                {/* Persons Section */}
+                                <div className="bg-brand-pink/5 border border-brand-pink/20 rounded-lg p-3">
+                                  <div className={`flex flex-col gap-2 ${isMobile ? 'text-xs' : ''}`}>
+                                    <div className="flex items-center gap-2 pb-2 border-b border-brand-pink/20">
+                                      <span className={`font-bold text-brand-pink ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                        ผู้สั่ง ({variant.count} คน):
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {variant.persons.map((person, personIndex) => (
+                                        <Badge key={personIndex} variant="secondary" className={`${isMobile ? "text-xs px-2 py-1" : "text-sm px-3 py-1"} bg-white border border-brand-pink/30 text-foreground font-medium hover:bg-brand-pink/10 transition-colors`}>
+                                          {person}
+                                        </Badge>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
