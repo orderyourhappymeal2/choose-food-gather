@@ -702,13 +702,21 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       if (ordersError) throw ordersError;
 
-      // Fetch persons for filter
-      const { data: personsData, error: personsError } = await supabase
-        .from('person')
-        .select('*')
-        .eq('plan_id', planId);
-
-      if (personsError) throw personsError;
+      // Get unique persons who have orders, sorted by latest created_at
+      const uniquePersons = ordersData?.reduce((acc, order) => {
+        const personId = order.person?.person_id;
+        if (personId && !acc.find(p => p.person_id === personId)) {
+          acc.push({
+            person_id: personId,
+            person_name: order.person?.person_name,
+            person_agent: order.person?.person_agent,
+            created_at: order.created_at
+          });
+        }
+        return acc;
+      }, [])
+      // Sort by created_at descending (latest first)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
 
       // Fetch meals for filter
       const { data: mealsData, error: mealsError } = await supabase
@@ -749,7 +757,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       setOrders(enrichedOrders);
       setFilteredOrders(enrichedOrders);
-      setOrderPersons(personsData || []);
+      setOrderPersons(uniquePersons);
       setOrderMeals(mealsData || []);
       setOrderShops(shopsData || []);
       
@@ -1539,14 +1547,14 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 
       {/* Order Modal */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
-        <DialogContent className="w-[95vw] max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[90vh] flex flex-col">
+        <DialogContent className="w-[98vw] max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[95vh] md:w-[95vw] md:h-[90vh] flex flex-col">
           <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               รายการอาหารที่ถูกสั่ง - {selectedPlanForOrder?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex flex-col h-full p-4 gap-4 min-h-0">
+          <div className="flex flex-col h-full p-2 md:p-4 gap-2 md:gap-4 min-h-0">
             {/* Filter Container */}
             <div className="flex-shrink-0">
               {/* Mobile Filter Icons */}
@@ -1568,11 +1576,11 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
                         <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                         <div className="border-t border-brand-pink/10 my-1"></div>
-                        {orderPersons.map((person) => (
-                          <SelectItem key={person.person_id} value={person.person_id}>
-                            {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
-                          </SelectItem>
-                        ))}
+                         {orderPersons.map((person, index) => (
+                           <SelectItem key={person.person_id} value={person.person_id}>
+                             {index + 1}. {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
+                           </SelectItem>
+                         ))}
                       </SelectContent>
                     </Select>
                   </PopoverContent>
@@ -1647,11 +1655,11 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                     <SelectContent className="bg-white z-50 border border-brand-pink/20 shadow-lg">
                       <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                       <div className="border-t border-brand-pink/10 my-1"></div>
-                      {orderPersons.map((person) => (
-                        <SelectItem key={person.person_id} value={person.person_id}>
-                          {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
-                        </SelectItem>
-                      ))}
+                       {orderPersons.map((person, index) => (
+                         <SelectItem key={person.person_id} value={person.person_id}>
+                           {index + 1}. {person.person_name}{person.person_agent ? ` (${person.person_agent})` : ''}
+                         </SelectItem>
+                       ))}
                     </SelectContent>
                   </Select>
                 </div>
