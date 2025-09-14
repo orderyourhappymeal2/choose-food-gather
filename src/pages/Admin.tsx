@@ -1050,26 +1050,26 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                 
                 <div className="space-y-1 md:space-y-3 min-w-0 pr-12 md:pr-20">
                   <div className="space-y-1 md:space-y-2">
-                    {/* Mobile & Tablet: Inline layout, Desktop: Stacked layout */}
-                    <div className="hidden lg:flex lg:flex-col lg:space-y-1 min-w-0">
+                    {/* Mobile: Inline layout, Tablet & Desktop: Stacked layout */}
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
                       <div className="text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
                     </div>
-                    <div className="lg:hidden flex items-center space-x-1 min-w-0">
+                    <div className="md:hidden flex items-center space-x-1 min-w-0">
                       <span className="text-xs font-medium text-muted-foreground shrink-0">งาน:</span>
-                      <div className="text-xs md:text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
+                      <div className="text-xs font-semibold text-foreground break-words">{plan.plan_name}</div>
                     </div>
                     
-                    <div className="hidden lg:flex lg:flex-col lg:space-y-1 min-w-0">
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
                       <div className="text-sm text-foreground break-words">{plan.plan_location}</div>
                     </div>
-                    <div className="lg:hidden flex items-center space-x-1 min-w-0">
+                    <div className="md:hidden flex items-center space-x-1 min-w-0">
                       <span className="text-xs font-medium text-muted-foreground shrink-0">ที่:</span>
-                      <div className="text-xs md:text-sm text-foreground break-words">{plan.plan_location}</div>
+                      <div className="text-xs text-foreground break-words">{plan.plan_location}</div>
                     </div>
                     
-                    <div className="hidden lg:grid lg:grid-cols-1 sm:lg:grid-cols-2 lg:gap-2">
+                    <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 md:gap-2">
                       <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
                         <div className="text-sm text-foreground break-words">{formatThaiDate(plan.plan_date)}</div>
@@ -1079,18 +1079,18 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         <div className="text-sm text-foreground break-words">{plan.plan_time}</div>
                       </div>
                     </div>
-                    <div className="lg:hidden flex items-center space-x-3 min-w-0">
+                    <div className="md:hidden flex items-center space-x-3 min-w-0">
                       <div className="flex items-center space-x-1 min-w-0">
                         <span className="text-xs font-medium text-muted-foreground shrink-0">วัน:</span>
-                        <div className="text-xs md:text-sm text-foreground break-words">{formatThaiDate(plan.plan_date).replace(/\s+/g, '')}</div>
+                        <div className="text-xs text-foreground break-words">{formatThaiDate(plan.plan_date).replace(/\s+/g, '')}</div>
                       </div>
                       <div className="flex items-center space-x-1 min-w-0">
                         <span className="text-xs font-medium text-muted-foreground shrink-0">เวลา:</span>
-                        <div className="text-xs md:text-sm text-foreground break-words">{plan.plan_time}</div>
+                        <div className="text-xs text-foreground break-words">{plan.plan_time}</div>
                       </div>
                     </div>
                     
-                    <div className="hidden lg:grid lg:grid-cols-1 sm:lg:grid-cols-2 lg:gap-2">
+                    <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 md:gap-2">
                       <div className="flex flex-col space-y-1 min-w-0">
                         <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
                         <div className="text-sm text-foreground break-words">{plan.plan_pwd}</div>
@@ -1100,24 +1100,24 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                         <div className="text-sm text-foreground break-words">{plan.plan_maxp} คน</div>
                       </div>
                     </div>
-                    <div className="lg:hidden flex items-center space-x-3 min-w-0">
+                    <div className="md:hidden flex items-center space-x-3 min-w-0">
                       <div className="flex items-center space-x-1 min-w-0">
                         <span className="text-xs font-medium text-muted-foreground shrink-0">รหัส:</span>
-                        <div className="text-xs md:text-sm text-foreground break-words">{plan.plan_pwd}</div>
+                        <div className="text-xs text-foreground break-words">{plan.plan_pwd}</div>
                       </div>
                       <div className="flex items-center space-x-1 min-w-0">
                         <span className="text-xs font-medium text-muted-foreground shrink-0">คน:</span>
-                        <div className="text-xs md:text-sm text-foreground break-words">{plan.plan_maxp}</div>
+                        <div className="text-xs text-foreground break-words">{plan.plan_maxp}</div>
                       </div>
                     </div>
                     
-                    <div className="hidden lg:flex lg:flex-col lg:space-y-1 min-w-0">
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
                       <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
                       <div className="text-sm text-foreground break-words">{plan.plan_editor}</div>
                     </div>
-                    <div className="lg:hidden flex items-center space-x-1 min-w-0">
+                    <div className="md:hidden flex items-center space-x-1 min-w-0">
                       <span className="text-xs font-medium text-muted-foreground shrink-0">สร้างโดย:</span>
-                      <div className="text-xs md:text-sm text-foreground break-words">{plan.plan_editor}</div>
+                      <div className="text-xs text-foreground break-words">{plan.plan_editor}</div>
                     </div>
                   </div>
                   
