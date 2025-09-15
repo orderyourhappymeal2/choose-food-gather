@@ -270,46 +270,25 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
       <div className="grid gap-6 md:gap-8">
         {mealGroups.map((meal) => (
           <div key={`meal-${meal.meal_index}`} className="space-y-4">
-            {/* Combined Meal Header */}
-            <Card className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <span className="bg-brand-pink text-white font-bold px-4 py-2 rounded-full text-lg min-w-[50px] text-center">
-                      {meal.meal_index}
-                    </span>
-                    <div>
-                      <h2 className={`font-bold text-foreground ${isMobile ? 'text-lg' : 'text-xl'}`}>
-                        {meal.meal_name}
-                      </h2>
-                      <div className="flex items-center gap-3 mt-2">
-                        <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
-                          {meal.total_items} รายการสั่งทั้งหมด
-                        </Badge>
-                        <Badge variant="outline" className="border-brand-pink text-brand-pink">
-                          {meal.restaurants.length} ร้านอาหาร
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <ChefHat className="h-8 w-8 text-brand-orange" />
-                </CardTitle>
-              </CardHeader>
-            </Card>
-
-            {/* Restaurant Sections */}
+            {/* Combined Meal + Restaurant Sections */}
             {meal.restaurants.map((restaurant) => {
               const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
               const isOpen = openRestaurants.has(restaurantKey);
 
               return (
-                <Card key={restaurantKey} className="border-2 border-brand-orange/20 bg-gradient-to-r from-white to-brand-orange/5 shadow-md">
+                <Card key={restaurantKey} className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
                   <Collapsible open={isOpen} onOpenChange={() => toggleRestaurant(restaurantKey)}>
-                    {/* Restaurant Header - Combined with Meal Info */}
+                    {/* Combined Meal + Restaurant Header */}
                     <CollapsibleTrigger asChild>
-                      <CardHeader className="cursor-pointer hover:bg-brand-orange/10 transition-colors border-b border-brand-orange/20">
+                      <CardHeader className="cursor-pointer hover:bg-brand-pink/10 transition-colors bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
                         <CardTitle className="flex items-center justify-between">
                           <div className="flex items-center gap-4 min-w-0 flex-1">
+                            {/* Meal Index Badge */}
+                            <span className="bg-brand-pink text-white font-bold px-4 py-2 rounded-full text-lg min-w-[50px] text-center flex-shrink-0">
+                              {meal.meal_index}
+                            </span>
+                            
+                            {/* Restaurant Image */}
                             {restaurant.shop_url_pic && (
                               <Avatar className={isMobile ? "h-12 w-12 flex-shrink-0" : "h-16 w-16 flex-shrink-0"}>
                                 <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
@@ -318,18 +297,24 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                 </AvatarFallback>
                               </Avatar>
                             )}
+                            
+                            {/* Combined Info */}
                             <div className="flex flex-col gap-2 min-w-0 flex-1">
                               <div className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
-                                {restaurant.shop_name}
+                                {meal.meal_name} - {restaurant.shop_name}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-muted-foreground">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
+                                  {meal.total_items} รายการทั้งหมด
+                                </Badge>
+                                <Badge variant="outline" className="border-brand-pink text-brand-pink">
                                   {restaurant.food_variants.length} เมนู
                                 </Badge>
                               </div>
                             </div>
                           </div>
-                          <div className="flex-shrink-0">
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <ChefHat className="h-6 w-6 text-brand-orange" />
                             {isOpen ? (
                               <ChevronUp className="h-6 w-6 text-brand-orange" />
                             ) : (
