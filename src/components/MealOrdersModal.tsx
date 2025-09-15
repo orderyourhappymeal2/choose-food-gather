@@ -269,12 +269,12 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
       <div className="grid gap-6 md:gap-8">
         {mealGroups.map((meal) => (
-          <Card key={`meal-${meal.meal_index}`} className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
-            {/* Meal & Restaurant Combined Header */}
-            <CardHeader className="bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3">
+          <div key={`meal-${meal.meal_index}`} className="space-y-4">
+            {/* Combined Meal Header */}
+            <Card className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
                     <span className="bg-brand-pink text-white font-bold px-4 py-2 rounded-full text-lg min-w-[50px] text-center">
                       {meal.meal_index}
                     </span>
@@ -284,7 +284,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                       </h2>
                       <div className="flex items-center gap-3 mt-2">
                         <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
-                          {meal.total_items} รายการสั่ง
+                          {meal.total_items} รายการสั่งทั้งหมด
                         </Badge>
                         <Badge variant="outline" className="border-brand-pink text-brand-pink">
                           {meal.restaurants.length} ร้านอาหาร
@@ -292,153 +292,142 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <ChefHat className="h-8 w-8 text-brand-orange mx-auto mb-1" />
-                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    ออเดอร์ทั้งหมด
-                  </div>
-                </div>
-              </CardTitle>
-            </CardHeader>
+                  <ChefHat className="h-8 w-8 text-brand-orange" />
+                </CardTitle>
+              </CardHeader>
+            </Card>
 
-            <CardContent className="p-4 space-y-4">
-              {/* Section 2 & 3: Restaurant Cards with Food Items */}
-              {meal.restaurants.map((restaurant) => {
-                const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
-                const isOpen = openRestaurants.has(restaurantKey);
+            {/* Restaurant Sections */}
+            {meal.restaurants.map((restaurant) => {
+              const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
+              const isOpen = openRestaurants.has(restaurantKey);
 
-                return (
-                  <Card key={restaurantKey} className="border-2 border-brand-orange/20 bg-gradient-to-r from-white to-brand-orange/5 shadow-md">
-                    <Collapsible open={isOpen} onOpenChange={() => toggleRestaurant(restaurantKey)}>
-                      {/* Section 2: Restaurant Header */}
-                      <CollapsibleTrigger asChild>
-                        <CardHeader className="cursor-pointer hover:bg-brand-orange/10 transition-colors border-b border-brand-orange/20">
-                          <CardTitle className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 min-w-0 flex-1">
-                              {restaurant.shop_url_pic && (
-                                <Avatar className={isMobile ? "h-12 w-12 flex-shrink-0" : "h-16 w-16 flex-shrink-0"}>
-                                  <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
-                                  <AvatarFallback className="bg-brand-orange/20">
-                                    <Store className="h-8 w-8 text-brand-orange" />
-                                  </AvatarFallback>
-                                </Avatar>
-                              )}
-                              <div className="flex flex-col gap-2 min-w-0 flex-1">
-                                <div className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
-                                  {restaurant.shop_name}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="secondary" className="bg-brand-orange/20 text-brand-orange border-brand-orange/40">
-                                    {restaurant.total_items} รายการ
-                                  </Badge>
-                                  <Badge variant="outline" className="text-muted-foreground">
-                                    {restaurant.food_variants.length} เมนู
-                                  </Badge>
-                                </div>
+              return (
+                <Card key={restaurantKey} className="border-2 border-brand-orange/20 bg-gradient-to-r from-white to-brand-orange/5 shadow-md">
+                  <Collapsible open={isOpen} onOpenChange={() => toggleRestaurant(restaurantKey)}>
+                    {/* Restaurant Header - Combined with Meal Info */}
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="cursor-pointer hover:bg-brand-orange/10 transition-colors border-b border-brand-orange/20">
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 min-w-0 flex-1">
+                            {restaurant.shop_url_pic && (
+                              <Avatar className={isMobile ? "h-12 w-12 flex-shrink-0" : "h-16 w-16 flex-shrink-0"}>
+                                <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
+                                <AvatarFallback className="bg-brand-orange/20">
+                                  <Store className="h-8 w-8 text-brand-orange" />
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                            <div className="flex flex-col gap-2 min-w-0 flex-1">
+                              <div className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
+                                {restaurant.shop_name}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-muted-foreground">
+                                  {restaurant.food_variants.length} เมนู
+                                </Badge>
                               </div>
                             </div>
-                            <div className="flex-shrink-0">
-                              {isOpen ? (
-                                <ChevronUp className="h-6 w-6 text-brand-orange" />
-                              ) : (
-                                <ChevronDown className="h-6 w-6 text-brand-orange" />
-                              )}
-                            </div>
-                          </CardTitle>
-                        </CardHeader>
-                      </CollapsibleTrigger>
+                          </div>
+                          <div className="flex-shrink-0">
+                            {isOpen ? (
+                              <ChevronUp className="h-6 w-6 text-brand-orange" />
+                            ) : (
+                              <ChevronDown className="h-6 w-6 text-brand-orange" />
+                            )}
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </CollapsibleTrigger>
 
-                      {/* Section 3: Food Items */}
-                      <CollapsibleContent>
-                        <CardContent className="pt-4">
-                          <div className="space-y-4">
-                            {restaurant.food_variants.map((variant, index) => (
-                              <Card key={index} className="bg-gradient-to-r from-white to-brand-pink/5 border-l-4 border-brand-pink/60 shadow-sm">
-                                <CardContent className="p-4">
-                                  {/* Fixed Container Layout - No Overflow Issues */}
-                                  <div className="grid gap-4">
-                                    {/* Row 1: Food Image, Name, and Count */}
-                                    <div className="flex items-start gap-4 w-full">
-                                      {/* Food Image - Fixed Size Container */}
-                                      {variant.food_url_pic && (
-                                        <div className="flex-shrink-0">
-                                          <AspectRatio ratio={1} className={isMobile ? "w-20 h-20" : "w-24 h-24"}>
-                                            <img 
-                                              src={variant.food_url_pic} 
-                                              alt={variant.food_name}
-                                              className="rounded-lg object-cover w-full h-full border-2 border-brand-pink/20"
-                                            />
-                                          </AspectRatio>
+                    {/* Food Items with Proper Container Layout */}
+                    <CollapsibleContent>
+                      <CardContent className="pt-4">
+                        <div className="space-y-4">
+                          {restaurant.food_variants.map((variant, index) => (
+                            <Card key={index} className="bg-gradient-to-r from-white to-brand-pink/5 border-l-4 border-brand-pink/60 shadow-sm overflow-hidden">
+                              <CardContent className="p-4">
+                                <div className="space-y-4">
+                                  {/* Food Header with Image and Info */}
+                                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
+                                    {/* Image Container - Separate and Fixed */}
+                                    {variant.food_url_pic && (
+                                      <div className="lg:col-span-2 flex justify-center lg:justify-start">
+                                        <div className={`relative overflow-hidden rounded-lg border-2 border-brand-pink/20 ${isMobile ? 'w-20 h-20' : 'w-24 h-24'} flex-shrink-0`}>
+                                          <img 
+                                            src={variant.food_url_pic} 
+                                            alt={variant.food_name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Food Info Container */}
+                                    <div className={`space-y-3 ${variant.food_url_pic ? 'lg:col-span-10' : 'lg:col-span-12'}`}>
+                                      <div className="flex items-center flex-wrap gap-2">
+                                        <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm flex-shrink-0">
+                                          {variant.index}
+                                        </span>
+                                        <h4 className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'} flex-1 min-w-0`}>
+                                          {variant.food_name}
+                                        </h4>
+                                        <Badge variant="destructive" className="bg-brand-orange text-white font-bold flex-shrink-0">
+                                          {variant.count} รายการ
+                                        </Badge>
+                                      </div>
+                                      
+                                      {/* Toppings and Notes */}
+                                      {(variant.topping || variant.order_note) && (
+                                        <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                                          {variant.topping && variant.topping !== "-" && (
+                                            <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                              <span className="font-semibold text-brand-orange flex-shrink-0">เพิ่ม:</span>
+                                              <span className="text-foreground break-words">{variant.topping}</span>
+                                            </div>
+                                          )}
+                                          {variant.order_note && (
+                                            <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                              <span className="font-semibold text-brand-orange flex-shrink-0">หมายเหตุ:</span>
+                                              <span className="text-foreground break-words">{variant.order_note}</span>
+                                            </div>
+                                          )}
                                         </div>
                                       )}
-                                      
-                                      {/* Food Info - Flexible Container */}
-                                      <div className="flex-1 min-w-0 space-y-3">
-                                        <div className="flex items-center flex-wrap gap-2">
-                                          <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm">
-                                            {variant.index}
-                                          </span>
-                                          <h4 className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'} flex-1 min-w-0`}>
-                                            {variant.food_name}
-                                          </h4>
-                                          <Badge variant="destructive" className="bg-brand-orange text-white font-bold flex-shrink-0">
-                                            {variant.count} รายการ
-                                          </Badge>
-                                        </div>
-                                        
-                                        {/* Row 2: Toppings and Notes - Full Width */}
-                                        {(variant.topping || variant.order_note) && (
-                                          <div className="bg-muted/50 rounded-lg p-3 space-y-2 w-full">
-                                            {variant.topping && variant.topping !== "-" && (
-                                              <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                                                <span className="font-semibold text-brand-orange flex-shrink-0">เพิ่ม:</span>
-                                                <span className="text-foreground break-words">{variant.topping}</span>
-                                              </div>
-                                            )}
-                                            {variant.order_note && (
-                                              <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                                                <span className="font-semibold text-brand-orange flex-shrink-0">หมายเหตุ:</span>
-                                                <span className="text-foreground break-words">{variant.order_note}</span>
-                                              </div>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
                                     </div>
+                                  </div>
 
-                                    {/* Row 3: List of People - Full Width Container */}
-                                    <div className="bg-brand-pink/10 rounded-lg p-4 border border-brand-pink/20 w-full">
-                                      <div className="space-y-3">
-                                        <div className={`font-bold text-brand-pink ${isMobile ? 'text-sm' : 'text-base'} border-b border-brand-pink/20 pb-2 flex items-center gap-2`}>
-                                          <span>รายชื่อผู้สั่ง ({variant.count} คน):</span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                          {variant.persons.map((person, personIndex) => (
-                                            <Badge 
-                                              key={personIndex} 
-                                              variant="secondary" 
-                                              className={`${isMobile ? "text-sm px-3 py-1.5" : "text-base px-4 py-2"} bg-white border border-brand-pink/40 text-foreground font-medium hover:bg-brand-pink/20 transition-colors`}
-                                            >
-                                              {person}
-                                            </Badge>
-                                          ))}
-                                        </div>
+                                  {/* People List */}
+                                  <div className="bg-brand-pink/10 rounded-lg p-4 border border-brand-pink/20">
+                                    <div className="space-y-3">
+                                      <div className={`font-bold text-brand-pink ${isMobile ? 'text-sm' : 'text-base'} border-b border-brand-pink/20 pb-2`}>
+                                        รายชื่อผู้สั่ง ({variant.count} คน):
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {variant.persons.map((person, personIndex) => (
+                                          <Badge 
+                                            key={personIndex} 
+                                            variant="secondary" 
+                                            className={`${isMobile ? "text-sm px-3 py-1.5" : "text-base px-4 py-2"} bg-white border border-brand-pink/40 text-foreground font-medium hover:bg-brand-pink/20 transition-colors`}
+                                          >
+                                            {person}
+                                          </Badge>
+                                        ))}
                                       </div>
                                     </div>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </Card>
-                );
-              })}
-            </CardContent>
-          </Card>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </Card>
+              );
+            })}
+          </div>
         ))}
       </div>
     </div>
