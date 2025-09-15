@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { ChevronDown, ChevronUp, UtensilsCrossed, Store, ChefHat } from "lucide-react";
+import { ChevronDown, ChevronUp, UtensilsCrossed, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -281,45 +281,50 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                     {/* Combined Meal + Restaurant Header */}
                     <CollapsibleTrigger asChild>
                       <CardHeader className="cursor-pointer hover:bg-brand-pink/10 transition-colors bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
-                        <CardTitle className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 min-w-0 flex-1">
-                            {/* Meal Index Badge */}
-                            <span className="bg-brand-pink text-white font-bold px-4 py-2 rounded-full text-lg min-w-[50px] text-center flex-shrink-0">
-                              {meal.meal_index}
-                            </span>
-                            
-                            {/* Restaurant Image */}
-                            {restaurant.shop_url_pic && (
-                              <Avatar className={isMobile ? "h-12 w-12 flex-shrink-0" : "h-16 w-16 flex-shrink-0"}>
-                                <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
-                                <AvatarFallback className="bg-brand-orange/20">
-                                  <Store className="h-8 w-8 text-brand-orange" />
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                            
-                            {/* Combined Info */}
-                            <div className="flex flex-col gap-2 min-w-0 flex-1">
-                              <div className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
-                                {meal.meal_name} - {restaurant.shop_name}
-                              </div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="destructive" className="bg-brand-orange text-black font-bold">
-                                  {meal.total_items} รายการทั้งหมด
-                                </Badge>
-                                <Badge variant="outline" className="border-brand-pink text-brand-pink">
-                                  {restaurant.food_variants.length} เมนู
-                                </Badge>
+                        <CardTitle>
+                          {/* Grid Layout for Better Responsive Design */}
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center">
+                            {/* Left Section: Index + Image + Info */}
+                            <div className="md:col-span-10 flex items-center gap-3 md:gap-4 min-w-0">
+                              {/* Meal Index Badge */}
+                              <span className="bg-brand-pink text-white font-bold px-3 py-2 md:px-4 md:py-2 rounded-full text-base md:text-lg min-w-[40px] md:min-w-[50px] text-center flex-shrink-0">
+                                {meal.meal_index}
+                              </span>
+                              
+                              {/* Restaurant Image */}
+                              {restaurant.shop_url_pic && (
+                                <Avatar className="h-10 w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 flex-shrink-0">
+                                  <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
+                                  <AvatarFallback className="bg-brand-orange/20">
+                                    <Store className="h-4 w-4 md:h-6 md:w-6 lg:h-8 lg:w-8 text-brand-orange" />
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              
+                              {/* Combined Info */}
+                              <div className="flex flex-col gap-2 min-w-0 flex-1">
+                                <div className="font-bold text-foreground text-sm md:text-base lg:text-lg leading-tight">
+                                  {meal.meal_name} - {restaurant.shop_name}
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant="destructive" className="bg-brand-pink text-white font-bold text-xs md:text-sm">
+                                    {meal.total_items} รายการ
+                                  </Badge>
+                                  <Badge variant="outline" className="border-brand-orange text-brand-orange font-bold text-xs md:text-sm">
+                                    {restaurant.food_variants.length} เมนู
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <ChefHat className="h-6 w-6 text-brand-orange" />
-                            {isOpen ? (
-                              <ChevronUp className="h-6 w-6 text-brand-orange" />
-                            ) : (
-                              <ChevronDown className="h-6 w-6 text-brand-orange" />
-                            )}
+                            
+                            {/* Right Section: Expand Button */}
+                            <div className="md:col-span-2 flex justify-end">
+                              {isOpen ? (
+                                <ChevronUp className="h-5 w-5 md:h-6 md:w-6 text-brand-orange" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5 md:h-6 md:w-6 text-brand-orange" />
+                              )}
+                            </div>
                           </div>
                         </CardTitle>
                       </CardHeader>
