@@ -357,7 +357,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                     <div className={`space-y-3 ${variant.food_url_pic ? 'lg:col-span-10' : 'lg:col-span-12'}`}>
                                       <div className="flex items-center flex-wrap gap-2">
                                         <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm flex-shrink-0">
-                                          {variant.index}
+                                          {meal.meal_index}.{variant.index}
                                         </span>
                                         <h4 className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'} flex-1 min-w-0`}>
                                           {variant.food_name}
