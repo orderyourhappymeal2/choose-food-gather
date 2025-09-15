@@ -304,7 +304,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                 {meal.meal_name} - {restaurant.shop_name}
                               </div>
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
+                                <Badge variant="destructive" className="bg-brand-orange text-black font-bold">
                                   {meal.total_items} รายการทั้งหมด
                                 </Badge>
                                 <Badge variant="outline" className="border-brand-pink text-brand-pink">
