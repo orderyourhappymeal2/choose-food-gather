@@ -270,7 +270,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
       <div className="grid gap-6 md:gap-8">
         {mealGroups.map((meal) => (
           <Card key={`meal-${meal.meal_index}`} className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
-            {/* Section 1: Meal Header */}
+            {/* Meal & Restaurant Combined Header */}
             <CardHeader className="bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -282,18 +282,23 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                       <h2 className={`font-bold text-foreground ${isMobile ? 'text-lg' : 'text-xl'}`}>
                         {meal.meal_name}
                       </h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <ChefHat className="h-4 w-4 text-brand-orange" />
-                        <span className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
-                          ทั้งหมด {meal.total_items} รายการ
-                        </span>
+                      <div className="flex items-center gap-3 mt-2">
+                        <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
+                          {meal.total_items} รายการสั่ง
+                        </Badge>
+                        <Badge variant="outline" className="border-brand-pink text-brand-pink">
+                          {meal.restaurants.length} ร้านอาหาร
+                        </Badge>
                       </div>
                     </div>
                   </div>
                 </div>
-                <Badge variant="destructive" className={`${isMobile ? 'text-sm px-3 py-2' : 'text-lg px-4 py-2'} font-bold`}>
-                  {meal.restaurants.length} ร้าน
-                </Badge>
+                <div className="text-right">
+                  <ChefHat className="h-8 w-8 text-brand-orange mx-auto mb-1" />
+                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    ออเดอร์ทั้งหมด
+                  </div>
+                </div>
               </CardTitle>
             </CardHeader>
 
@@ -351,12 +356,14 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                             {restaurant.food_variants.map((variant, index) => (
                               <Card key={index} className="bg-gradient-to-r from-white to-brand-pink/5 border-l-4 border-brand-pink/60 shadow-sm">
                                 <CardContent className="p-4">
-                                  <div className={isMobile ? "space-y-4" : "flex gap-6"}>
-                                    {/* 3.1: Food Image and Basic Info */}
-                                    <div className={`flex items-start gap-4 ${isMobile ? 'w-full' : 'flex-1'}`}>
+                                  {/* Fixed Container Layout - No Overflow Issues */}
+                                  <div className="grid gap-4">
+                                    {/* Row 1: Food Image, Name, and Count */}
+                                    <div className="flex items-start gap-4 w-full">
+                                      {/* Food Image - Fixed Size Container */}
                                       {variant.food_url_pic && (
                                         <div className="flex-shrink-0">
-                                          <AspectRatio ratio={1} className={isMobile ? "w-16 h-16" : "w-20 h-20"}>
+                                          <AspectRatio ratio={1} className={isMobile ? "w-20 h-20" : "w-24 h-24"}>
                                             <img 
                                               src={variant.food_url_pic} 
                                               alt={variant.food_name}
@@ -365,32 +372,34 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                           </AspectRatio>
                                         </div>
                                       )}
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-3 mb-2">
-                                          <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded text-sm min-w-[28px] text-center">
+                                      
+                                      {/* Food Info - Flexible Container */}
+                                      <div className="flex-1 min-w-0 space-y-3">
+                                        <div className="flex items-center flex-wrap gap-2">
+                                          <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm">
                                             {variant.index}
                                           </span>
-                                          <h4 className={`font-bold text-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                          <h4 className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'} flex-1 min-w-0`}>
                                             {variant.food_name}
                                           </h4>
-                                          <Badge variant="destructive" className="bg-brand-orange text-white">
-                                            {variant.count} คน
+                                          <Badge variant="destructive" className="bg-brand-orange text-white font-bold flex-shrink-0">
+                                            {variant.count} รายการ
                                           </Badge>
                                         </div>
                                         
-                                        {/* 3.2: Toppings and Notes */}
+                                        {/* Row 2: Toppings and Notes - Full Width */}
                                         {(variant.topping || variant.order_note) && (
-                                          <div className="bg-muted/50 rounded-lg p-3 mb-3 space-y-1">
+                                          <div className="bg-muted/50 rounded-lg p-3 space-y-2 w-full">
                                             {variant.topping && variant.topping !== "-" && (
-                                              <div className={`flex gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                                <span className="font-semibold text-brand-orange min-w-fit">เพิ่ม:</span>
-                                                <span className="text-foreground">{variant.topping}</span>
+                                              <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                                <span className="font-semibold text-brand-orange flex-shrink-0">เพิ่ม:</span>
+                                                <span className="text-foreground break-words">{variant.topping}</span>
                                               </div>
                                             )}
                                             {variant.order_note && (
-                                              <div className={`flex gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                                <span className="font-semibold text-brand-orange min-w-fit">หมายเหตุ:</span>
-                                                <span className="text-foreground">{variant.order_note}</span>
+                                              <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                                <span className="font-semibold text-brand-orange flex-shrink-0">หมายเหตุ:</span>
+                                                <span className="text-foreground break-words">{variant.order_note}</span>
                                               </div>
                                             )}
                                           </div>
@@ -398,18 +407,18 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                       </div>
                                     </div>
 
-                                    {/* 3.3: List of People */}
-                                    <div className={`bg-brand-pink/10 rounded-lg p-3 border border-brand-pink/20 ${isMobile ? 'w-full' : 'min-w-[200px]'}`}>
-                                      <div className="space-y-2">
-                                        <div className={`font-bold text-brand-pink ${isMobile ? 'text-xs' : 'text-sm'} border-b border-brand-pink/20 pb-1`}>
-                                          รายชื่อผู้สั่ง:
+                                    {/* Row 3: List of People - Full Width Container */}
+                                    <div className="bg-brand-pink/10 rounded-lg p-4 border border-brand-pink/20 w-full">
+                                      <div className="space-y-3">
+                                        <div className={`font-bold text-brand-pink ${isMobile ? 'text-sm' : 'text-base'} border-b border-brand-pink/20 pb-2 flex items-center gap-2`}>
+                                          <span>รายชื่อผู้สั่ง ({variant.count} คน):</span>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                           {variant.persons.map((person, personIndex) => (
                                             <Badge 
                                               key={personIndex} 
                                               variant="secondary" 
-                                              className={`${isMobile ? "text-xs px-2 py-1" : "text-sm px-3 py-1"} bg-white border border-brand-pink/40 text-foreground font-medium hover:bg-brand-pink/20 transition-colors`}
+                                              className={`${isMobile ? "text-sm px-3 py-1.5" : "text-base px-4 py-2"} bg-white border border-brand-pink/40 text-foreground font-medium hover:bg-brand-pink/20 transition-colors`}
                                             >
                                               {person}
                                             </Badge>
