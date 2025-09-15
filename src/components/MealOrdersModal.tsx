@@ -46,18 +46,24 @@ interface FoodVariant {
   index: number;
 }
 
-interface MealSection {
-  meal_name: string;
+interface RestaurantSection {
   shop_name: string;
   shop_url_pic: string | null;
-  meal_index: number;
   food_variants: FoodVariant[];
+  total_items: number;
+}
+
+interface MealGroup {
+  meal_name: string;
+  meal_index: number;
+  restaurants: RestaurantSection[];
+  total_items: number;
 }
 
 const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
-  const [mealSections, setMealSections] = useState<MealSection[]>([]);
+  const [mealGroups, setMealGroups] = useState<MealGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [openRestaurants, setOpenRestaurants] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -103,18 +109,18 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
       }
 
       if (!orders || orders.length === 0) {
-        setMealSections([]);
+        setMealGroups([]);
         return;
       }
 
-      // Group orders by meal and shop
-      const groupedData = groupOrdersByMealAndShop(orders as OrderData[]);
-      setMealSections(groupedData);
+      // Group orders by meal first, then by restaurant
+      const groupedData = groupOrdersByMeal(orders as OrderData[]);
+      setMealGroups(groupedData);
       
-      // Open first section by default
-      if (groupedData.length > 0) {
-        const firstSectionKey = `${groupedData[0].meal_index}-${groupedData[0].meal_name}-${groupedData[0].shop_name}`;
-        setOpenSections(new Set([firstSectionKey]));
+      // Open first restaurant in first meal by default
+      if (groupedData.length > 0 && groupedData[0].restaurants.length > 0) {
+        const firstRestaurantKey = `${groupedData[0].meal_index}-${groupedData[0].restaurants[0].shop_name}`;
+        setOpenRestaurants(new Set([firstRestaurantKey]));
       }
 
     } catch (error) {
@@ -125,95 +131,116 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     }
   };
 
-  const groupOrdersByMealAndShop = (orders: OrderData[]): MealSection[] => {
-    // First, get unique meal-shop combinations
-    const mealShopMap = new Map<string, {
+  const groupOrdersByMeal = (orders: OrderData[]): MealGroup[] => {
+    // First, group by meal
+    const mealMap = new Map<string, {
       meal_name: string;
-      shop_name: string;
-      shop_url_pic: string | null;
       meal_index: number;
-      orders: OrderData[];
+      restaurants: Map<string, {
+        shop_name: string;
+        shop_url_pic: string | null;
+        orders: OrderData[];
+      }>;
     }>();
 
     orders.forEach(order => {
       if (!order.meal || !order.meal.shop?.shop_name || !order.food) return;
       
-      const key = `${order.meal.meal_index}-${order.meal.meal_name}-${order.meal.shop.shop_name}`;
+      const mealKey = `${order.meal.meal_index}-${order.meal.meal_name}`;
       
-      if (!mealShopMap.has(key)) {
-        mealShopMap.set(key, {
+      if (!mealMap.has(mealKey)) {
+        mealMap.set(mealKey, {
           meal_name: order.meal.meal_name,
+          meal_index: order.meal.meal_index,
+          restaurants: new Map()
+        });
+      }
+      
+      const meal = mealMap.get(mealKey)!;
+      const restaurantKey = order.meal.shop.shop_name;
+      
+      if (!meal.restaurants.has(restaurantKey)) {
+        meal.restaurants.set(restaurantKey, {
           shop_name: order.meal.shop.shop_name,
           shop_url_pic: order.meal.shop.url_pic,
-          meal_index: order.meal.meal_index,
           orders: []
         });
       }
       
-      mealShopMap.get(key)!.orders.push(order);
+      meal.restaurants.get(restaurantKey)!.orders.push(order);
     });
 
-    // Convert to array and group food variants
-    const sections: MealSection[] = Array.from(mealShopMap.values()).map(section => {
-      const foodVariantMap = new Map<string, FoodVariant>();
-      
-      section.orders.forEach(order => {
-        if (!order.food || !order.person) return;
+    // Convert to final structure
+    const mealGroups: MealGroup[] = Array.from(mealMap.values()).map(meal => {
+      const restaurants: RestaurantSection[] = Array.from(meal.restaurants.values()).map(restaurant => {
+        const foodVariantMap = new Map<string, FoodVariant>();
         
-        const variantKey = `${order.food.food_name}|${order.topping || ''}|${order.order_note || ''}`;
+        restaurant.orders.forEach(order => {
+          if (!order.food || !order.person) return;
+          
+          const variantKey = `${order.food.food_name}|${order.topping || ''}|${order.order_note || ''}`;
+          
+          if (!foodVariantMap.has(variantKey)) {
+            foodVariantMap.set(variantKey, {
+              food_name: order.food.food_name,
+              food_url_pic: order.food.url_pic,
+              topping: order.topping,
+              order_note: order.order_note,
+              persons: [],
+              count: 0,
+              index: 0
+            });
+          }
+          
+          const variant = foodVariantMap.get(variantKey)!;
+          variant.persons.push(order.person.person_name);
+          variant.count++;
+        });
+
+        const sortedVariants = Array.from(foodVariantMap.values()).sort((a, b) => 
+          a.food_name.localeCompare(b.food_name, 'th')
+        );
         
-        if (!foodVariantMap.has(variantKey)) {
-          foodVariantMap.set(variantKey, {
-            food_name: order.food.food_name,
-            food_url_pic: order.food.url_pic,
-            topping: order.topping,
-            order_note: order.order_note,
-            persons: [],
-            count: 0,
-            index: 0
-          });
-        }
-        
-        const variant = foodVariantMap.get(variantKey)!;
-        variant.persons.push(order.person.person_name);
-        variant.count++;
+        // Add index to each food variant
+        sortedVariants.forEach((variant, index) => {
+          variant.index = index + 1;
+        });
+
+        const totalItems = sortedVariants.reduce((sum, variant) => sum + variant.count, 0);
+
+        return {
+          shop_name: restaurant.shop_name,
+          shop_url_pic: restaurant.shop_url_pic,
+          food_variants: sortedVariants,
+          total_items: totalItems
+        };
       });
 
-      const sortedVariants = Array.from(foodVariantMap.values()).sort((a, b) => 
-        a.food_name.localeCompare(b.food_name, 'th')
-      );
-      
-      // Add index to each food variant
-      sortedVariants.forEach((variant, index) => {
-        variant.index = index + 1;
-      });
+      // Sort restaurants by name
+      restaurants.sort((a, b) => a.shop_name.localeCompare(b.shop_name, 'th'));
+
+      const totalItems = restaurants.reduce((sum, restaurant) => sum + restaurant.total_items, 0);
 
       return {
-        meal_name: section.meal_name,
-        shop_name: section.shop_name,
-        shop_url_pic: section.shop_url_pic,
-        meal_index: section.meal_index,
-        food_variants: sortedVariants
+        meal_name: meal.meal_name,
+        meal_index: meal.meal_index,
+        restaurants: restaurants,
+        total_items: totalItems
       };
     });
 
-    // Sort by meal_index then by shop_name
-    return sections.sort((a, b) => {
-      if (a.meal_index !== b.meal_index) {
-        return a.meal_index - b.meal_index;
-      }
-      return a.shop_name.localeCompare(b.shop_name, 'th');
-    });
+    // Sort by meal_index
+    return mealGroups.sort((a, b) => a.meal_index - b.meal_index);
   };
 
-  const toggleSection = (sectionKey: string) => {
-    const newOpenSections = new Set(openSections);
-    if (newOpenSections.has(sectionKey)) {
-      newOpenSections.delete(sectionKey);
+  const toggleRestaurant = (restaurantKey: string) => {
+    const newOpenRestaurants = new Set(openRestaurants);
+    if (newOpenRestaurants.has(restaurantKey)) {
+      newOpenRestaurants.delete(restaurantKey);
     } else {
-      newOpenSections.add(sectionKey);
+      newOpenRestaurants.add(restaurantKey);
     }
-    setOpenSections(newOpenSections);
+    setOpenRestaurants(newOpenRestaurants);
   };
 
   if (isLoading) {
@@ -227,7 +254,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     );
   }
 
-  if (mealSections.length === 0) {
+  if (mealGroups.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
@@ -240,164 +267,170 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
 
   return (
     <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
-      <div className="grid gap-4 md:gap-6">
-        {mealSections.map((section) => {
-          const sectionKey = `${section.meal_index}-${section.meal_name}-${section.shop_name}`;
-          const isOpen = openSections.has(sectionKey);
-
-          return (
-            <Card key={sectionKey} className={`border border-brand-pink/20 bg-white/80 ${isMobile ? 'relative' : ''}`}>
-              <Collapsible open={isOpen} onOpenChange={() => toggleSection(sectionKey)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-brand-pink/5 transition-colors pb-3 border-b border-brand-pink/10">
-                    <CardTitle className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        {section.shop_url_pic && (
-                          <Avatar className={isMobile ? "h-10 w-10 flex-shrink-0" : "h-12 w-12 flex-shrink-0"}>
-                            <AvatarImage src={section.shop_url_pic} alt={section.shop_name} />
-                            <AvatarFallback>
-                              <Store className="h-6 w-6" />
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div className="flex flex-col gap-1 min-w-0 flex-1">
-                          {isMobile ? (
-                            <div className="space-y-1">
-                              <div className="text-sm font-semibold text-foreground">
-                                มื้อ: {section.meal_name}
-                              </div>
-                              <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                <span>ร้าน: {section.shop_name}</span>
-                                <Badge variant="destructive" className="text-xs px-2">
-                                  {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
-                                </Badge>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-2">
-                              <span className="font-semibold text-lg text-foreground">
-                                {section.meal_name}
-                              </span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  {section.shop_name}
-                                </span>
-                                <Badge variant="destructive" className="text-sm font-bold">
-                                  รวม {section.food_variants.reduce((total, variant) => total + variant.count, 0)} รายการ
-                                </Badge>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+      <div className="grid gap-6 md:gap-8">
+        {mealGroups.map((meal) => (
+          <Card key={`meal-${meal.meal_index}`} className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
+            {/* Section 1: Meal Header */}
+            <CardHeader className="bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-brand-pink text-white font-bold px-4 py-2 rounded-full text-lg min-w-[50px] text-center">
+                      {meal.meal_index}
+                    </span>
+                    <div>
+                      <h2 className={`font-bold text-foreground ${isMobile ? 'text-lg' : 'text-xl'}`}>
+                        {meal.meal_name}
+                      </h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <ChefHat className="h-4 w-4 text-brand-orange" />
+                        <span className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
+                          ทั้งหมด {meal.total_items} รายการ
+                        </span>
                       </div>
-                      <div className={`flex-shrink-0 ${isMobile ? 'absolute top-2 right-2' : ''}`}>
-                        {isOpen ? (
-                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    <div className="space-y-3">
-                      {section.food_variants.map((variant, index) => {
-                        // Calculate global index across all sections
-                        let globalIndex = 0;
-                        for (let i = 0; i < mealSections.indexOf(section); i++) {
-                          globalIndex += mealSections[i].food_variants.length;
-                        }
-                        globalIndex += index + 1;
-
-                        return (
-                          <div
-                            key={index}
-                            className="bg-gradient-to-r from-white via-white to-brand-pink/5 border-2 border-brand-pink/15 rounded-lg p-4 shadow-sm"
-                          >
-                            <div className={isMobile ? "flex flex-col gap-3" : "flex gap-4"}>
-                              {variant.food_url_pic && (
-                                <div className={`flex-shrink-0 ${isMobile ? 'w-12 h-12 self-start' : 'w-16 h-16'}`}>
-                                  <AspectRatio ratio={1}>
-                                    <img 
-                                      src={variant.food_url_pic} 
-                                      alt={variant.food_name}
-                                      className="rounded-lg object-cover w-full h-full border border-brand-pink/20"
-                                    />
-                                  </AspectRatio>
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                {/* Header Section with Index and Name */}
-                                <div className="bg-brand-pink/10 rounded-lg p-3 mb-3 border-l-4 border-brand-pink/60">
-                                  <div className={`flex items-center justify-between ${isMobile ? 'flex-col gap-2' : ''}`}>
-                                    <div className="flex items-center gap-3">
-                                      <span className="bg-brand-pink/80 text-white font-bold px-3 py-1 rounded-full text-sm min-w-[32px] text-center">
-                                        {globalIndex}
-                                      </span>
-                                      <div className={`font-semibold text-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
-                                        {variant.food_name}
-                                      </div>
-                                    </div>
-                                    <div className="bg-brand-orange/20 border border-brand-orange/40 rounded-lg px-3 py-2">
-                                      <div className={`text-center ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                        <div className="font-bold text-brand-orange text-xl">{variant.count}</div>
-                                        <div className="text-xs text-muted-foreground font-medium">จำนวน</div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Details Section */}
-                                {(variant.topping || variant.order_note) && (
-                                  <div className="bg-muted/30 rounded-lg p-3 mb-3 space-y-2">
-                                    {variant.topping && variant.topping !== "-" && (
-                                      <div className={`flex items-start gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                        <span className="font-medium text-brand-orange min-w-fit">add-on:</span>
-                                        <span className="text-foreground">{variant.topping}</span>
-                                      </div>
-                                    )}
-                                    
-                                    {variant.order_note && (
-                                      <div className={`flex items-start gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                        <span className="font-medium text-brand-orange min-w-fit">หมายเหตุ:</span>
-                                        <span className="text-foreground">{variant.order_note}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                                
-                                {/* Persons Section */}
-                                <div className="bg-brand-pink/5 border border-brand-pink/20 rounded-lg p-3">
-                                  <div className={`flex flex-col gap-2 ${isMobile ? 'text-xs' : ''}`}>
-                                    <div className="flex items-center gap-2 pb-2 border-b border-brand-pink/20">
-                                      <span className={`font-bold text-brand-pink ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                        ผู้สั่ง ({variant.count} คน):
-                                      </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                      {variant.persons.map((person, personIndex) => (
-                                        <Badge key={personIndex} variant="secondary" className={`${isMobile ? "text-xs px-2 py-1" : "text-sm px-3 py-1"} bg-white border border-brand-pink/30 text-foreground font-medium hover:bg-brand-pink/10 transition-colors`}>
-                                          {person}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
                     </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          );
-        })}
+                  </div>
+                </div>
+                <Badge variant="destructive" className={`${isMobile ? 'text-sm px-3 py-2' : 'text-lg px-4 py-2'} font-bold`}>
+                  {meal.restaurants.length} ร้าน
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="p-4 space-y-4">
+              {/* Section 2 & 3: Restaurant Cards with Food Items */}
+              {meal.restaurants.map((restaurant) => {
+                const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
+                const isOpen = openRestaurants.has(restaurantKey);
+
+                return (
+                  <Card key={restaurantKey} className="border-2 border-brand-orange/20 bg-gradient-to-r from-white to-brand-orange/5 shadow-md">
+                    <Collapsible open={isOpen} onOpenChange={() => toggleRestaurant(restaurantKey)}>
+                      {/* Section 2: Restaurant Header */}
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-brand-orange/10 transition-colors border-b border-brand-orange/20">
+                          <CardTitle className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                              {restaurant.shop_url_pic && (
+                                <Avatar className={isMobile ? "h-12 w-12 flex-shrink-0" : "h-16 w-16 flex-shrink-0"}>
+                                  <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
+                                  <AvatarFallback className="bg-brand-orange/20">
+                                    <Store className="h-8 w-8 text-brand-orange" />
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              <div className="flex flex-col gap-2 min-w-0 flex-1">
+                                <div className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
+                                  {restaurant.shop_name}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="bg-brand-orange/20 text-brand-orange border-brand-orange/40">
+                                    {restaurant.total_items} รายการ
+                                  </Badge>
+                                  <Badge variant="outline" className="text-muted-foreground">
+                                    {restaurant.food_variants.length} เมนู
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              {isOpen ? (
+                                <ChevronUp className="h-6 w-6 text-brand-orange" />
+                              ) : (
+                                <ChevronDown className="h-6 w-6 text-brand-orange" />
+                              )}
+                            </div>
+                          </CardTitle>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+
+                      {/* Section 3: Food Items */}
+                      <CollapsibleContent>
+                        <CardContent className="pt-4">
+                          <div className="space-y-4">
+                            {restaurant.food_variants.map((variant, index) => (
+                              <Card key={index} className="bg-gradient-to-r from-white to-brand-pink/5 border-l-4 border-brand-pink/60 shadow-sm">
+                                <CardContent className="p-4">
+                                  <div className={isMobile ? "space-y-4" : "flex gap-6"}>
+                                    {/* 3.1: Food Image and Basic Info */}
+                                    <div className={`flex items-start gap-4 ${isMobile ? 'w-full' : 'flex-1'}`}>
+                                      {variant.food_url_pic && (
+                                        <div className="flex-shrink-0">
+                                          <AspectRatio ratio={1} className={isMobile ? "w-16 h-16" : "w-20 h-20"}>
+                                            <img 
+                                              src={variant.food_url_pic} 
+                                              alt={variant.food_name}
+                                              className="rounded-lg object-cover w-full h-full border-2 border-brand-pink/20"
+                                            />
+                                          </AspectRatio>
+                                        </div>
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-3 mb-2">
+                                          <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded text-sm min-w-[28px] text-center">
+                                            {variant.index}
+                                          </span>
+                                          <h4 className={`font-bold text-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
+                                            {variant.food_name}
+                                          </h4>
+                                          <Badge variant="destructive" className="bg-brand-orange text-white">
+                                            {variant.count} คน
+                                          </Badge>
+                                        </div>
+                                        
+                                        {/* 3.2: Toppings and Notes */}
+                                        {(variant.topping || variant.order_note) && (
+                                          <div className="bg-muted/50 rounded-lg p-3 mb-3 space-y-1">
+                                            {variant.topping && variant.topping !== "-" && (
+                                              <div className={`flex gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                                <span className="font-semibold text-brand-orange min-w-fit">เพิ่ม:</span>
+                                                <span className="text-foreground">{variant.topping}</span>
+                                              </div>
+                                            )}
+                                            {variant.order_note && (
+                                              <div className={`flex gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                                <span className="font-semibold text-brand-orange min-w-fit">หมายเหตุ:</span>
+                                                <span className="text-foreground">{variant.order_note}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* 3.3: List of People */}
+                                    <div className={`bg-brand-pink/10 rounded-lg p-3 border border-brand-pink/20 ${isMobile ? 'w-full' : 'min-w-[200px]'}`}>
+                                      <div className="space-y-2">
+                                        <div className={`font-bold text-brand-pink ${isMobile ? 'text-xs' : 'text-sm'} border-b border-brand-pink/20 pb-1`}>
+                                          รายชื่อผู้สั่ง:
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                          {variant.persons.map((person, personIndex) => (
+                                            <Badge 
+                                              key={personIndex} 
+                                              variant="secondary" 
+                                              className={`${isMobile ? "text-xs px-2 py-1" : "text-sm px-3 py-1"} bg-white border border-brand-pink/40 text-foreground font-medium hover:bg-brand-pink/20 transition-colors`}
+                                            >
+                                              {person}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
+                );
+              })}
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
