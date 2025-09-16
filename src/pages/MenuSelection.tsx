@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -31,6 +31,7 @@ const MenuSelection = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   const { meal, shop } = location.state || {};
 
@@ -117,6 +118,16 @@ const MenuSelection = () => {
     // Reset toppings and note when changing item
     setSelectedTopping("");
     setOrderNote("");
+    
+    // Auto-scroll to confirm button after selection
+    setTimeout(() => {
+      if (confirmButtonRef.current) {
+        confirmButtonRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 100);
   };
 
   const handleToppingChange = (topping: string) => {
@@ -331,6 +342,7 @@ const MenuSelection = () => {
 
           {/* Confirm Button */}
           <Button 
+            ref={confirmButtonRef}
             onClick={handleConfirm}
             className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
           >
