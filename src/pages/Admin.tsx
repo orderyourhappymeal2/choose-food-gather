@@ -3491,7 +3491,7 @@ const Admin = () => {
                                   {foodItems.map((food) => (
                                     <div 
                                       key={food.food_id} 
-                                      className="flex gap-4 p-4 bg-white/50 border border-brand-pink/10 rounded-lg hover:bg-white/70 transition-colors"
+                                      className="grid grid-cols-[auto_1fr_auto] gap-4 p-4 bg-white/50 border border-brand-pink/10 rounded-lg hover:bg-white/70 transition-colors"
                                     >
                                       {/* Food Image */}
                                       <div className="flex-shrink-0">
@@ -3514,7 +3514,7 @@ const Admin = () => {
                                       </div>
                                       
                                        {/* Food Info */}
-                                       <div className="flex-1 min-w-0 space-y-2">
+                                       <div className="min-w-0 space-y-2 overflow-hidden">
                                          <div>
                                            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
                                              {food.food_name}
