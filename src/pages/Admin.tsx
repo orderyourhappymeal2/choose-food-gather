@@ -13,7 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { Switch } from "@/components/ui/switch";
 
@@ -388,6 +388,12 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
   const [selectedMealFilter, setSelectedMealFilter] = useState<string>("all");
   const [selectedShopFilter, setSelectedShopFilter] = useState<string>("all");
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  
+  // Delete individual orders states
+  const [isDeleteOrdersModalOpen, setIsDeleteOrdersModalOpen] = useState(false);
+  const [selectedPlanForDeleteOrders, setSelectedPlanForDeleteOrders] = useState<any>(null);
+  const [personsWithOrders, setPersonsWithOrders] = useState<any[]>([]);
+  const [isLoadingPersonsWithOrders, setIsLoadingPersonsWithOrders] = useState(false);
 
   // Edit form
   const editForm = useForm<PlanFormData>({
@@ -771,6 +777,93 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลคำสั่งซื้อ');
     } finally {
       setIsLoadingOrders(false);
+    }
+  };
+
+  // Handle delete individual orders
+  const handleDeleteIndividualOrders = async (plan: any) => {
+    setSelectedPlanForDeleteOrders(plan);
+    setIsDeleteOrdersModalOpen(true);
+    await fetchPersonsWithOrders(plan.plan_id);
+  };
+
+  // Fetch persons with orders
+  const fetchPersonsWithOrders = async (planId: string) => {
+    setIsLoadingPersonsWithOrders(true);
+    try {
+      // Fetch persons who have orders in this plan
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('order')
+        .select(`
+          person_id,
+          person:person_id (person_id, person_name, person_agent)
+        `)
+        .eq('plan_id', planId);
+
+      if (ordersError) throw ordersError;
+
+      // Get unique persons with their order counts
+      const personsMap = new Map();
+      ordersData?.forEach(order => {
+        if (order.person && order.person_id) {
+          const personId = order.person_id;
+          if (personsMap.has(personId)) {
+            personsMap.get(personId).orderCount += 1;
+          } else {
+            personsMap.set(personId, {
+              person_id: personId,
+              person_name: order.person.person_name,
+              person_agent: order.person.person_agent,
+              orderCount: 1
+            });
+          }
+        }
+      });
+
+      const uniquePersons = Array.from(personsMap.values());
+      setPersonsWithOrders(uniquePersons);
+
+    } catch (error) {
+      console.error('Error fetching persons with orders:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดรายชื่อผู้สั่งอาหาร');
+    } finally {
+      setIsLoadingPersonsWithOrders(false);
+    }
+  };
+
+  // Delete person and their orders
+  const handleDeletePersonAndOrders = async (personId: string, personName: string) => {
+    if (!selectedPlanForDeleteOrders) return;
+
+    const planId = selectedPlanForDeleteOrders.plan_id;
+
+    try {
+      // Delete all orders for this person in this plan
+      const { error: ordersError } = await supabase
+        .from('order')
+        .delete()
+        .eq('plan_id', planId)
+        .eq('person_id', personId);
+
+      if (ordersError) throw ordersError;
+
+      // Delete the person record
+      const { error: personError } = await supabase
+        .from('person')
+        .delete()
+        .eq('person_id', personId)
+        .eq('plan_id', planId);
+
+      if (personError) throw personError;
+
+      toast.success(`ลบรายการสั่งอาหารของ ${personName} สำเร็จ`);
+      
+      // Refresh the persons list
+      await fetchPersonsWithOrders(planId);
+
+    } catch (error) {
+      console.error('Error deleting person and orders:', error);
+      toast.error('เกิดข้อผิดพลาดในการลบรายการสั่งอาหาร');
     }
   };
 
@@ -1249,16 +1342,26 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                               <p>ดูรายการสั่งอาหาร</p>
                             </TooltipContent>
                           </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleCopyLink(plan)}>
-                                <Link className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>คัดลอกลิงก์</p>
-                            </TooltipContent>
-                          </Tooltip>
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleCopyLink(plan)}>
+                                 <Link className="h-4 w-4 text-gray-800" />
+                               </Button>
+                             </TooltipTrigger>
+                             <TooltipContent>
+                               <p>คัดลอกลิงก์</p>
+                             </TooltipContent>
+                           </Tooltip>
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-orange-600 hover:bg-orange-600 hover:border-orange-600" onClick={() => handleDeleteIndividualOrders(plan)}>
+                                 <UserMinus className="h-4 w-4 text-orange-600" />
+                               </Button>
+                             </TooltipTrigger>
+                             <TooltipContent>
+                               <p>ลบคำสั่งออเดอร์จากผู้สั่ง</p>
+                             </TooltipContent>
+                           </Tooltip>
                         </>
                       )}
                       <Tooltip>
