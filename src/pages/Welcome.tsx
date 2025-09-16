@@ -123,16 +123,23 @@ const Welcome = () => {
     }
 
     try {
-      // Check current number of people in this plan
-      const { data: currentPeople, error: countError } = await supabase
+      // Check current number of people who have actually placed orders in this plan
+      const { data: currentOrderedPeople, error: countError } = await supabase
         .from('person')
-        .select('person_id')
+        .select(`
+          person_id,
+          order!inner(person_id)
+        `)
         .eq('plan_id', planData.plan_id);
 
       if (countError) throw countError;
 
+      // Count unique people who have placed orders
+      const uniqueOrderedPeople = currentOrderedPeople ? 
+        [...new Set(currentOrderedPeople.map(p => p.person_id))].length : 0;
+
       // Check if adding this person would exceed the limit
-      if (currentPeople && currentPeople.length >= planData.plan_maxp) {
+      if (uniqueOrderedPeople >= planData.plan_maxp) {
         toast({
           title: "จำนวนผู้เข้าร่วมเต็มแล้ว",
           description: `สามารถรองรับได้สูงสุด ${planData.plan_maxp} คน`,
@@ -141,39 +148,35 @@ const Welcome = () => {
         return;
       }
 
-      // Check if this person already exists (prevent duplicate entries)
+      // Check if this person name already exists among people who have placed orders
       const { data: existingPerson } = await supabase
         .from('person')
-        .select('person_id')
+        .select('person_id, person_name')
         .eq('plan_id', planData.plan_id)
-        .eq('person_name', formData.nickname)
-        .single();
+        .eq('person_name', formData.nickname);
 
-      if (existingPerson) {
-        toast({
-          title: "ชื่อนี้ถูกใช้ไปแล้ว",
-          description: "อาจมีผู้เข้าร่วมมีชื่อที่ซ้ำกัน อาจรบกวนให้ (กลุ่ม/หน่วยงาน) ในชื่อของท่านด้วยค่ะ",
-          variant: "destructive"
-        });
-        return;
+      // Check if any of these people have actual orders
+      if (existingPerson && existingPerson.length > 0) {
+        const personIds = existingPerson.map(p => p.person_id);
+        const { data: existingOrders } = await supabase
+          .from('order')
+          .select('person_id')
+          .in('person_id', personIds)
+          .limit(1);
+
+        if (existingOrders && existingOrders.length > 0) {
+          toast({
+            title: "ชื่อนี้ถูกใช้ไปแล้ว",
+            description: "อาจมีผู้เข้าร่วมมีชื่อที่ซ้ำกัน อาจรบกวนให้ (กลุ่ม/หน่วยงาน) ในชื่อของท่านด้วยค่ะ",
+            variant: "destructive"
+          });
+          return;
+        }
       }
 
-      // Insert new person
-      const { data: newPerson, error: insertError } = await supabase
-        .from('person')
-        .insert({
-          person_name: formData.nickname,
-          plan_id: planData.plan_id
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      // Store user data and navigate to food categories
+      // Store user data without person_id (will be created when order is confirmed)
       const userData = {
         ...formData,
-        person_id: newPerson.person_id,
         plan_id: planData.plan_id
       };
       

@@ -158,13 +158,47 @@ const OrderSummary = () => {
     setIsSubmitting(true);
 
     try {
+      // Create person record if it doesn't exist
+      let personId = userInfo.person_id;
+      
+      if (!personId) {
+        // Check if person already exists (in case of page refresh)
+        const { data: existingPerson } = await supabase
+          .from('person')
+          .select('person_id')
+          .eq('plan_id', userInfo.plan_id)
+          .eq('person_name', userInfo.nickname)
+          .maybeSingle();
+
+        if (existingPerson) {
+          personId = existingPerson.person_id;
+        } else {
+          // Create new person record
+          const { data: newPerson, error: insertError } = await supabase
+            .from('person')
+            .insert({
+              person_name: userInfo.nickname,
+              plan_id: userInfo.plan_id
+            })
+            .select('person_id')
+            .single();
+
+          if (insertError) throw insertError;
+          personId = newPerson.person_id;
+        }
+
+        // Update userInfo and localStorage with person_id
+        const updatedUserInfo = { ...userInfo, person_id: personId };
+        setUserInfo(updatedUserInfo);
+        localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+      }
       // Save pre-defined meal orders to database
       for (const meal of preDefinedMeals) {
         // Check if order already exists for this person, meal, food, and order_type
         const { data: existingOrder } = await (supabase as any)
           .from('order')
           .select('order_id')
-          .eq('person_id', userInfo.person_id)
+          .eq('person_id', personId)
           .eq('plan_id', userInfo.plan_id)
           .eq('food_id', meal.food_id)
           .eq('meal_id', meal.meal_id)
@@ -172,7 +206,7 @@ const OrderSummary = () => {
           .maybeSingle();
 
         const orderData: any = {
-          person_id: userInfo.person_id,
+          person_id: personId,
           food_id: meal.food_id,
           plan_id: userInfo.plan_id,
           meal_id: meal.meal_id,
@@ -205,7 +239,7 @@ const OrderSummary = () => {
         const { data: existingOrder } = await (supabase as any)
           .from('order')
           .select('order_id')
-          .eq('person_id', item.person_id)
+          .eq('person_id', personId)
           .eq('plan_id', item.plan_id)
           .eq('food_id', item.food_id)
           .eq('meal_id', item.meal_id)
@@ -213,7 +247,7 @@ const OrderSummary = () => {
           .maybeSingle();
 
         const orderData: any = {
-          person_id: item.person_id,
+          person_id: personId,
           food_id: item.food_id,
           plan_id: item.plan_id,
           meal_id: item.meal_id,
