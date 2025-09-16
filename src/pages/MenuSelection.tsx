@@ -111,6 +111,8 @@ const MenuSelection = () => {
   };
 
   const handleItemSelect = (item: MenuItem) => {
+    const isDeselecting = selectedItem?.food_id === item.food_id;
+    
     // Single selection only
     setSelectedItem(prevSelected => 
       prevSelected?.food_id === item.food_id ? null : item
@@ -119,15 +121,17 @@ const MenuSelection = () => {
     setSelectedTopping("");
     setOrderNote("");
     
-    // Auto-scroll to confirm button after selection
-    setTimeout(() => {
-      if (confirmButtonRef.current) {
-        confirmButtonRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-      }
-    }, 100);
+    // Auto-scroll to confirm button only when selecting (not deselecting)
+    if (!isDeselecting) {
+      setTimeout(() => {
+        if (confirmButtonRef.current) {
+          confirmButtonRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
+    }
   };
 
   const handleToppingChange = (topping: string) => {
