@@ -1628,6 +1628,78 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete Orders Modal */}
+      <Dialog open={isDeleteOrdersModalOpen} onOpenChange={setIsDeleteOrdersModalOpen}>
+        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>ลบคำสั่งออเดอร์จากผู้สั่ง</DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[60vh] pr-4">
+            {isLoadingPersonsWithOrders ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-sm text-muted-foreground">กำลังโหลดรายชื่อผู้สั่ง...</div>
+              </div>
+            ) : personsWithOrders.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-sm text-muted-foreground">ไม่มีรายการสั่งอาหารในแผนนี้</div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {personsWithOrders.map((person) => (
+                  <div key={person.person_id} className="flex items-center justify-between p-4 border border-brand-pink/20 rounded-lg bg-white/50">
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{person.person_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        จำนวนคำสั่ง: {person.orderCount} รายการ
+                      </p>
+                    </div>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="ml-3">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          ลบ
+                        </Button>
+                      </AlertDialogTrigger>
+                      
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>ยืนยันการลบคำสั่งซื้อ</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            คุณต้องการลบคำสั่งซื้อทั้งหมดของ <strong>"{person.person_name}"</strong> หรือไม่?
+                            <br />
+                            <span className="text-red-600 font-medium mt-2 block">
+                              การกระทำนี้ไม่สามารถย้อนกลับได้
+                            </span>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeletePersonAndOrders(person.person_id, person.person_name)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            ลบคำสั่งซื้อ
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteOrdersModalOpen(false)}>
+              ปิด
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Publish Confirmation */}
       <AlertDialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
         <AlertDialogContent>
