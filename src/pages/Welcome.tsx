@@ -300,7 +300,7 @@ const Welcome = () => {
                   </Tooltip>
                 </div>
                 <Input
-                  placeholder="เบอร์โทร, LINE ID, หรือช่องทางอื่นๆ (ไม่บังคับ)"
+                  placeholder="กรอกเบอร์โทร)"
                   value={formData.contact}
                   onChange={(e) => handleInputChange('contact', e.target.value)}
                   className="bg-white border-brand-pink/50 focus:border-primary"
