@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -269,7 +269,8 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   return (
     <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
       <ScrollArea className="h-full">
-        <div className="min-w-[800px]">
+        <ScrollBar orientation="horizontal" />
+        <div className="min-w-[800px] overflow-x-auto">
           <Table className="border border-brand-pink/60">
             <TableHeader>
               <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">

@@ -1899,7 +1899,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                   </div>
                 </div>
               ) : (
-                <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30">
+                <div className="h-full overflow-auto border border-brand-pink/10 rounded-lg bg-white/30">
                   <div className="min-w-[1000px]">
                     <Table className="border border-brand-pink/60">
                       <TableHeader>
@@ -1958,7 +1958,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </TableBody>
                     </Table>
                   </div>
-                </ScrollArea>
+                </div>
               )}
             </div>
             
@@ -2075,9 +2075,9 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           </DialogHeader>
           
           <div className="flex-1 overflow-hidden px-2 md:px-4 py-2">
-            <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-2 md:p-4">
+            <div className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-2 md:p-4 overflow-auto">
               <MealOrdersModal plan={selectedPlanForMeal} />
-            </ScrollArea>
+            </div>
           </div>
           
           <DialogFooter className="p-4 border-t bg-white/90">
