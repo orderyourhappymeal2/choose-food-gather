@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronDown, ChevronUp, UtensilsCrossed, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -267,159 +268,165 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
 
   return (
     <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
-      <div className="grid gap-6 md:gap-8">
-        {mealGroups.map((meal) => (
-          <div key={`meal-${meal.meal_index}`} className="space-y-4">
-            {/* Combined Meal + Restaurant Sections */}
-            {meal.restaurants.map((restaurant) => {
-              const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
-              const isOpen = openRestaurants.has(restaurantKey);
+      <ScrollArea className="h-full">
+        <Table className="border border-brand-pink/60">
+          <TableHeader>
+            <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {mealGroups.map((meal) => (
+              meal.restaurants.map((restaurant) => {
+                const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
+                const isOpen = openRestaurants.has(restaurantKey);
 
-              return (
-                <Card key={restaurantKey} className="border-2 border-brand-pink/30 bg-gradient-to-br from-white via-white to-brand-pink/5 shadow-lg">
-                  <Collapsible open={isOpen} onOpenChange={() => toggleRestaurant(restaurantKey)}>
-                    {/* Combined Meal + Restaurant Header */}
-                    <CollapsibleTrigger asChild>
-                      <CardHeader className="cursor-pointer hover:bg-brand-pink/10 transition-colors bg-gradient-to-r from-brand-pink/10 to-brand-orange/10 border-b-2 border-brand-pink/20">
-                        <CardTitle>
-                          {/* Grid Layout for Better Responsive Design */}
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center">
-                            {/* Left Section: Index + Image + Info */}
-                            <div className="md:col-span-10 flex items-center gap-3 md:gap-4 min-w-0">
-                              {/* Meal Index Badge */}
-                              <span className="bg-brand-pink text-white font-bold px-3 py-2 md:px-4 md:py-2 rounded-full text-base md:text-lg min-w-[40px] md:min-w-[50px] text-center flex-shrink-0">
-                                {meal.meal_index}
-                              </span>
-                              
-                              {/* Restaurant Image */}
-                              {restaurant.shop_url_pic && (
-                                <Avatar className="h-10 w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 flex-shrink-0">
-                                  <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
-                                  <AvatarFallback className="bg-brand-orange/20">
-                                    <Store className="h-4 w-4 md:h-6 md:w-6 lg:h-8 lg:w-8 text-brand-orange" />
-                                  </AvatarFallback>
-                                </Avatar>
-                              )}
-                              
-                              {/* Combined Info */}
-                              <div className="flex flex-col gap-2 min-w-0 flex-1">
-                                <div className="font-bold text-foreground text-sm md:text-base lg:text-lg leading-tight">
-                                  {meal.meal_name} - {restaurant.shop_name}
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge variant="destructive" className="bg-brand-pink text-white font-bold text-xs md:text-sm">
-                                    {meal.total_items} รายการ
-                                  </Badge>
-                                  <Badge variant="outline" className="border-brand-orange text-brand-orange font-bold text-xs md:text-sm">
-                                    {restaurant.food_variants.length} เมนู
-                                  </Badge>
-                                </div>
-                              </div>
+                return (
+                  <>
+                    <TableRow 
+                      key={restaurantKey} 
+                      className="border-b border-brand-pink/40 hover:bg-brand-pink/10 cursor-pointer"
+                      onClick={() => toggleRestaurant(restaurantKey)}
+                    >
+                      <TableCell className="border-r border-brand-pink/40 text-center">
+                        <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm">
+                          {meal.meal_index}
+                        </span>
+                      </TableCell>
+                      <TableCell className="border-r border-brand-pink/40">
+                        <div className="flex items-center gap-3">
+                          {restaurant.shop_url_pic && (
+                            <Avatar className="h-10 w-10 flex-shrink-0">
+                              <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
+                              <AvatarFallback className="bg-brand-orange/20">
+                                <Store className="h-4 w-4 text-brand-orange" />
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                              {meal.meal_name} - {restaurant.shop_name}
                             </div>
-                            
-                            {/* Right Section: Expand Button */}
-                            <div className="md:col-span-2 flex justify-end">
-                              {isOpen ? (
-                                <ChevronUp className="h-5 w-5 md:h-6 md:w-6 text-brand-orange" />
-                              ) : (
-                                <ChevronDown className="h-5 w-5 md:h-6 md:w-6 text-brand-orange" />
-                              )}
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="border-brand-orange text-brand-orange font-bold text-xs">
+                                {restaurant.food_variants.length} เมนู
+                              </Badge>
                             </div>
                           </div>
-                        </CardTitle>
-                      </CardHeader>
-                    </CollapsibleTrigger>
-
-                    {/* Food Items with Proper Container Layout */}
-                    <CollapsibleContent>
-                      <CardContent className="pt-4">
-                        <div className="space-y-4">
-                          {restaurant.food_variants.map((variant, index) => (
-                            <Card key={index} className="bg-gradient-to-r from-white to-brand-pink/5 border-l-4 border-brand-pink/60 shadow-sm overflow-hidden">
-                              <CardContent className="p-4">
-                                <div className="space-y-4">
-                                  {/* Food Header with Image and Info */}
-                                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
-                                    {/* Image Container - Separate and Fixed */}
-                                    {variant.food_url_pic && (
-                                      <div className="lg:col-span-2 flex justify-center lg:justify-start">
-                                        <div className={`relative overflow-hidden rounded-lg border-2 border-brand-pink/20 ${isMobile ? 'w-20 h-20' : 'w-24 h-24'} flex-shrink-0`}>
+                        </div>
+                      </TableCell>
+                      <TableCell className="border-r border-brand-pink/40 text-center">
+                        <Badge variant="destructive" className="bg-brand-pink text-white font-bold">
+                          {restaurant.total_items} รายการ
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {isOpen ? (
+                          <ChevronUp className="h-5 w-5 text-brand-orange mx-auto" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-brand-orange mx-auto" />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                    
+                    {/* Collapsible Content Row */}
+                    {isOpen && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="p-0">
+                          <div className="bg-brand-pink/5 border-t border-brand-pink/40">
+                            <Table className="border-none">
+                              <TableHeader>
+                                <TableRow className="bg-brand-pink/10 hover:bg-brand-pink/10 border-b border-brand-pink/40">
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-16">ลำดับ</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-20">รูป</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ชื่ออาหาร</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-24">จำนวน</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">เพิ่มเติม</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold">ผู้สั่ง</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {restaurant.food_variants.map((variant, index) => (
+                                  <TableRow key={index} className="border-b border-brand-pink/30 hover:bg-brand-pink/5">
+                                    <TableCell className="border-r border-brand-pink/30 text-center">
+                                      <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
+                                        {meal.meal_index}.{variant.index}
+                                      </span>
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
+                                      {variant.food_url_pic ? (
+                                        <div className="w-16 h-16 relative overflow-hidden rounded-lg border border-brand-pink/20">
                                           <img 
                                             src={variant.food_url_pic} 
                                             alt={variant.food_name}
                                             className="w-full h-full object-cover"
                                           />
                                         </div>
+                                      ) : (
+                                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                          <UtensilsCrossed className="h-6 w-6 text-gray-400" />
+                                        </div>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
+                                      <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                                        {variant.food_name}
                                       </div>
-                                    )}
-                                    
-                                    {/* Food Info Container */}
-                                    <div className={`space-y-3 ${variant.food_url_pic ? 'lg:col-span-10' : 'lg:col-span-12'}`}>
-                                      <div className="flex items-center flex-wrap gap-2">
-                                        <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm flex-shrink-0">
-                                          {meal.meal_index}.{variant.index}
-                                        </span>
-                                        <h4 className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'} flex-1 min-w-0`}>
-                                          {variant.food_name}
-                                        </h4>
-                                        <Badge variant="destructive" className="bg-brand-orange text-white font-bold flex-shrink-0">
-                                          {variant.count} รายการ
-                                        </Badge>
-                                      </div>
-                                      
-                                      {/* Toppings and Notes */}
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30 text-center">
+                                      <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
+                                        {variant.count}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
                                       {(variant.topping || variant.order_note) && (
-                                        <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                                        <div className="space-y-1 text-sm">
                                           {variant.topping && variant.topping !== "-" && (
-                                            <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                                              <span className="font-semibold text-brand-orange flex-shrink-0">เพิ่ม:</span>
-                                              <span className="text-foreground break-words">{variant.topping}</span>
+                                            <div>
+                                              <span className="font-semibold text-brand-orange">เพิ่ม:</span>
+                                              <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.topping}</span>
                                             </div>
                                           )}
                                           {variant.order_note && (
-                                            <div className={`flex gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                                              <span className="font-semibold text-brand-orange flex-shrink-0">หมายเหตุ:</span>
-                                              <span className="text-foreground break-words">{variant.order_note}</span>
+                                            <div>
+                                              <span className="font-semibold text-brand-orange">หมายเหตุ:</span>
+                                              <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.order_note}</span>
                                             </div>
                                           )}
                                         </div>
                                       )}
-                                    </div>
-                                  </div>
-
-                                  {/* People List */}
-                                  <div className="bg-brand-pink/10 rounded-lg p-4 border border-brand-pink/20">
-                                    <div className="space-y-3">
-                                      <div className={`font-bold text-brand-pink ${isMobile ? 'text-sm' : 'text-base'} border-b border-brand-pink/20 pb-2`}>
-                                        รายชื่อผู้สั่ง ({variant.count} คน):
-                                      </div>
-                                      <div className="flex flex-wrap gap-2">
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex flex-wrap gap-1">
                                         {variant.persons.map((person, personIndex) => (
                                           <Badge 
                                             key={personIndex} 
                                             variant="secondary" 
-                                            className={`${isMobile ? "text-sm px-3 py-1.5" : "text-base px-4 py-2"} bg-white border border-brand-pink/40 text-foreground font-medium hover:bg-brand-pink/20 transition-colors`}
+                                            className="text-xs px-2 py-1 bg-white border border-brand-pink/40 text-gray-700 dark:text-gray-200 font-medium hover:bg-brand-pink/10 transition-colors"
                                           >
                                             {person}
                                           </Badge>
                                         ))}
                                       </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </Card>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })
+            ))}
+          </TableBody>
+        </Table>
+      </ScrollArea>
     </div>
   );
 };
