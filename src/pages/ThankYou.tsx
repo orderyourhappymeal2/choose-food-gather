@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Home, Heart } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { parse, format } from "date-fns";
+import { th } from "date-fns/locale";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +15,37 @@ const ThankYou = () => {
 
   // Mock thank you message (customizable by admin)
   const thankYouMessage = "รับออร์เดอร์แล้วค่า ขอให้เป็นวันที่ดีนะคะ";
+
+  // Function to format date in Thai format
+  const formatThaiDate = (dateString: string) => {
+    try {
+      // Parse the date assuming it's in format like "2024-09-19" or "19/09/2024"
+      let dateObj: Date;
+      
+      if (dateString.includes('-')) {
+        dateObj = parse(dateString, 'yyyy-MM-dd', new Date());
+      } else if (dateString.includes('/')) {
+        // Try different formats
+        try {
+          dateObj = parse(dateString, 'dd/MM/yyyy', new Date());
+        } catch {
+          dateObj = parse(dateString, 'MM/dd/yyyy', new Date());
+        }
+      } else {
+        return dateString; // Return original if can't parse
+      }
+
+      // Format in Thai with Buddhist Era (add 543 to year)
+      const day = format(dateObj, 'd');
+      const month = format(dateObj, 'MMM', { locale: th });
+      const year = (dateObj.getFullYear() + 543).toString();
+      
+      return `${day} ${month} ${year}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString; // Return original string if parsing fails
+    }
+  };
 
   useEffect(() => {
     console.log('ThankYou: useEffect called');
@@ -92,7 +125,7 @@ const ThankYou = () => {
             {finalOrder?.planData && (
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>แล้วพบกันที่ <span className="font-medium text-foreground">{finalOrder.planData.plan_location}</span></p>
-                <p>วันที่ <span className="font-medium text-foreground">{finalOrder.planData.plan_date}</span></p>
+                <p>วันที่ <span className="font-medium text-foreground">{formatThaiDate(finalOrder.planData.plan_date)}</span></p>
                 <p>เวลา <span className="font-medium text-foreground">{finalOrder.planData.plan_time}</span></p>
               </div>
             )}
