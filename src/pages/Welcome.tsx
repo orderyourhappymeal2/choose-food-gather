@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChefHat, MapPin, Calendar, Clock, Users, Settings } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChefHat, MapPin, Calendar, Clock, Users, Settings, Info } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,7 +15,8 @@ import { th } from "date-fns/locale";
 const Welcome = () => {
   const [formData, setFormData] = useState({
     nickname: "",
-    code: ""
+    code: "",
+    contact: ""
   });
   const [planData, setPlanData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -281,6 +283,26 @@ const Welcome = () => {
                   placeholder="กรอกรหัสเข้าร่วมงาน"
                   value={formData.code}
                   onChange={(e) => handleInputChange('code', e.target.value)}
+                  className="bg-white border-brand-pink/50 focus:border-primary"
+                />
+              </div>
+              
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="block text-sm font-medium">ช่องทางติดต่อ</label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p className="text-xs">ติดต่อในกรณีอาหารหมด ทางร้านเกิดปัญหา หรือ อื่นๆ</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input
+                  placeholder="เบอร์โทร, LINE ID, หรือช่องทางอื่นๆ (ไม่บังคับ)"
+                  value={formData.contact}
+                  onChange={(e) => handleInputChange('contact', e.target.value)}
                   className="bg-white border-brand-pink/50 focus:border-primary"
                 />
               </div>
