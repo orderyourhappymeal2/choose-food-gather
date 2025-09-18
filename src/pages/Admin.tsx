@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus, UserCog } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { Switch } from "@/components/ui/switch";
 
@@ -792,37 +792,47 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
   const fetchPersonsWithOrders = async (planId: string) => {
     setIsLoadingPersonsWithOrders(true);
     try {
-      // Fetch persons who have orders in this plan
+      // First get all person_ids who have orders in this plan
       const { data: ordersData, error: ordersError } = await supabase
         .from('order')
-        .select(`
-          person_id,
-          person:person_id (person_id, person_name, person_agent)
-        `)
+        .select('person_id')
         .eq('plan_id', planId);
 
       if (ordersError) throw ordersError;
 
-      // Get unique persons with their order counts
-      const personsMap = new Map();
+      // Count orders per person
+      const orderCounts = new Map();
       ordersData?.forEach(order => {
-        if (order.person && order.person_id) {
-          const personId = order.person_id;
-          if (personsMap.has(personId)) {
-            personsMap.get(personId).orderCount += 1;
-          } else {
-            personsMap.set(personId, {
-              person_id: personId,
-              person_name: order.person.person_name,
-              person_agent: order.person.person_agent,
-              orderCount: 1
-            });
-          }
-        }
+        const personId = order.person_id;
+        orderCounts.set(personId, (orderCounts.get(personId) || 0) + 1);
       });
 
-      const uniquePersons = Array.from(personsMap.values());
-      setPersonsWithOrders(uniquePersons);
+      // Get unique person IDs
+      const uniquePersonIds = Array.from(orderCounts.keys());
+
+      if (uniquePersonIds.length === 0) {
+        setPersonsWithOrders([]);
+        return;
+      }
+
+      // Fetch person details for those IDs
+      const { data: personsData, error: personsError } = await supabase
+        .from('person')
+        .select('person_id, person_name, person_agent')
+        .in('person_id', uniquePersonIds);
+
+      if (personsError) throw personsError;
+
+      // Combine person data with order counts
+      const personsWithOrderCounts = personsData?.map(person => ({
+        person_id: person.person_id,
+        person_name: person.person_name,
+        person_agent: person.person_agent,
+        contact: person.person_agent, // Use person_agent as contact
+        orderCount: orderCounts.get(person.person_id) || 0
+      })) || [];
+
+      setPersonsWithOrders(personsWithOrderCounts);
 
     } catch (error) {
       console.error('Error fetching persons with orders:', error);
@@ -1353,16 +1363,16 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                                <p>คัดลอกลิงก์</p>
                              </TooltipContent>
                            </Tooltip>
-                           <Tooltip>
-                             <TooltipTrigger asChild>
-                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-orange-600 hover:bg-orange-600 hover:border-orange-600" onClick={() => handleDeleteIndividualOrders(plan)}>
-                                 <UserMinus className="h-4 w-4 text-orange-600" />
-                               </Button>
-                             </TooltipTrigger>
-                             <TooltipContent>
-                               <p>ลบคำสั่งออเดอร์จากผู้สั่ง</p>
-                             </TooltipContent>
-                           </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-orange-600 hover:bg-orange-600 hover:border-orange-600" onClick={() => handleDeleteIndividualOrders(plan)}>
+                                  <UserCog className="h-4 w-4 text-orange-600" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>จัดการผู้สั่งออเดอร์</p>
+                              </TooltipContent>
+                            </Tooltip>
                         </>
                       )}
                       <Tooltip>
@@ -1633,7 +1643,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       <Dialog open={isDeleteOrdersModalOpen} onOpenChange={setIsDeleteOrdersModalOpen}>
         <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>ลบคำสั่งออเดอร์จากผู้สั่ง</DialogTitle>
+            <DialogTitle>จัดการผู้สั่งออเดอร์</DialogTitle>
           </DialogHeader>
           
           <ScrollArea className="max-h-[60vh] pr-4">
@@ -1651,9 +1661,9 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                   <div key={person.person_id} className="flex items-center justify-between p-4 border border-brand-pink/20 rounded-lg bg-white/50">
                     <div className="flex-1">
                       <p className="font-medium text-foreground">{person.person_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        จำนวนคำสั่ง: {person.orderCount} รายการ
-                      </p>
+                       <p className="text-sm text-muted-foreground">
+                         {person.contact || 'ไม่มีข้อมูลติดต่อ'}
+                       </p>
                     </div>
                     
                     <AlertDialog>
