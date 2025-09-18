@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -1899,106 +1900,62 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                 </div>
               ) : (
                 <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30">
-                  <div className="p-4 space-y-3">
-                    {/* Header - Hidden on mobile */}
-                    <div className="hidden lg:grid grid-cols-8 gap-4 p-3 bg-white/50 rounded-lg font-medium text-sm text-foreground border-b border-brand-pink/20">
-                      <div>#</div>
-                      <div>ผู้สั่ง</div>
-                      <div>มื้ออาหาร</div>
-                      <div>ร้านอาหาร</div>
-                      <div>เมนู</div>
-                      <div>หมายเหตุ</div>
-                      <div>ท็อปปิ้ง</div>
-                      <div>เวลาสั่ง</div>
-                    </div>
-                    
-                     {/* Order Items */}
-                     {filteredOrders.map((order, index) => (
-                       <div key={order.order_id} className={`grid grid-cols-1 lg:grid-cols-8 gap-2 lg:gap-4 p-3 rounded-lg ${index % 2 === 0 ? 'bg-gradient-to-r from-white/50 to-brand-pink/5' : 'bg-gradient-to-r from-brand-orange/5 to-white/50'} hover:bg-gradient-to-r hover:from-brand-pink/10 hover:to-brand-orange/10 transition-all duration-200 border-2 border-brand-pink/30 shadow-sm`}>
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">#:</span>
-                            <span className="text-sm font-bold text-primary">{index + 1}</span>
-                          </div>
-                          <div className="hidden lg:block text-sm font-bold text-primary">
-                            {index + 1}
-                          </div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">คน:</span>
-                            <span className="text-sm font-medium">
-                              {order.person_name}
-                              {order.person_agent && ` (${order.person_agent})`}
+                  <Table className="border border-brand-pink/60">
+                    <TableHeader>
+                      <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40 text-center">#</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ผู้สั่ง</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ร้านอาหาร</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">เมนู</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">หมายเหตุ</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ท็อปปิ้ง</TableHead>
+                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold">เวลาสั่ง</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOrders.map((order, index) => (
+                        <TableRow key={order.order_id} className="border-b border-brand-pink/40 hover:bg-brand-pink/10">
+                          <TableCell className="border-r border-brand-pink/40 text-center">
+                            <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
+                              {index + 1}
                             </span>
-                          </div>
-                          <div className="hidden lg:block text-sm font-medium">
-                            {order.person_name}
-                            {order.person_agent && (
-                              <div className="text-xs text-muted-foreground">({order.person_agent})</div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">มื้อ:</span>
-                            <span className="text-sm font-medium text-primary inline-flex items-center gap-2">
+                          </TableCell>
+                          <TableCell className="border-r border-brand-pink/40">
+                            <div className="text-gray-800 dark:text-gray-100 font-medium">
+                              {order.person_name}
+                              {order.person_agent && (
+                                <div className="text-xs text-gray-600 dark:text-gray-300">({order.person_agent})</div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="border-r border-brand-pink/40">
+                            <div className="text-gray-800 dark:text-gray-100 font-medium flex items-center gap-2">
                               {order.meal_name}
                               {!order.is_custom && <Check className="h-4 w-4 text-green-600" />}
-                            </span>
-                          </div>
-                          <div className="hidden lg:block text-sm font-medium text-primary flex items-center gap-2">
-                            {order.meal_name}
-                            {!order.is_custom && <Check className="h-4 w-4 text-green-600" />}
-                          </div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">ร้าน:</span>
-                            <span className="text-sm font-medium text-brand-orange">{order.shop_name}</span>
-                          </div>
-                          <div className="hidden lg:block text-sm font-medium text-brand-orange">{order.shop_name}</div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">เมนู:</span>
-                            <span className="text-sm font-medium">{order.food_name}</span>
-                          </div>
-                          <div className="hidden lg:block text-sm font-medium">{order.food_name}</div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">โน๊ต:</span>
-                            <span className="text-sm">{order.order_note || '-'}</span>
-                          </div>
-                          <div className="hidden lg:block text-sm">{order.order_note || '-'}</div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">ท็อป:</span>
-                            <span className="text-sm">{order.topping || '-'}</span>
-                          </div>
-                          <div className="hidden lg:block text-sm">{order.topping || '-'}</div>
-                        </div>
-                        
-                        <div className="lg:col-span-1">
-                          <div className="lg:hidden">
-                            <span className="font-medium text-xs text-muted-foreground mr-2">เวลา:</span>
-                            <span className="text-xs text-muted-foreground">{formatThaiDateTime(order.created_at)}</span>
-                          </div>
-                          <div className="hidden lg:block text-xs text-muted-foreground">
-                            {formatThaiDateTime(order.created_at)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="border-r border-brand-pink/40">
+                            <div className="text-gray-800 dark:text-gray-100 font-medium">{order.shop_name}</div>
+                          </TableCell>
+                          <TableCell className="border-r border-brand-pink/40">
+                            <div className="text-gray-700 dark:text-gray-200">{order.food_name}</div>
+                          </TableCell>
+                          <TableCell className="border-r border-brand-pink/40">
+                            <div className="text-gray-700 dark:text-gray-200">{order.order_note || '-'}</div>
+                          </TableCell>
+                          <TableCell className="border-r border-brand-pink/40">
+                            <div className="text-gray-700 dark:text-gray-200">{order.topping || '-'}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs text-gray-600 dark:text-gray-300">
+                              {formatThaiDateTime(order.created_at)}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </ScrollArea>
               )}
             </div>
