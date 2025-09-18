@@ -1900,62 +1900,64 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                 </div>
               ) : (
                 <ScrollArea className="h-full border border-brand-pink/10 rounded-lg bg-white/30">
-                  <Table className="border border-brand-pink/60">
-                    <TableHeader>
-                      <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40 text-center">#</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ผู้สั่ง</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ร้านอาหาร</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">เมนู</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">หมายเหตุ</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ท็อปปิ้ง</TableHead>
-                        <TableHead className="text-gray-800 dark:text-gray-100 font-bold">เวลาสั่ง</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredOrders.map((order, index) => (
-                        <TableRow key={order.order_id} className="border-b border-brand-pink/40 hover:bg-brand-pink/10">
-                          <TableCell className="border-r border-brand-pink/40 text-center">
-                            <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
-                              {index + 1}
-                            </span>
-                          </TableCell>
-                          <TableCell className="border-r border-brand-pink/40">
-                            <div className="text-gray-800 dark:text-gray-100 font-medium">
-                              {order.person_name}
-                              {order.person_agent && (
-                                <div className="text-xs text-gray-600 dark:text-gray-300">({order.person_agent})</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="border-r border-brand-pink/40">
-                            <div className="text-gray-800 dark:text-gray-100 font-medium flex items-center gap-2">
-                              {order.meal_name}
-                              {!order.is_custom && <Check className="h-4 w-4 text-green-600" />}
-                            </div>
-                          </TableCell>
-                          <TableCell className="border-r border-brand-pink/40">
-                            <div className="text-gray-800 dark:text-gray-100 font-medium">{order.shop_name}</div>
-                          </TableCell>
-                          <TableCell className="border-r border-brand-pink/40">
-                            <div className="text-gray-700 dark:text-gray-200">{order.food_name}</div>
-                          </TableCell>
-                          <TableCell className="border-r border-brand-pink/40">
-                            <div className="text-gray-700 dark:text-gray-200">{order.order_note || '-'}</div>
-                          </TableCell>
-                          <TableCell className="border-r border-brand-pink/40">
-                            <div className="text-gray-700 dark:text-gray-200">{order.topping || '-'}</div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-xs text-gray-600 dark:text-gray-300">
-                              {formatThaiDateTime(order.created_at)}
-                            </div>
-                          </TableCell>
+                  <div className="min-w-[1000px]">
+                    <Table className="border border-brand-pink/60">
+                      <TableHeader>
+                        <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40 text-center">#</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ผู้สั่ง</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ร้านอาหาร</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">เมนู</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">หมายเหตุ</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ท็อปปิ้ง</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold">เวลาสั่ง</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.map((order, index) => (
+                          <TableRow key={order.order_id} className="border-b border-brand-pink/40 hover:bg-brand-pink/10">
+                            <TableCell className="border-r border-brand-pink/40 text-center">
+                              <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
+                                {index + 1}
+                              </span>
+                            </TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
+                              <div className="text-gray-800 dark:text-gray-100 font-medium">
+                                {order.person_name}
+                                {order.person_agent && (
+                                  <div className="text-xs text-gray-600 dark:text-gray-300">({order.person_agent})</div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
+                              <div className="text-gray-800 dark:text-gray-100 font-medium flex items-center gap-2">
+                                {order.meal_name}
+                                {!order.is_custom && <Check className="h-4 w-4 text-green-600" />}
+                              </div>
+                            </TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
+                              <div className="text-gray-800 dark:text-gray-100 font-medium">{order.shop_name}</div>
+                            </TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
+                              <div className="text-gray-700 dark:text-gray-200">{order.food_name}</div>
+                            </TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
+                              <div className="text-gray-700 dark:text-gray-200">{order.order_note || '-'}</div>
+                            </TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
+                              <div className="text-gray-700 dark:text-gray-200">{order.topping || '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-xs text-gray-600 dark:text-gray-300">
+                                {formatThaiDateTime(order.created_at)}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </ScrollArea>
               )}
             </div>

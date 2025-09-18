@@ -269,16 +269,17 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   return (
     <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
       <ScrollArea className="h-full">
-        <Table className="border border-brand-pink/60">
-          <TableHeader>
-            <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <div className="min-w-[800px]">
+          <Table className="border border-brand-pink/60">
+            <TableHeader>
+              <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
             {mealGroups.map((meal) => (
               meal.restaurants.map((restaurant) => {
                 const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
@@ -419,16 +420,17 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    )}
-                  </>
-                );
-              })
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
-    </div>
-  );
+                     )}
+                   </>
+                 );
+               })
+             ))}
+           </TableBody>
+         </Table>
+        </div>
+       </ScrollArea>
+     </div>
+   );
 };
 
 export default MealOrdersModal;
