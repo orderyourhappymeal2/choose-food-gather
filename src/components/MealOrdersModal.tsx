@@ -319,7 +319,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                             {meal.meal_name} - {restaurant.shop_name}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="border-brand-orange text-brand-orange font-bold text-xs">
+                            <Badge variant="outline" className="border-orange-600 text-orange-600 font-bold text-xs">
                               {restaurant.food_variants.length} เมนู
                             </Badge>
                           </div>
@@ -409,15 +409,15 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex flex-wrap gap-1">
-                                      {variant.persons.map((person, personIndex) => (
-                                        <Badge 
-                                          key={personIndex} 
-                                          variant="secondary" 
-                                          className="bg-brand-orange/10 text-brand-orange border-brand-orange/30 text-xs"
-                                        >
-                                          {person}
-                                        </Badge>
-                                      ))}
+                                       {variant.persons.map((person, personIndex) => (
+                                         <Badge 
+                                           key={personIndex} 
+                                           variant="secondary" 
+                                           className="bg-orange-600/30 text-orange-700 border-orange-600/50 text-xs font-bold"
+                                         >
+                                           {person}
+                                         </Badge>
+                                       ))}
                                     </div>
                                   </TableCell>
                                 </TableRow>
