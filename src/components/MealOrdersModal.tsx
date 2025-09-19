@@ -267,179 +267,176 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   }
 
   return (
-    <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-7xl"}>
-      <ScrollArea className="h-full">
-        <ScrollBar orientation="horizontal" />
-        <div className="min-w-[1000px] overflow-x-auto">
-          <Table className="border border-brand-pink/60">
-            <TableHeader>
-              <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
-                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
-                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
-                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
-                <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-            {mealGroups.map((meal, mealIndex) => (
-              <React.Fragment key={meal.meal_index}>
-                {/* Add meal separator */}
-                {mealIndex > 0 && (
-                  <TableRow className="border-none">
-                    <TableCell colSpan={4} className="p-0">
-                      <div className="bg-gradient-to-r from-brand-pink/30 via-brand-orange/30 to-brand-pink/30 h-3 border-y-2 border-brand-pink/60 shadow-inner"></div>
-                    </TableCell>
-                  </TableRow>
-                )}
-                {meal.restaurants.map((restaurant) => {
-                const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
-                const isOpen = openRestaurants.has(restaurantKey);
+    <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
+      <div className="w-full overflow-x-auto">
+        <Table className="border border-brand-pink/60">
+          <TableHeader>
+            <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
+              <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+          {mealGroups.map((meal, mealIndex) => (
+            <React.Fragment key={meal.meal_index}>
+              {/* Add meal separator */}
+              {mealIndex > 0 && (
+                <TableRow className="border-none">
+                  <TableCell colSpan={4} className="p-0">
+                    <div className="bg-gradient-to-r from-brand-pink/30 via-brand-orange/30 to-brand-pink/30 h-3 border-y-2 border-brand-pink/60 shadow-inner"></div>
+                  </TableCell>
+                </TableRow>
+              )}
+              {meal.restaurants.map((restaurant) => {
+              const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
+              const isOpen = openRestaurants.has(restaurantKey);
 
-                return (
-                  <React.Fragment key={restaurantKey}>
-                    <TableRow 
-                      className="border-b border-brand-pink/40 hover:bg-brand-pink/10 cursor-pointer"
-                      onClick={() => toggleRestaurant(restaurantKey)}
-                    >
-                      <TableCell className="border-r border-brand-pink/40 text-center">
-                        <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm">
-                          {meal.meal_index}
-                        </span>
-                      </TableCell>
-                      <TableCell className="border-r border-brand-pink/40">
-                        <div className="flex items-center gap-3">
-                          {restaurant.shop_url_pic && (
-                            <Avatar className="h-10 w-10 flex-shrink-0">
-                              <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
-                              <AvatarFallback className="bg-brand-orange/20">
-                                <Store className="h-4 w-4 text-brand-orange" />
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          <div className="flex flex-col gap-1">
-                            <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
-                              {meal.meal_name} - {restaurant.shop_name}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="border-brand-orange text-brand-orange font-bold text-xs">
-                                {restaurant.food_variants.length} เมนู
-                              </Badge>
-                            </div>
+              return (
+                <React.Fragment key={restaurantKey}>
+                  <TableRow 
+                    className="border-b border-brand-pink/40 hover:bg-brand-pink/10 cursor-pointer"
+                    onClick={() => toggleRestaurant(restaurantKey)}
+                  >
+                    <TableCell className="border-r border-brand-pink/40 text-center">
+                      <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm">
+                        {meal.meal_index}
+                      </span>
+                    </TableCell>
+                    <TableCell className="border-r border-brand-pink/40">
+                      <div className="flex items-center gap-3">
+                        {restaurant.shop_url_pic && (
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
+                            <AvatarFallback className="bg-brand-orange/20">
+                              <Store className="h-4 w-4 text-brand-orange" />
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className="flex flex-col gap-1">
+                          <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                            {meal.meal_name} - {restaurant.shop_name}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="border-brand-orange text-brand-orange font-bold text-xs">
+                              {restaurant.food_variants.length} เมนู
+                            </Badge>
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell className="border-r border-brand-pink/40 text-center">
-                        <Badge variant="destructive" className="bg-brand-pink text-white font-bold">
-                          {restaurant.total_items} รายการ
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {isOpen ? (
-                          <ChevronUp className="h-5 w-5 text-brand-orange mx-auto" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-brand-orange mx-auto" />
-                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="border-r border-brand-pink/40 text-center">
+                      <Badge variant="destructive" className="bg-brand-pink text-white font-bold">
+                        {restaurant.total_items} รายการ
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {isOpen ? (
+                        <ChevronUp className="h-5 w-5 text-brand-orange mx-auto" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-brand-orange mx-auto" />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                  
+                  {/* Collapsible Content Row */}
+                  {isOpen && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="p-0">
+                        <div className="bg-brand-pink/5 border-t border-brand-pink/40">
+                          <Table className="border-none">
+                            <TableHeader>
+                              <TableRow className="bg-brand-pink/10 hover:bg-brand-pink/10 border-b border-brand-pink/40">
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-16">ลำดับ</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-20">รูป</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ชื่ออาหาร</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-24">จำนวน</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">เพิ่มเติม</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold">ผู้สั่ง</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {restaurant.food_variants.map((variant, index) => (
+                                <TableRow key={index} className="border-b border-brand-pink/30 hover:bg-brand-pink/5">
+                                  <TableCell className="border-r border-brand-pink/30 text-center">
+                                    <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
+                                      {meal.meal_index}.{variant.index}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="border-r border-brand-pink/30">
+                                    {variant.food_url_pic ? (
+                                      <div className="w-16 h-16 relative overflow-hidden rounded-lg border border-brand-pink/20">
+                                        <img 
+                                          src={variant.food_url_pic} 
+                                          alt={variant.food_name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <UtensilsCrossed className="h-6 w-6 text-gray-400" />
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="border-r border-brand-pink/30">
+                                    <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                                      {variant.food_name}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="border-r border-brand-pink/30 text-center">
+                                    <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
+                                      {variant.count}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="border-r border-brand-pink/30">
+                                    {(variant.topping || variant.order_note) && (
+                                      <div className="space-y-1 text-sm">
+                                        {variant.topping && variant.topping !== "-" && (
+                                          <div>
+                                            <span className="font-semibold text-brand-orange">เพิ่ม:</span>
+                                            <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.topping}</span>
+                                          </div>
+                                        )}
+                                        {variant.order_note && (
+                                          <div>
+                                            <span className="font-semibold text-brand-orange">หมายเหตุ:</span>
+                                            <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.order_note}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                      {variant.persons.map((person, personIndex) => (
+                                        <Badge 
+                                          key={personIndex} 
+                                          variant="secondary" 
+                                          className="bg-brand-orange/10 text-brand-orange border-brand-orange/30 text-xs"
+                                        >
+                                          {person}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
                       </TableCell>
                     </TableRow>
-                    
-                    {/* Collapsible Content Row */}
-                    {isOpen && (
-                      <TableRow>
-                        <TableCell colSpan={4} className="p-0">
-                          <div className="bg-brand-pink/5 border-t border-brand-pink/40">
-                            <Table className="border-none">
-                              <TableHeader>
-                                <TableRow className="bg-brand-pink/10 hover:bg-brand-pink/10 border-b border-brand-pink/40">
-                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-16">ลำดับ</TableHead>
-                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-20">รูป</TableHead>
-                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ชื่ออาหาร</TableHead>
-                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-24">จำนวน</TableHead>
-                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">เพิ่มเติม</TableHead>
-                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold">ผู้สั่ง</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {restaurant.food_variants.map((variant, index) => (
-                                  <TableRow key={index} className="border-b border-brand-pink/30 hover:bg-brand-pink/5">
-                                    <TableCell className="border-r border-brand-pink/30 text-center">
-                                      <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
-                                        {meal.meal_index}.{variant.index}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell className="border-r border-brand-pink/30">
-                                      {variant.food_url_pic ? (
-                                        <div className="w-16 h-16 relative overflow-hidden rounded-lg border border-brand-pink/20">
-                                          <img 
-                                            src={variant.food_url_pic} 
-                                            alt={variant.food_name}
-                                            className="w-full h-full object-cover"
-                                          />
-                                        </div>
-                                      ) : (
-                                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                                          <UtensilsCrossed className="h-6 w-6 text-gray-400" />
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                    <TableCell className="border-r border-brand-pink/30">
-                                      <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
-                                        {variant.food_name}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="border-r border-brand-pink/30 text-center">
-                                      <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
-                                        {variant.count}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell className="border-r border-brand-pink/30">
-                                      {(variant.topping || variant.order_note) && (
-                                        <div className="space-y-1 text-sm">
-                                          {variant.topping && variant.topping !== "-" && (
-                                            <div>
-                                              <span className="font-semibold text-brand-orange">เพิ่ม:</span>
-                                              <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.topping}</span>
-                                            </div>
-                                          )}
-                                          {variant.order_note && (
-                                            <div>
-                                              <span className="font-semibold text-brand-orange">หมายเหตุ:</span>
-                                              <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.order_note}</span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex flex-wrap gap-1">
-                                        {variant.persons.map((person, personIndex) => (
-                                          <Badge 
-                                            key={personIndex} 
-                                            variant="secondary" 
-                                            className="bg-brand-orange/10 text-brand-orange border-brand-orange/30 text-xs"
-                                          >
-                                            {person}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                     )}
-                  </React.Fragment>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-            </TableBody>
-         </Table>
-        </div>
-       </ScrollArea>
-     </div>
+                   )}
+                </React.Fragment>
+                );
+              })}
+            </React.Fragment>
+          ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
    );
 };
 
