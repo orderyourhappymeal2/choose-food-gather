@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -267,10 +267,10 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   }
 
   return (
-    <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
+    <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-7xl"}>
       <ScrollArea className="h-full">
         <ScrollBar orientation="horizontal" />
-        <div className="min-w-[800px] overflow-x-auto">
+        <div className="min-w-[1000px] overflow-x-auto">
           <Table className="border border-brand-pink/60">
             <TableHeader>
               <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
@@ -281,15 +281,23 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-            {mealGroups.map((meal) => (
-              meal.restaurants.map((restaurant) => {
+            {mealGroups.map((meal, mealIndex) => (
+              <React.Fragment key={meal.meal_index}>
+                {/* Add meal separator */}
+                {mealIndex > 0 && (
+                  <TableRow className="border-none">
+                    <TableCell colSpan={4} className="p-0">
+                      <div className="bg-gradient-to-r from-brand-pink/30 via-brand-orange/30 to-brand-pink/30 h-3 border-y-2 border-brand-pink/60 shadow-inner"></div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                {meal.restaurants.map((restaurant) => {
                 const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
                 const isOpen = openRestaurants.has(restaurantKey);
 
                 return (
-                  <>
+                  <React.Fragment key={restaurantKey}>
                     <TableRow 
-                      key={restaurantKey} 
                       className="border-b border-brand-pink/40 hover:bg-brand-pink/10 cursor-pointer"
                       onClick={() => toggleRestaurant(restaurantKey)}
                     >
@@ -407,7 +415,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                           <Badge 
                                             key={personIndex} 
                                             variant="secondary" 
-                                            className="text-xs px-2 py-1 bg-white border border-brand-pink/40 text-gray-700 dark:text-gray-200 font-medium hover:bg-brand-pink/10 transition-colors"
+                                            className="bg-brand-orange/10 text-brand-orange border-brand-orange/30 text-xs"
                                           >
                                             {person}
                                           </Badge>
@@ -422,11 +430,12 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                         </TableCell>
                       </TableRow>
                      )}
-                   </>
-                 );
-               })
-             ))}
-           </TableBody>
+                  </React.Fragment>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+            </TableBody>
          </Table>
         </div>
        </ScrollArea>
