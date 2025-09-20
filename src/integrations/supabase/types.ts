@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin: {
+        Row: {
+          admin_id: string
+          agent_name: string
+          created_at: string
+          role: string
+          state: string
+          username: string
+        }
+        Insert: {
+          admin_id?: string
+          agent_name?: string
+          created_at?: string
+          role?: string
+          state?: string
+          username?: string
+        }
+        Update: {
+          admin_id?: string
+          agent_name?: string
+          created_at?: string
+          role?: string
+          state?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       food: {
         Row: {
           created_at: string
@@ -117,6 +168,7 @@ export type Database = {
           meal_id: string | null
           order_id: string
           order_note: string | null
+          order_type: string | null
           person_id: string
           plan_id: string
           topping: string | null
@@ -127,6 +179,7 @@ export type Database = {
           meal_id?: string | null
           order_id?: string
           order_note?: string | null
+          order_type?: string | null
           person_id: string
           plan_id: string
           topping?: string | null
@@ -137,6 +190,7 @@ export type Database = {
           meal_id?: string | null
           order_id?: string
           order_note?: string | null
+          order_type?: string | null
           person_id?: string
           plan_id?: string
           topping?: string | null
@@ -174,6 +228,7 @@ export type Database = {
       }
       person: {
         Row: {
+          contact: string | null
           created_at: string
           person_agent: string | null
           person_id: string
@@ -181,6 +236,7 @@ export type Database = {
           plan_id: string
         }
         Insert: {
+          contact?: string | null
           created_at?: string
           person_agent?: string | null
           person_id?: string
@@ -188,6 +244,7 @@ export type Database = {
           plan_id: string
         }
         Update: {
+          contact?: string | null
           created_at?: string
           person_agent?: string | null
           person_id?: string
@@ -208,6 +265,7 @@ export type Database = {
         Row: {
           created_at: string
           is_open: number
+          plan_access: string
           plan_date: string
           plan_editor: string
           plan_id: string
@@ -222,6 +280,7 @@ export type Database = {
         Insert: {
           created_at?: string
           is_open?: number
+          plan_access?: string
           plan_date: string
           plan_editor: string
           plan_id?: string
@@ -236,6 +295,7 @@ export type Database = {
         Update: {
           created_at?: string
           is_open?: number
+          plan_access?: string
           plan_date?: string
           plan_editor?: string
           plan_id?: string
