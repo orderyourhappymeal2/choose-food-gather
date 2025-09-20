@@ -107,7 +107,8 @@ const SuperUser = () => {
 
     setLoading(true);
     try {
-      const fakeEmail = `${newUser.username}@fake.local`;
+      // Use a realistic fake email domain to avoid validation issues
+      const fakeEmail = `${newUser.username}@internal.system`;
       
       const { error } = await supabase.auth.signUp({
         email: fakeEmail,
