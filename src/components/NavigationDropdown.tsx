@@ -5,7 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Menu, Home, Shield, Utensils, ClipboardList, CheckCircle } from "lucide-react";
+import { Menu, Home, Shield, Utensils, ClipboardList, CheckCircle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const NavigationDropdown = () => {
@@ -14,6 +14,7 @@ const NavigationDropdown = () => {
   const navigationItems = [
     { name: "หน้าแรก", path: "/", icon: Home },
     { name: "แอดมิน", path: "/admin", icon: Shield },
+    { name: "จัดการผู้ใช้", path: "/super-user", icon: Users },
     { name: "หมวดหมู่อาหาร", path: "/food-categories", icon: Utensils },
     { name: "สรุปคำสั่งซื้อ", path: "/order-summary", icon: ClipboardList },
     { name: "ขอบคุณ", path: "/thank-you", icon: CheckCircle },
