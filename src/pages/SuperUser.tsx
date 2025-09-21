@@ -8,8 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Users, History, Plus, Edit, Trash2, Power, PowerOff } from "lucide-react";
+import { Shield, Users, History, Plus, Edit, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import NavigationDropdown from "@/components/NavigationDropdown";
 
@@ -250,14 +251,14 @@ const SuperUser = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/30 to-background">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold text-slate-800">
               จัดการผู้ใช้ระดับสูง
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-slate-600 mt-2">
               สำหรับการจัดการบัญชีผู้ใช้และตรวจสอบการใช้งานระบบ
             </p>
           </div>
@@ -293,32 +294,36 @@ const SuperUser = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={createUser} className="space-y-4 max-w-md">
+                <form onSubmit={createUser} className="space-y-4 max-w-md mx-auto">
                   <div className="space-y-2">
-                    <Label htmlFor="username">ชื่อผู้ใช้</Label>
+                    <Label htmlFor="username" className="text-center block">ชื่อผู้ใช้</Label>
                     <Input
                       id="username"
                       type="text"
                       value={newUser.username}
                       onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                       placeholder="กรอกชื่อผู้ใช้"
+                      className="bg-white border-slate-300 text-center"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">รหัสผ่าน</Label>
+                    <Label htmlFor="password" className="text-center block">รหัสผ่าน</Label>
                     <Input
                       id="password"
                       type="password"
                       value={newUser.password}
                       onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                       placeholder="กรอกรหัสผ่าน"
+                      className="bg-white border-slate-300 text-center"
                       required
                     />
                   </div>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "กำลังสร้าง..." : "สร้างผู้ใช้"}
-                  </Button>
+                  <div className="text-center">
+                    <Button type="submit" disabled={loading} className="bg-slate-700 hover:bg-slate-800">
+                      {loading ? "กำลังสร้าง..." : "สร้างผู้ใช้"}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -341,61 +346,52 @@ const SuperUser = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ชื่อผู้ใช้</TableHead>
-                        <TableHead>ชื่อเอเจนต์</TableHead>
-                        <TableHead>บทบาท</TableHead>
-                        <TableHead>สถานะ</TableHead>
-                        <TableHead>วันที่สร้าง</TableHead>
-                        <TableHead>การจัดการ</TableHead>
+                        <TableHead className="text-center">ชื่อผู้ใช้</TableHead>
+                        <TableHead className="text-center">ชื่อเอเจนต์</TableHead>
+                        <TableHead className="text-center">บทบาท</TableHead>
+                        <TableHead className="text-center">สถานะ</TableHead>
+                        <TableHead className="text-center">วันที่สร้าง</TableHead>
+                        <TableHead className="text-center">การจัดการ</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {admins.map((admin) => (
                         <TableRow key={admin.user_id}>
-                          <TableCell className="font-medium">{admin.username}</TableCell>
-                          <TableCell>{admin.agent_name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{admin.role}</Badge>
+                          <TableCell className="font-medium text-center">{admin.username}</TableCell>
+                          <TableCell className="text-center">{admin.agent_name}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="bg-slate-100 text-slate-800 border-slate-300">{admin.role}</Badge>
                           </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={admin.state === "enable" ? "default" : "secondary"}
-                              className={
-                                admin.state === "enable" 
-                                  ? "bg-green-100 text-green-800 border-green-300" 
-                                  : "bg-gray-100 text-gray-800 border-gray-300"
-                              }
-                            >
-                              {admin.state === "enable" ? "เปิดใช้งาน" : "ปิดใช้งาน"}
-                            </Badge>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <Switch
+                                checked={admin.state === "enable"}
+                                onCheckedChange={() => toggleAdminState(admin.user_id, admin.state)}
+                                className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-slate-300"
+                              />
+                              <span className="text-sm">
+                                {admin.state === "enable" ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             {new Date(admin.created_at).toLocaleDateString('th-TH')}
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => openEditDialog(admin)}
+                                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => toggleAdminState(admin.user_id, admin.state)}
-                              >
-                                {admin.state === "enable" ? (
-                                  <PowerOff className="h-4 w-4" />
-                                ) : (
-                                  <Power className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
                                 onClick={() => deleteAdmin(admin.user_id)}
+                                className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -427,28 +423,28 @@ const SuperUser = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ลำดับที่</TableHead>
-                        <TableHead>ผู้เรียก</TableHead>
-                        <TableHead>รายละเอียด</TableHead>
-                        <TableHead>เวลา</TableHead>
+                        <TableHead className="text-center">ลำดับที่</TableHead>
+                        <TableHead className="text-center">ผู้เรียก</TableHead>
+                        <TableHead className="text-center">รายละเอียด</TableHead>
+                        <TableHead className="text-center">เวลา</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {auditLogs.map((log, index) => (
                         <TableRow key={log.id}>
-                          <TableCell>{index + 1}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">{index + 1}</TableCell>
+                          <TableCell className="text-center">
                             {admins.find(admin => admin.user_id === log.user_id)?.username || "ระบบ"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             <div>
                               <div className="font-medium">{log.action}</div>
                               {log.details && (
-                                <div className="text-sm text-muted-foreground">{log.details}</div>
+                                <div className="text-sm text-slate-600">{log.details}</div>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             {new Date(log.created_at).toLocaleString('th-TH')}
                           </TableCell>
                         </TableRow>
@@ -461,29 +457,29 @@ const SuperUser = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>แก้ไขข้อมูลผู้ใช้</DialogTitle>
-              <DialogDescription>
+            <DialogHeader className="text-center">
+              <DialogTitle className="text-center">แก้ไขข้อมูลผู้ใช้</DialogTitle>
+              <DialogDescription className="text-center">
                 แก้ไขชื่อเอเจนต์และบทบาทของผู้ใช้
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-agent-name">ชื่อเอเจนต์</Label>
+                <Label htmlFor="edit-agent-name" className="text-center block">ชื่อเอเจนต์</Label>
                 <Input
                   id="edit-agent-name"
                   value={editForm.agent_name}
                   onChange={(e) => setEditForm({ ...editForm, agent_name: e.target.value })}
+                  className="bg-white border-slate-300 text-center"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-role">บทบาท</Label>
+                <Label htmlFor="edit-role" className="text-center block">บทบาท</Label>
                 <Select value={editForm.role} onValueChange={(value) => setEditForm({ ...editForm, role: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="bg-white border-slate-300">
+                    <SelectValue className="text-center" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="user">ผู้ใช้</SelectItem>
@@ -492,11 +488,11 @@ const SuperUser = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-center gap-2">
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   ยกเลิก
                 </Button>
-                <Button onClick={updateAdmin} disabled={loading}>
+                <Button onClick={updateAdmin} disabled={loading} className="bg-slate-700 hover:bg-slate-800">
                   {loading ? "กำลังบันทึก..." : "บันทึก"}
                 </Button>
               </div>
