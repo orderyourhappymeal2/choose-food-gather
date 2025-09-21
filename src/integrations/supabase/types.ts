@@ -16,27 +16,27 @@ export type Database = {
     Tables: {
       admin: {
         Row: {
-          admin_id: string
           agent_name: string
           created_at: string
           role: string
           state: string
+          user_id: string
           username: string
         }
         Insert: {
-          admin_id?: string
           agent_name?: string
           created_at?: string
           role?: string
           state?: string
+          user_id?: string
           username?: string
         }
         Update: {
-          admin_id?: string
           agent_name?: string
           created_at?: string
           role?: string
           state?: string
+          user_id?: string
           username?: string
         }
         Relationships: []
