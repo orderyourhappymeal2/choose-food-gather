@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import NavigationDropdown from "@/components/NavigationDropdown";
 
 interface Admin {
-  admin_id: string;
+  user_id: string;
   username: string;
   agent_name: string;
   role: string;
@@ -163,7 +163,7 @@ const SuperUser = () => {
           agent_name: editForm.agent_name,
           role: editForm.role,
         })
-        .eq("admin_id", editingAdmin.admin_id);
+        .eq("user_id", editingAdmin.user_id);
 
       if (error) throw error;
 
@@ -195,7 +195,7 @@ const SuperUser = () => {
       const { error } = await supabase
         .from("admin")
         .update({ state: newState })
-        .eq("admin_id", adminId);
+        .eq("user_id", adminId);
 
       if (error) throw error;
 
@@ -226,7 +226,7 @@ const SuperUser = () => {
       const { error } = await supabase
         .from("admin")
         .delete()
-        .eq("admin_id", adminId);
+        .eq("user_id", adminId);
 
       if (error) throw error;
 
@@ -351,7 +351,7 @@ const SuperUser = () => {
                     </TableHeader>
                     <TableBody>
                       {admins.map((admin) => (
-                        <TableRow key={admin.admin_id}>
+                        <TableRow key={admin.user_id}>
                           <TableCell className="font-medium">{admin.username}</TableCell>
                           <TableCell>{admin.agent_name}</TableCell>
                           <TableCell>
@@ -384,7 +384,7 @@ const SuperUser = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => toggleAdminState(admin.admin_id, admin.state)}
+                                onClick={() => toggleAdminState(admin.user_id, admin.state)}
                               >
                                 {admin.state === "enable" ? (
                                   <PowerOff className="h-4 w-4" />
@@ -395,7 +395,7 @@ const SuperUser = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deleteAdmin(admin.admin_id)}
+                                onClick={() => deleteAdmin(admin.user_id)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -438,7 +438,7 @@ const SuperUser = () => {
                         <TableRow key={log.id}>
                           <TableCell>{index + 1}</TableCell>
                           <TableCell>
-                            {admins.find(admin => admin.admin_id === log.user_id)?.username || "ระบบ"}
+                            {admins.find(admin => admin.user_id === log.user_id)?.username || "ระบบ"}
                           </TableCell>
                           <TableCell>
                             <div>
