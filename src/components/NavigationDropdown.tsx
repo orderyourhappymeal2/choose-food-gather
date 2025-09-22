@@ -2,19 +2,35 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Menu, Home, Shield, Utensils, ClipboardList, CheckCircle, Users } from "lucide-react";
+import { Menu, Home, Shield, Utensils, ClipboardList, CheckCircle, Users, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const NavigationDropdown = () => {
   const navigate = useNavigate();
+  const { admin, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/welcome');
+      toast.success('ออกจากระบบเรียบร้อยแล้ว');
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการออกจากระบบ');
+    }
+  };
 
   const navigationItems = [
     { name: "หน้าแรก", path: "/", icon: Home },
+    ...(admin?.role === 'admin' ? [
+      { name: "จัดการผู้ใช้", path: "/super-user", icon: Users },
+    ] : []),
     { name: "แอดมิน", path: "/admin", icon: Shield },
-    { name: "จัดการผู้ใช้", path: "/super-user", icon: Users },
     { name: "หมวดหมู่อาหาร", path: "/food-categories", icon: Utensils },
     { name: "สรุปคำสั่งซื้อ", path: "/order-summary", icon: ClipboardList },
     { name: "ขอบคุณ", path: "/thank-you", icon: CheckCircle },
@@ -49,6 +65,14 @@ const NavigationDropdown = () => {
             </DropdownMenuItem>
           );
         })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground focus:bg-destructive focus:text-destructive-foreground text-destructive"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          ออกจากระบบ
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

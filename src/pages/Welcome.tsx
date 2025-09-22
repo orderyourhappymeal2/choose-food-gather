@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChefHat, MapPin, Calendar, Clock, Users, Settings, Info } from "lucide-react";
+import { ChefHat, MapPin, Calendar, Clock, Users, Settings, Info, Eye, EyeOff } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -21,9 +22,13 @@ const Welcome = () => {
   const [planData, setPlanData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
+  const [adminUsername, setAdminUsername] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signInWithUsername, admin } = useAuth();
   const [searchParams] = useSearchParams();
 
   // Format date to Thai format with Buddhist Era
@@ -195,24 +200,65 @@ const Welcome = () => {
     }
   };
 
-  const handleAdminAccess = () => {
-    if (adminPassword === "innovation-ai") {
-      setIsAdminDialogOpen(false);
-      setAdminPassword("");
-      navigate('/admin');
-    } else {
+  const handleAdminAccess = async () => {
+    if (!adminUsername || !adminPassword) {
       toast({
-        title: "รหัสไม่ถูกต้อง",
-        description: "กรุณากรอกรหัสที่ถูกต้อง",
+        title: "กรุณากรอกข้อมูลให้ครบถ้วน",
+        description: "กรุณากรอกทั้งชื่อผู้ใช้และรหัสผ่าน",
         variant: "destructive"
       });
+      return;
+    }
+
+    setIsLoggingIn(true);
+    
+    try {
+      const result = await signInWithUsername(adminUsername, adminPassword);
+      
+      if (result.success) {
+        setIsAdminDialogOpen(false);
+        setAdminUsername("");
+        setAdminPassword("");
+        
+        // Wait a moment for auth context to update
+        setTimeout(() => {
+          // Navigate based on role (will be handled after auth context updates)
+        }, 100);
+      } else {
+        toast({
+          title: "เข้าสู่ระบบไม่สำเร็จ",
+          description: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const handleOpenAdminDialog = () => {
     setIsAdminDialogOpen(true);
+    setAdminUsername("");
     setAdminPassword("");
+    setShowPassword(false);
   };
+
+  // Redirect authenticated users to appropriate page
+  useEffect(() => {
+    if (admin) {
+      if (admin.role === 'admin') {
+        navigate('/super-user');
+      } else if (admin.role === 'user') {
+        navigate('/admin');
+      }
+    }
+  }, [admin, navigate]);
 
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
@@ -331,27 +377,52 @@ const Welcome = () => {
             <div className="space-y-4">
               <div>
                 <Input
-                  type="password"
-                  placeholder="กรอกรหัส"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAdminAccess()}
-                  className="bg-white border-primary/50 focus:border-primary"
+                  placeholder="ชื่อผู้ใช้"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  className="bg-white border-slate-300 focus:border-slate-500"
                 />
+              </div>
+              <div>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="รหัสผ่าน"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && !isLoggingIn && handleAdminAccess()}
+                    className="bg-white border-slate-300 focus:border-slate-500 pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-slate-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-slate-400" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setIsAdminDialogOpen(false)}
                   className="flex-1"
+                  disabled={isLoggingIn}
                 >
                   ยกเลิก
                 </Button>
                 <Button
                   onClick={handleAdminAccess}
-                  className="flex-1 bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90 text-foreground border-0"
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
+                  disabled={isLoggingIn}
                 >
-                  เข้าสู่ระบบ
+                  {isLoggingIn ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
                 </Button>
               </div>
             </div>
