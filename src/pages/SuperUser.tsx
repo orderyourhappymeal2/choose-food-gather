@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Users, History, Plus, Edit, Trash2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Shield, Users, History, Plus, Edit, Trash2, Power } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import NavigationDropdown from "@/components/NavigationDropdown";
 
@@ -124,6 +125,7 @@ const SuperUser = () => {
 
       if (error) throw error;
 
+      // Don't auto-login after creating credentials - stay on the same page
       toast({
         title: "สำเร็จ",
         description: "สร้างผู้ใช้ใหม่เรียบร้อยแล้ว",
@@ -253,17 +255,27 @@ const SuperUser = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold text-slate-800">
-              จัดการผู้ใช้ระดับสูง
-            </h1>
-            <p className="text-slate-600 mt-2">
-              สำหรับการจัดการบัญชีผู้ใช้และตรวจสอบการใช้งานระบบ
-            </p>
+          <div className="flex justify-between items-center mb-8">
+            <div className="text-center flex-1">
+              <h1 className="text-4xl font-bold text-slate-800">
+                จัดการผู้ใช้ระดับสูง
+              </h1>
+              <p className="text-slate-600 mt-2">
+                สำหรับการจัดการบัญชีผู้ใช้และตรวจสอบการใช้งานระบบ
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                const { signOut } = useAuth();
+                await signOut();
+              }}
+              className="border-slate-300 hover:bg-slate-50"
+            >
+              <Power className="w-4 h-4 mr-2" />
+              ออกจากระบบ
+            </Button>
           </div>
-          <NavigationDropdown />
-        </div>
 
         <Tabs defaultValue="create-user" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">

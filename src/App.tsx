@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import Welcome from "./pages/Welcome";
+import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import SuperUser from "./pages/SuperUser";
 import FoodCategories from "./pages/FoodCategories";
@@ -24,8 +24,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Welcome />} />
-            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="user">
                 <Admin />
@@ -36,10 +36,26 @@ const App = () => (
                 <SuperUser />
               </ProtectedRoute>
             } />
-            <Route path="/food-categories" element={<FoodCategories />} />
-            <Route path="/menu/:restaurantId" element={<MenuSelection />} />
-            <Route path="/order-summary" element={<OrderSummary />} />
-            <Route path="/thank-you" element={<ThankYou />} />
+            <Route path="/food-categories" element={
+              <ProtectedRoute>
+                <FoodCategories />
+              </ProtectedRoute>
+            } />
+            <Route path="/menu/:restaurantId" element={
+              <ProtectedRoute>
+                <MenuSelection />
+              </ProtectedRoute>
+            } />
+            <Route path="/order-summary" element={
+              <ProtectedRoute>
+                <OrderSummary />
+              </ProtectedRoute>
+            } />
+            <Route path="/thank-you" element={
+              <ProtectedRoute>
+                <ThankYou />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

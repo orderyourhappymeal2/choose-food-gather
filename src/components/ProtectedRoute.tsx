@@ -24,9 +24,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Redirect to welcome if not authenticated
+  // Redirect to login if not authenticated
   if (!user || !admin) {
-    return <Navigate to="/welcome" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   // Check if admin is enabled
@@ -43,7 +43,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
   // Check role-based access
   if (requiredRole && admin.role !== requiredRole) {
-    return <Navigate to="/welcome" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
