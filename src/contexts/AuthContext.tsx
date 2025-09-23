@@ -114,23 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.user) {
-        // Wait for admin data to be fetched
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Navigate based on role after successful login
-        const { data: adminData } = await supabase
-          .from('admin')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .eq('state', 'enable')
-          .single();
-        
-        if (adminData?.role === 'admin') {
-          window.location.href = '/super-user';
-        } else if (adminData?.role === 'user') {
-          window.location.href = '/admin';
-        }
-        
         return { success: true };
       }
 

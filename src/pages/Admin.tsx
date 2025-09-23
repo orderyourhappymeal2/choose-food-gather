@@ -2,7 +2,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -2123,7 +2122,6 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 };
 
 const Admin = () => {
-  const { admin, signOut } = useAuth();
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
@@ -2133,10 +2131,6 @@ const Admin = () => {
 
   // Create refs to access refresh functions from child components
   const waitingPlansRefreshRef = useRef<() => void>();
-
-  const handleLogout = async () => {
-    await signOut();
-  };
   const publishedPlansRefreshRef = useRef<() => void>();
   const finishedPlansRefreshRef = useRef<() => void>();
 
@@ -2770,38 +2764,11 @@ const Admin = () => {
   };
   const isMobile = useIsMobile();
   
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header with user info and logout */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center">
-              <Store className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-slate-800">จัดการร้านอาหาร</h1>
-              <p className="text-sm text-slate-600">
-                เข้าสู่ระบบโดย: <span className="font-medium">{admin?.agent_name || admin?.username}</span>
-              </p>
-            </div>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="border-slate-300 hover:bg-slate-50"
-          >
-            <Power className="w-4 h-4 mr-2" />
-            ออกจากระบบ
-          </Button>
-        </div>
-      </div>
-
-      {/* Main content */}
+  return <div className={`min-h-screen bg-[var(--gradient-welcome)] py-4 ${isMobile ? 'px-0' : 'px-0 sm:p-6'}`}>
       <div className={`max-w-6xl mx-auto pt-4 sm:pt-8 relative ${isMobile ? 'px-0' : ''}`}>
 
-        {/* Original Header - now hidden or removed */}
-        <div className="text-center mb-8 hidden">
+        {/* Header */}
+        <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <ChefHat className="w-16 h-16 text-primary" />
           </div>
@@ -4353,8 +4320,6 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Admin;
