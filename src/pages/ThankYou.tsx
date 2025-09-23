@@ -66,6 +66,13 @@ const ThankYou = () => {
     try {
       // Get plan_id from finalOrder
       const planId = finalOrder?.userInfo?.plan_id;
+      
+      // Clear all stored data first
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('orderItems');
+      localStorage.removeItem('finalOrder');
+      localStorage.removeItem('orderCache');
+
       if (!planId) {
         navigate('/');
         return;
@@ -80,21 +87,27 @@ const ThankYou = () => {
 
       if (error) throw error;
 
-      // Clear all stored data
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('orderItems');
-      localStorage.removeItem('finalOrder');
-      localStorage.removeItem('orderCache');
-
-      // Redirect to url_portal if available, otherwise to home
+      // Handle url_portal navigation
       if (planData?.url_portal) {
-        window.location.href = planData.url_portal;
+        try {
+          const url = new URL(planData.url_portal);
+          // Extract path and search params from the URL
+          const pathWithParams = url.pathname + url.search;
+          
+          // Use React Router navigation instead of full page reload
+          navigate(pathWithParams);
+        } catch (urlError) {
+          console.error('Invalid URL format:', urlError);
+          // Fallback to home with plan parameter
+          navigate(`/?plan=${planId}`);
+        }
       } else {
-        navigate('/');
+        // No url_portal, go to home with plan parameter
+        navigate(`/?plan=${planId}`);
       }
     } catch (error) {
       console.error('Error fetching plan data:', error);
-      // Fallback to home page
+      // Clear data and fallback to home page
       localStorage.removeItem('userInfo');
       localStorage.removeItem('orderItems');
       localStorage.removeItem('finalOrder');
