@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChefHat, MapPin, Calendar, Clock, Users, Settings, Info, Eye, EyeOff } from "lucide-react";
+import { ChefHat, MapPin, Calendar, Clock, Users, Info } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,14 +20,9 @@ const Welcome = () => {
   });
   const [planData, setPlanData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const [adminUsername, setAdminUsername] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signInWithUsername, admin } = useAuth();
+  const { admin } = useAuth();
   const [searchParams] = useSearchParams();
 
   // Format date to Thai format with Buddhist Era
@@ -50,6 +44,17 @@ const Welcome = () => {
       setIsLoading(false);
     }
   }, [searchParams]);
+
+  // Redirect authenticated users to appropriate page
+  useEffect(() => {
+    if (admin) {
+      if (admin.role === 'admin') {
+        navigate('/super-user');
+      } else if (admin.role === 'user') {
+        navigate('/admin');
+      }
+    }
+  }, [admin, navigate]);
 
   const fetchPlanData = async (planId: string) => {
     try {
@@ -200,80 +205,10 @@ const Welcome = () => {
     }
   };
 
-  const handleAdminAccess = async () => {
-    if (!adminUsername || !adminPassword) {
-      toast({
-        title: "กรุณากรอกข้อมูลให้ครบถ้วน",
-        description: "กรุณากรอกทั้งชื่อผู้ใช้และรหัสผ่าน",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoggingIn(true);
-    
-    try {
-      const result = await signInWithUsername(adminUsername, adminPassword);
-      
-      if (result.success) {
-        setIsAdminDialogOpen(false);
-        setAdminUsername("");
-        setAdminPassword("");
-        
-        // Wait a moment for auth context to update
-        setTimeout(() => {
-          // Navigate based on role (will be handled after auth context updates)
-        }, 100);
-      } else {
-        toast({
-          title: "เข้าสู่ระบบไม่สำเร็จ",
-          description: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleOpenAdminDialog = () => {
-    setIsAdminDialogOpen(true);
-    setAdminUsername("");
-    setAdminPassword("");
-    setShowPassword(false);
-  };
-
-  // Redirect authenticated users to appropriate page
-  useEffect(() => {
-    if (admin) {
-      if (admin.role === 'admin') {
-        navigate('/super-user');
-      } else if (admin.role === 'user') {
-        navigate('/admin');
-      }
-    }
-  }, [admin, navigate]);
-
   return (
     <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
       <div className="max-w-md mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
         
-        {/* Settings Button */}
-        <Button
-          onClick={handleOpenAdminDialog}
-          variant="outline"
-          size="icon"
-          className="fixed sm:absolute sm:bottom-4 sm:right-4 top-4 right-4 z-50 bg-white/80 backdrop-blur-sm hover:bg-white/90 border-2 border-muted/30"
-        >
-          <Settings className="w-5 h-5" />
-        </Button>
-
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -364,70 +299,6 @@ const Welcome = () => {
           <ChefHat className="w-5 h-5 mr-2" />
           เริ่มสั่งอาหารกัน!
         </Button>
-
-        {/* Admin Access Dialog */}
-        <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>เข้าสู่ระบบแอดมิน</DialogTitle>
-              <DialogDescription>
-                กรุณากรอกรหัสเพื่อเข้าไปยังหน้าแอดมิน
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Input
-                  placeholder="ชื่อผู้ใช้"
-                  value={adminUsername}
-                  onChange={(e) => setAdminUsername(e.target.value)}
-                  className="bg-white border-slate-300 focus:border-slate-500"
-                />
-              </div>
-              <div>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="รหัสผ่าน"
-                    value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !isLoggingIn && handleAdminAccess()}
-                    className="bg-white border-slate-300 focus:border-slate-500 pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-slate-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-slate-400" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAdminDialogOpen(false)}
-                  className="flex-1"
-                  disabled={isLoggingIn}
-                >
-                  ยกเลิก
-                </Button>
-                <Button
-                  onClick={handleAdminAccess}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
-                  disabled={isLoggingIn}
-                >
-                  {isLoggingIn ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

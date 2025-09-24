@@ -10,9 +10,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Users, History, Plus, Edit, Trash2 } from "lucide-react";
+import { Shield, Users, History, Plus, Edit, Trash2, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import NavigationDropdown from "@/components/NavigationDropdown";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface Admin {
   user_id: string;
@@ -33,6 +35,8 @@ interface AuditLog {
 
 const SuperUser = () => {
   const { toast } = useToast();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,6 +59,15 @@ const SuperUser = () => {
     fetchAdmins();
     fetchAuditLogs();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const fetchAdmins = async () => {
     try {
@@ -224,12 +237,21 @@ const SuperUser = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // First delete from admin table
+      const { error: adminError } = await supabase
         .from("admin")
         .delete()
         .eq("user_id", adminId);
 
-      if (error) throw error;
+      if (adminError) throw adminError;
+
+      // Then delete from auth.users using admin API
+      const { error: authError } = await supabase.auth.admin.deleteUser(adminId);
+      
+      if (authError) {
+        console.error("Error deleting from auth.users:", authError);
+        // Don't throw here - admin record is already deleted
+      }
 
       toast({
         title: "สำเร็จ",
@@ -262,7 +284,17 @@ const SuperUser = () => {
               สำหรับการจัดการบัญชีผู้ใช้และตรวจสอบการใช้งานระบบ
             </p>
           </div>
-          <NavigationDropdown />
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              ออกจากระบบ
+            </Button>
+            <NavigationDropdown />
+          </div>
         </div>
 
         <Tabs defaultValue="create-user" className="space-y-6">

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
 import Admin from "./pages/Admin";
 import SuperUser from "./pages/SuperUser";
@@ -24,7 +25,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Welcome />} />
+            <Route path="/" element={<Login />} />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="user">

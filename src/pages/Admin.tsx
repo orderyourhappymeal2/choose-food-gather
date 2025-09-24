@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus, UserCog } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus, UserCog, LogOut } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { Switch } from "@/components/ui/switch";
 
@@ -31,6 +31,8 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MealOrdersModal from "@/components/MealOrdersModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   DndContext,
   closestCenter,
@@ -2122,6 +2124,9 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 };
 
 const Admin = () => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [progressSortOrder, setProgressSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
@@ -2131,6 +2136,15 @@ const Admin = () => {
 
   // Create refs to access refresh functions from child components
   const waitingPlansRefreshRef = useRef<() => void>();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   const publishedPlansRefreshRef = useRef<() => void>();
   const finishedPlansRefreshRef = useRef<() => void>();
 
@@ -2768,7 +2782,18 @@ const Admin = () => {
       <div className={`max-w-6xl mx-auto pt-4 sm:pt-8 relative ${isMobile ? 'px-0' : ''}`}>
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          <div className="absolute top-0 right-0">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 bg-white/80 backdrop-blur-sm hover:bg-white/90"
+            >
+              <LogOut className="h-4 w-4" />
+              ออกจากระบบ
+            </Button>
+          </div>
           <div className="flex justify-center mb-4">
             <ChefHat className="w-16 h-16 text-primary" />
           </div>
