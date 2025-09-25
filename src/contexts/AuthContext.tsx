@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface Admin {
   user_id: string;
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener
@@ -83,6 +85,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAdmin(null);
       } else {
         setAdmin(data);
+        // Navigate based on role after successful authentication
+        if (window.location.pathname === '/') {
+          if (data.role === 'admin') {
+            navigate('/super-user');
+          } else if (data.role === 'user') {
+            navigate('/admin');
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching admin data:', error);
