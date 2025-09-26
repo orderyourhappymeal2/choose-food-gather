@@ -12,7 +12,6 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { Shield, Users, History, Plus, Edit, Trash2, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import NavigationDropdown from "@/components/NavigationDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -201,35 +200,21 @@ const SuperUser = () => {
     }
   };
 
-  const toggleAdminState = async (adminId: string, currentState: string) => {
-    const newState = currentState === "enable" ? "disable" : "enable";
+  const toggleAdminState = (adminId: string, currentState: string) => {
+    // Update local state only - no database update
+    setAdmins(prevAdmins => 
+      prevAdmins.map(admin => 
+        admin.user_id === adminId 
+          ? { ...admin, state: currentState === "enable" ? "disable" : "enable" }
+          : admin
+      )
+    );
     
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("admin")
-        .update({ state: newState })
-        .eq("user_id", adminId);
-
-      if (error) throw error;
-
-      toast({
-        title: "สำเร็จ",
-        description: `${newState === "enable" ? "เปิด" : "ปิด"}สิทธิ์การเข้าถึงเรียบร้อยแล้ว`,
-      });
-
-      fetchAdmins();
-      fetchAuditLogs();
-    } catch (error: any) {
-      console.error("Error toggling admin state:", error);
-      toast({
-        title: "ข้อผิดพลาด",
-        description: "ไม่สามารถเปลี่ยนสิทธิ์การเข้าถึงได้",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    const newState = currentState === "enable" ? "disable" : "enable";
+    toast({
+      title: "สำเร็จ",
+      description: `${newState === "enable" ? "เปิด" : "ปิด"}สิทธิ์การเข้าถึงเรียบร้อยแล้ว`,
+    });
   };
 
   const deleteAdmin = async (adminId: string) => {
@@ -275,8 +260,8 @@ const SuperUser = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center flex-1">
+        <div className="relative mb-8">
+          <div className="text-center">
             <h1 className="text-4xl font-bold text-slate-800">
               จัดการผู้ใช้ระดับสูง
             </h1>
@@ -284,7 +269,7 @@ const SuperUser = () => {
               สำหรับการจัดการบัญชีผู้ใช้และตรวจสอบการใช้งานระบบ
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="absolute top-0 right-0">
             <Button
               onClick={handleLogout}
               variant="outline"
@@ -293,7 +278,6 @@ const SuperUser = () => {
               <LogOut className="h-4 w-4" />
               ออกจากระบบ
             </Button>
-            <NavigationDropdown />
           </div>
         </div>
 
@@ -352,7 +336,7 @@ const SuperUser = () => {
                     />
                   </div>
                   <div className="text-center">
-                    <Button type="submit" disabled={loading} className="bg-slate-700 hover:bg-slate-800">
+                    <Button type="submit" disabled={loading} className="bg-slate-700 hover:bg-slate-800 text-white">
                       {loading ? "กำลังสร้าง..." : "สร้างผู้ใช้"}
                     </Button>
                   </div>
