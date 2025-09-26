@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,18 @@ const Login = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signInWithUsername } = useAuth();
+  const { signInWithUsername, admin, loading } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && admin) {
+      if (admin.role === 'admin') {
+        navigate('/super-user', { replace: true });
+      } else {
+        navigate('/admin', { replace: true });
+      }
+    }
+  }, [admin, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +45,11 @@ const Login = () => {
       const result = await signInWithUsername(username, password);
       
       if (result.success) {
-        // Don't navigate here - let the auth context handle it
-        // The useEffect in AuthContext will redirect appropriately
+        toast({
+          title: "เข้าสู่ระบบสำเร็จ",
+          description: "กำลังนำคุณไปยังหน้าจัดการ...",
+        });
+        // Navigation will be handled by useEffect when admin data is loaded
       } else {
         toast({
           title: "เข้าสู่ระบบไม่สำเร็จ",
