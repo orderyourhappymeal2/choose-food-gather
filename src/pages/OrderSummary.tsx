@@ -178,7 +178,8 @@ const OrderSummary = () => {
             .from('person')
             .insert({
               person_name: userInfo.nickname,
-              plan_id: userInfo.plan_id
+              plan_id: userInfo.plan_id,
+              contact: userInfo.contact
             })
             .select('person_id')
             .single();
