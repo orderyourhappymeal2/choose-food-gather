@@ -45,16 +45,18 @@ const Welcome = () => {
     }
   }, [searchParams]);
 
-  // Redirect authenticated users to appropriate page
+  // Redirect authenticated users to appropriate page (only if no plan parameter)
   useEffect(() => {
-    if (admin) {
+    const planId = searchParams.get('plan');
+    // Don't redirect if accessing via plan link - allow public access
+    if (admin && !planId) {
       if (admin.role === 'admin') {
         navigate('/super-user');
       } else if (admin.role === 'user') {
         navigate('/admin');
       }
     }
-  }, [admin, navigate]);
+  }, [admin, navigate, searchParams]);
 
   const fetchPlanData = async (planId: string) => {
     try {
