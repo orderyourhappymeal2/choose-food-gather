@@ -181,29 +181,29 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
       const restaurants: RestaurantSection[] = Array.from(meal.restaurants.values()).map(restaurant => {
         const foodVariantMap = new Map<string, FoodVariant>();
         
-        restaurant.orders.forEach(order => {
-          if (!order.food || !order.person) return;
-          
-          const variantKey = `${order.food.food_name}|${order.topping || ''}|${order.order_note || ''}`;
-          
-          if (!foodVariantMap.has(variantKey)) {
-            foodVariantMap.set(variantKey, {
-              food_name: order.food.food_name,
-              food_url_pic: order.food.url_pic,
-              topping: order.topping,
-              order_note: order.order_note,
-              persons: [],
-              count: 0,
-              index: 0
-            });
-          }
-          
-          const variant = foodVariantMap.get(variantKey)!;
-          variant.persons.push({
-            name: order.person.person_name,
-            contact: order.person.contact
-          });
-          variant.count++;
+         restaurant.orders.forEach(order => {
+           if (!order.food || !order.person) return;
+           
+           const variantKey = `${order.food.food_name}|${order.topping || ''}|${order.order_note || ''}`;
+           
+           if (!foodVariantMap.has(variantKey)) {
+             foodVariantMap.set(variantKey, {
+               food_name: order.food.food_name,
+               food_url_pic: order.food.url_pic,
+               topping: order.topping,
+               order_note: order.order_note,
+               persons: [],
+               count: 0,
+               index: 0
+             });
+           }
+           
+           const variant = foodVariantMap.get(variantKey)!;
+           variant.persons.push({
+             name: order.person.person_name,
+             contact: order.person.contact || null
+           });
+           variant.count++;
         });
 
         const sortedVariants = Array.from(foodVariantMap.values()).sort((a, b) => 
@@ -416,18 +416,23 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                     )}
                                   </TableCell>
                                   <TableCell>
-                                     <div className="flex flex-wrap gap-1">
-                                        {variant.persons.map((person, personIndex) => (
-                                          <div key={personIndex} className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs">
-                                            <div className="font-bold text-orange-700">{person.name}</div>
-                                            {person.contact && (
-                                              <div className="text-orange-600 text-[10px] mt-0.5">
-                                                {person.contact}
-                                              </div>
-                                            )}
-                                          </div>
-                                        ))}
-                                     </div>
+                                      <div className="flex flex-wrap gap-1">
+                                         {variant.persons.map((person, personIndex) => (
+                                           <div key={personIndex} className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs">
+                                             <div className="font-bold text-orange-700">{person.name}</div>
+                                             {person.contact && person.contact.trim() && (
+                                               <div className="text-orange-600 text-[10px] mt-0.5">
+                                                 ติดต่อ: {person.contact}
+                                               </div>
+                                             )}
+                                             {(!person.contact || !person.contact.trim()) && (
+                                               <div className="text-gray-500 text-[10px] mt-0.5 italic">
+                                                 ไม่มีข้อมูลติดต่อ
+                                               </div>
+                                             )}
+                                           </div>
+                                         ))}
+                                      </div>
                                   </TableCell>
                                 </TableRow>
                               ))}

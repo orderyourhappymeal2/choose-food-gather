@@ -31,6 +31,7 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MealOrdersModal from "@/components/MealOrdersModal";
+import PortalLinkModal from "@/components/PortalLinkModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -670,21 +671,6 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       fetchPlans();
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
-    }
-  };
-
-  // Handle copy link
-  const handleCopyLink = async (plan: any) => {
-    if (!plan.url_portal) {
-      toast.error('ไม่พบลิงก์ในแผนนี้');
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(plan.url_portal);
-      toast.success('คัดลอกลิงก์สำเร็จ');
-    } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการคัดลอกลิงก์');
     }
   };
 
@@ -1355,16 +1341,14 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                               <p>ดูรายการสั่งอาหาร</p>
                             </TooltipContent>
                           </Tooltip>
-                           <Tooltip>
-                             <TooltipTrigger asChild>
-                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleCopyLink(plan)}>
-                                 <Link className="h-4 w-4 text-gray-800" />
-                               </Button>
-                             </TooltipTrigger>
-                             <TooltipContent>
-                               <p>คัดลอกลิงก์</p>
-                             </TooltipContent>
-                           </Tooltip>
+                            <PortalLinkModal
+                              url={plan.url_portal || ''}
+                              trigger={
+                                <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" disabled={!plan.url_portal}>
+                                  <Link className="h-4 w-4 text-gray-800" />
+                                </Button>
+                              }
+                            />
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-orange-600 hover:bg-orange-600 hover:border-orange-600" onClick={() => handleDeleteIndividualOrders(plan)}>
