@@ -22,6 +22,7 @@ interface OrderData {
   order_note: string | null;
   person: {
     person_name: string;
+    contact: string | null;
   };
   food: {
     food_name: string;
@@ -42,7 +43,10 @@ interface FoodVariant {
   food_url_pic: string | null;
   topping: string | null;
   order_note: string | null;
-  persons: string[];
+  persons: {
+    name: string;
+    contact: string | null;
+  }[];
   count: number;
   index: number;
 }
@@ -86,7 +90,8 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
           topping,
           order_note,
           person:person_id (
-            person_name
+            person_name,
+            contact
           ),
           food:food_id (
             food_name,
@@ -194,7 +199,10 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
           }
           
           const variant = foodVariantMap.get(variantKey)!;
-          variant.persons.push(order.person.person_name);
+          variant.persons.push({
+            name: order.person.person_name,
+            contact: order.person.contact
+          });
           variant.count++;
         });
 
@@ -408,17 +416,18 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                     )}
                                   </TableCell>
                                   <TableCell>
-                                    <div className="flex flex-wrap gap-1">
-                                       {variant.persons.map((person, personIndex) => (
-                                         <Badge 
-                                           key={personIndex} 
-                                           variant="secondary" 
-                                           className="bg-orange-600/30 text-orange-700 border-orange-600/50 text-xs font-bold"
-                                         >
-                                           {person}
-                                         </Badge>
-                                       ))}
-                                    </div>
+                                     <div className="flex flex-wrap gap-1">
+                                        {variant.persons.map((person, personIndex) => (
+                                          <div key={personIndex} className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs">
+                                            <div className="font-bold text-orange-700">{person.name}</div>
+                                            {person.contact && (
+                                              <div className="text-orange-600 text-[10px] mt-0.5">
+                                                {person.contact}
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                     </div>
                                   </TableCell>
                                 </TableRow>
                               ))}
