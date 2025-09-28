@@ -415,25 +415,15 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                       </div>
                                     )}
                                   </TableCell>
-                                  <TableCell>
-                                      <div className="flex flex-wrap gap-1">
-                                         {variant.persons.map((person, personIndex) => (
-                                           <div key={personIndex} className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs">
-                                             <div className="font-bold text-orange-700">{person.name}</div>
-                                             {person.contact && person.contact.trim() && (
-                                               <div className="text-orange-600 text-[10px] mt-0.5">
-                                                 ติดต่อ: {person.contact}
-                                               </div>
-                                             )}
-                                             {(!person.contact || !person.contact.trim()) && (
-                                               <div className="text-gray-500 text-[10px] mt-0.5 italic">
-                                                 ไม่มีข้อมูลติดต่อ
-                                               </div>
-                                             )}
-                                           </div>
-                                         ))}
-                                      </div>
-                                  </TableCell>
+                                   <TableCell>
+                                       <div className="flex flex-wrap gap-1">
+                                          {variant.persons.map((person, personIndex) => (
+                                            <div key={personIndex} className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs">
+                                              <div className="font-bold text-orange-700">{person.name}</div>
+                                            </div>
+                                          ))}
+                                       </div>
+                                   </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
