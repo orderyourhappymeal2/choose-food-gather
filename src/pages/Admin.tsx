@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus, UserCog, LogOut } from "lucide-react";
+import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus, UserCog, LogOut, Settings } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { Switch } from "@/components/ui/switch";
 
@@ -1225,153 +1226,137 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                     </div>
                   )}
                   
-                  <div className="flex gap-2 pt-2 overflow-hidden justify-center">
-                    <TooltipProvider>
-                      {filterState === 'waiting' && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600" onClick={() => handleAddMeal(plan)}>
-                                <Plus className="h-4 w-4 text-green-600" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>เพิ่มมื้ออาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
-                      {filterState === 'finished' && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:text-white" onClick={() => exportToExcel(plan)}>
-                                <FileSpreadsheet className="h-4 w-4 text-green-600 hover:text-white" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>ส่งออก Excel</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
-                                <FileText className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>ดูรายการมื้ออาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
-                                <ShoppingCart className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>ดูรายการสั่งอาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
-                      {filterState === 'waiting' && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleEdit(plan)}>
-                                <Edit className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>แก้ไขใบสั่งอาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handlePublish(plan)}>
-                                <Send className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>เผยแพร่ใบสั่งอาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
-                       {filterState === 'published' && (
-                         <>
-                           <Tooltip>
-                             <TooltipTrigger asChild>
-                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:text-white" onClick={() => exportToExcel(plan)}>
-                                 <FileSpreadsheet className="h-4 w-4 text-green-600 hover:text-white" />
-                               </Button>
-                             </TooltipTrigger>
-                             <TooltipContent>
-                               <p>ส่งออก Excel</p>
-                             </TooltipContent>
-                           </Tooltip>
-                           <Tooltip>
-                             <TooltipTrigger asChild>
-                               <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-blue-600 hover:bg-blue-600 hover:border-blue-600" onClick={() => handleFinishPlan(plan)}>
-                                 <CheckCircle className="h-4 w-4 text-blue-600" />
-                               </Button>
-                             </TooltipTrigger>
-                             <TooltipContent>
-                               <p>ปิดใบสั่งอาหาร</p>
-                             </TooltipContent>
-                           </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowMealList(plan)}>
-                                <FileText className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>ดูรายการมื้ออาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" onClick={() => handleShowOrders(plan)}>
-                                <ShoppingCart className="h-4 w-4 text-gray-800" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>ดูรายการสั่งอาหาร</p>
-                            </TooltipContent>
-                          </Tooltip>
-                            <PortalLinkModal
-                              url={plan.url_portal || ''}
-                              trigger={
-                                <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800" disabled={!plan.url_portal}>
-                                  <Link className="h-4 w-4 text-gray-800" />
-                                </Button>
-                              }
-                            />
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-orange-600 hover:bg-orange-600 hover:border-orange-600" onClick={() => handleDeleteIndividualOrders(plan)}>
-                                  <UserCog className="h-4 w-4 text-orange-600" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>จัดการผู้สั่งออเดอร์</p>
-                              </TooltipContent>
-                            </Tooltip>
-                        </>
-                      )}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="sm" variant="outline" className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600" onClick={() => handleDelete(plan)}>
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>ลบใบสั่งอาหาร</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                  <div className="flex justify-center pt-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" className="h-9 px-3 gap-2 border-primary hover:bg-primary hover:text-primary-foreground">
+                          <Settings className="h-4 w-4" />
+                          <span className="text-xs font-medium">จัดการ</span>
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="center">
+                        {filterState === 'waiting' && (
+                          <>
+                            <DropdownMenuItem onClick={() => handleAddMeal(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <Plus className="h-4 w-4 text-green-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">เพิ่มมื้ออาหาร</span>
+                                <span className="text-xs text-muted-foreground">เพิ่มเมนูอาหารใหม่</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEdit(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <Edit className="h-4 w-4 text-blue-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">แก้ไขใบสั่งอาหาร</span>
+                                <span className="text-xs text-muted-foreground">แก้ไขรายละเอียด</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePublish(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <Send className="h-4 w-4 text-purple-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">เผยแพร่ใบสั่งอาหาร</span>
+                                <span className="text-xs text-muted-foreground">เปิดให้สั่งอาหาร</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        
+                        {filterState === 'published' && (
+                          <>
+                            <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ส่งออก Excel</span>
+                                <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleFinishPlan(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <CheckCircle className="h-4 w-4 text-blue-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ปิดใบสั่งอาหาร</span>
+                                <span className="text-xs text-muted-foreground">ปิดการรับออเดอร์</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <FileText className="h-4 w-4 text-gray-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
+                                <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <ShoppingCart className="h-4 w-4 text-gray-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ดูรายการสั่งอาหาร</span>
+                                <span className="text-xs text-muted-foreground">แสดงออเดอร์ทั้งหมด</span>
+                              </div>
+                            </DropdownMenuItem>
+                            {plan.url_portal && (
+                              <DropdownMenuItem asChild className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                                <PortalLinkModal
+                                  url={plan.url_portal}
+                                  trigger={
+                                    <div className="flex gap-3 w-full">
+                                      <Link className="h-4 w-4 text-indigo-600" />
+                                      <div className="flex flex-col">
+                                        <span className="font-medium text-sm">ลิ้ง Portal</span>
+                                        <span className="text-xs text-muted-foreground">แชร์ลิ้งให้ผู้ใช้</span>
+                                      </div>
+                                    </div>
+                                  }
+                                />
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleDeleteIndividualOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <UserCog className="h-4 w-4 text-orange-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">จัดการผู้สั่งออเดอร์</span>
+                                <span className="text-xs text-muted-foreground">แก้ไขรายการผู้สั่ง</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        
+                        {filterState === 'finished' && (
+                          <>
+                            <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ส่งออก Excel</span>
+                                <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <FileText className="h-4 w-4 text-gray-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
+                                <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <ShoppingCart className="h-4 w-4 text-gray-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ดูรายการสั่งอาหาร</span>
+                                <span className="text-xs text-muted-foreground">แสดงออเดอร์ทั้งหมด</span>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        
+                        <DropdownMenuItem onClick={() => handleDelete(plan)} className="gap-3 py-2.5 px-3 hover:bg-destructive hover:text-destructive-foreground cursor-pointer">
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">ลบใบสั่งอาหาร</span>
+                            <span className="text-xs text-muted-foreground">ลบถาวร</span>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </CardContent>
