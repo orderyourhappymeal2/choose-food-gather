@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 
 
@@ -19,9 +19,9 @@ const NotFound = () => {
         <div className="text-center mt-20">
           <h1 className="text-4xl font-bold mb-4 text-foreground">404</h1>
           <p className="text-xl text-muted-foreground mb-4">หน้าที่คุณค้นหาไม่พบ</p>
-          <a href="/" className="text-primary hover:text-primary/80 underline">
+          <Link to="/" className="text-primary hover:text-primary/80 underline">
             กลับไปหน้าแรก
-          </a>
+          </Link>
         </div>
       </div>
     </div>

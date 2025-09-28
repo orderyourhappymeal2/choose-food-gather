@@ -68,13 +68,18 @@ const Welcome = () => {
 
       if (error) throw error;
       
+      // Check if plan is in a valid state for public access
+      if (data && data.plan_state !== "published") {
+        // Redirect to admin login if plan is not published
+        navigate('/', { replace: true });
+        return;
+      }
+      
       setPlanData(data);
     } catch (error) {
       console.error('Error fetching plan data:', error);
-      toast({
-        title: "ไม่พบข้อมูลแผนการจอง",
-        variant: "destructive"
-      });
+      // Redirect to admin login if plan not found or other error
+      navigate('/', { replace: true });
     } finally {
       setIsLoading(false);
     }

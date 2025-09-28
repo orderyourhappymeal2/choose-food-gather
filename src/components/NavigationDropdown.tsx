@@ -18,7 +18,7 @@ const NavigationDropdown = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      navigate('/welcome');
+      navigate('/');
       toast.success('ออกจากระบบเรียบร้อยแล้ว');
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการออกจากระบบ');
