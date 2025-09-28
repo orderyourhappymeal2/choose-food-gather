@@ -806,7 +806,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       // Fetch person details for those IDs
       const { data: personsData, error: personsError } = await supabase
         .from('person')
-        .select('person_id, person_name, person_agent')
+        .select('person_id, person_name, person_agent, contact')
         .in('person_id', uniquePersonIds);
 
       if (personsError) throw personsError;
@@ -816,7 +816,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
         person_id: person.person_id,
         person_name: person.person_name,
         person_agent: person.person_agent,
-        contact: person.person_agent, // Use person_agent as contact
+        contact: person.contact, // Use actual contact field
         orderCount: orderCounts.get(person.person_id) || 0
       })) || [];
 
