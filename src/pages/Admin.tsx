@@ -1134,165 +1134,147 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
               <div className={`h-1 w-full ${getTopBarColor().split(' ')[0]}`} />
               
               <CardContent className="p-1 md:p-4 min-w-0">
-                {/* Order number badge - top right */}
+                 {/* Dropdown menu - top right */}
                 <div className="absolute top-2 right-1 md:top-3 md:right-4">
-                  <div className="bg-muted/50 text-muted-foreground text-xs px-2 py-1 rounded-full font-mono">
-                    #{getOrderNumber(plan.plan_id)}
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline" className="h-8 px-2 gap-1 border-primary hover:bg-primary hover:text-primary-foreground">
+                        <Settings className="h-3 w-3" />
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
+                      {filterState === 'waiting' && (
+                        <>
+                          <DropdownMenuItem onClick={() => handleAddMeal(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <Plus className="h-4 w-4 text-green-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">เพิ่มมื้ออาหาร</span>
+                              <span className="text-xs text-muted-foreground">เพิ่มเมนูอาหารใหม่</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <Edit className="h-4 w-4 text-blue-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">แก้ไขใบสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">แก้ไขรายละเอียด</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handlePublish(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <Send className="h-4 w-4 text-purple-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">เผยแพร่ใบสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">เปิดให้สั่งอาหาร</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      
+                      {filterState === 'published' && (
+                        <>
+                          <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ส่งออก Excel</span>
+                              <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleFinishPlan(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <CheckCircle className="h-4 w-4 text-blue-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ปิดใบสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">ปิดการรับออเดอร์</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <FileText className="h-4 w-4 text-gray-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
+                              <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <ShoppingCart className="h-4 w-4 text-gray-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ดูรายการสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">แสดงออเดอร์ทั้งหมด</span>
+                            </div>
+                          </DropdownMenuItem>
+                          {plan.url_portal && (
+                            <DropdownMenuItem onClick={() => {
+                              navigator.clipboard.writeText(plan.url_portal);
+                              toast.success('คัดลอกลิงก์สำเร็จ');
+                            }} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                              <Link className="h-4 w-4 text-indigo-600" />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">ลิ้ง Portal</span>
+                                <span className="text-xs text-muted-foreground">แชร์ลิ้งให้ผู้ใช้</span>
+                              </div>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => handleDeleteIndividualOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <UserCog className="h-4 w-4 text-orange-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">จัดการผู้สั่งออเดอร์</span>
+                              <span className="text-xs text-muted-foreground">แก้ไขรายการผู้สั่ง</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      
+                      {filterState === 'finished' && (
+                        <>
+                          <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ส่งออก Excel</span>
+                              <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <FileText className="h-4 w-4 text-gray-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
+                              <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <ShoppingCart className="h-4 w-4 text-gray-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ดูรายการสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">แสดงออเดอร์ทั้งหมด</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      
+                      <DropdownMenuItem onClick={() => handleDelete(plan)} className="gap-3 py-2.5 px-3 hover:bg-destructive hover:text-destructive-foreground cursor-pointer">
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">ลบใบสั่งอาหาร</span>
+                          <span className="text-xs text-muted-foreground">ลบถาวร</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 
                 <div className="space-y-1 md:space-y-3 min-w-0 pr-12 md:pr-20">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1 md:space-y-2 flex-1 min-w-0">
-                      {/* Mobile: Inline layout, Tablet & Desktop: Stacked layout */}
-                      <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
-                        <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
-                        <div className="text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
-                      </div>
-                      <div className="md:hidden flex items-center space-x-1 min-w-0">
-                        <span className="text-xs font-medium text-muted-foreground shrink-0">งาน:</span>
-                        <div className="text-xs font-semibold text-foreground break-words">{plan.plan_name}</div>
-                      </div>
-                      
-                      <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
-                        <Label className="text-xs font-medium text-muted-foreground">รหัสใบสั่งอาหาร</Label>
-                        <div className="text-sm text-foreground break-words font-mono">{plan.plan_id.split('-')[0].toUpperCase()}</div>
-                      </div>
-                      <div className="md:hidden flex items-center space-x-1 min-w-0">
-                        <span className="text-xs font-medium text-muted-foreground shrink-0">รหัส:</span>
-                        <div className="text-xs text-foreground break-words font-mono">{plan.plan_id.split('-')[0].toUpperCase()}</div>
-                      </div>
+                  <div className="space-y-1 md:space-y-2">
+                    {/* Mobile: Inline layout, Tablet & Desktop: Stacked layout */}
+                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
+                      <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
+                      <div className="text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
                     </div>
-                    
-                    <div className="flex-shrink-0">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="outline" className="h-9 px-3 gap-2 border-primary hover:bg-primary hover:text-primary-foreground">
-                            <Settings className="h-4 w-4" />
-                            <span className="text-xs font-medium">จัดการ</span>
-                            <ChevronDown className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
-                          {filterState === 'waiting' && (
-                            <>
-                              <DropdownMenuItem onClick={() => handleAddMeal(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <Plus className="h-4 w-4 text-green-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">เพิ่มมื้ออาหาร</span>
-                                  <span className="text-xs text-muted-foreground">เพิ่มเมนูอาหารใหม่</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEdit(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <Edit className="h-4 w-4 text-blue-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">แก้ไขใบสั่งอาหาร</span>
-                                  <span className="text-xs text-muted-foreground">แก้ไขรายละเอียด</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handlePublish(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <Send className="h-4 w-4 text-purple-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">เผยแพร่ใบสั่งอาหาร</span>
-                                  <span className="text-xs text-muted-foreground">เปิดให้สั่งอาหาร</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </>
-                          )}
-                          
-                          {filterState === 'published' && (
-                            <>
-                              <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ส่งออก Excel</span>
-                                  <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleFinishPlan(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <CheckCircle className="h-4 w-4 text-blue-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ปิดใบสั่งอาหาร</span>
-                                  <span className="text-xs text-muted-foreground">ปิดการรับออเดอร์</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <FileText className="h-4 w-4 text-gray-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
-                                  <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <ShoppingCart className="h-4 w-4 text-gray-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ดูรายการสั่งอาหาร</span>
-                                  <span className="text-xs text-muted-foreground">แสดงออเดอร์ทั้งหมด</span>
-                                </div>
-                              </DropdownMenuItem>
-                              {plan.url_portal && (
-                                <DropdownMenuItem onClick={() => {
-                                  navigator.clipboard.writeText(plan.url_portal);
-                                  toast.success('คัดลอกลิงก์สำเร็จ');
-                                }} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                  <Link className="h-4 w-4 text-indigo-600" />
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-sm">ลิ้ง Portal</span>
-                                    <span className="text-xs text-muted-foreground">แชร์ลิ้งให้ผู้ใช้</span>
-                                  </div>
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem onClick={() => handleDeleteIndividualOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <UserCog className="h-4 w-4 text-orange-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">จัดการผู้สั่งออเดอร์</span>
-                                  <span className="text-xs text-muted-foreground">แก้ไขรายการผู้สั่ง</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </>
-                          )}
-                          
-                          {filterState === 'finished' && (
-                            <>
-                              <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ส่งออก Excel</span>
-                                  <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <FileText className="h-4 w-4 text-gray-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
-                                  <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                                <ShoppingCart className="h-4 w-4 text-gray-600" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">ดูรายการสั่งอาหาร</span>
-                                  <span className="text-xs text-muted-foreground">แสดงออเดอร์ทั้งหมด</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </>
-                          )}
-                          
-                          <DropdownMenuItem onClick={() => handleDelete(plan)} className="gap-3 py-2.5 px-3 hover:bg-destructive hover:text-destructive-foreground cursor-pointer">
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                            <div className="flex flex-col">
-                              <span className="font-medium text-sm">ลบใบสั่งอาหาร</span>
-                              <span className="text-xs text-muted-foreground">ลบถาวร</span>
-                            </div>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                     </div>
-                   </div>
+                    <div className="md:hidden flex items-center space-x-1 min-w-0">
+                      <span className="text-xs font-medium text-muted-foreground shrink-0">งาน:</span>
+                      <div className="text-xs font-semibold text-foreground break-words">{plan.plan_name}</div>
+                    </div>
+                  </div>
                    
                    <div className="space-y-1 md:space-y-2">
                     <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
