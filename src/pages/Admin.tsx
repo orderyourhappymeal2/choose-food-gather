@@ -1117,28 +1117,58 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       ) : (
         <div className="grid gap-2 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-0 md:px-4">
           {plans.map((plan) => {
-            const getTopBarColor = () => {
+            const getStateInfo = () => {
               switch(filterState) {
-                case 'waiting': return 'bg-brand-yellow border-brand-yellow/30';
-                case 'published': return 'bg-brand-orange border-brand-orange/30';
-                case 'finished': return 'bg-brand-pink border-brand-pink/30';
-                default: return 'bg-brand-cream border-brand-cream/30';
+                case 'waiting': 
+                  return {
+                    bgClass: 'bg-gradient-to-br from-yellow-50 to-amber-50',
+                    borderClass: 'border-yellow-200',
+                    iconBgClass: 'bg-yellow-100',
+                    iconTextClass: 'text-yellow-700',
+                    icon: Clock,
+                    badge: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                  };
+                case 'published': 
+                  return {
+                    bgClass: 'bg-gradient-to-br from-orange-50 to-pink-50',
+                    borderClass: 'border-orange-200',
+                    iconBgClass: 'bg-orange-100',
+                    iconTextClass: 'text-orange-700',
+                    icon: Store,
+                    badge: 'bg-orange-100 text-orange-800 border-orange-200'
+                  };
+                case 'finished': 
+                  return {
+                    bgClass: 'bg-gradient-to-br from-green-50 to-emerald-50',
+                    borderClass: 'border-green-200',
+                    iconBgClass: 'bg-green-100',
+                    iconTextClass: 'text-green-700',
+                    icon: CheckCircle,
+                    badge: 'bg-green-100 text-green-800 border-green-200'
+                  };
+                default: 
+                  return {
+                    bgClass: 'bg-white/80',
+                    borderClass: 'border-gray-200',
+                    iconBgClass: 'bg-gray-100',
+                    iconTextClass: 'text-gray-700',
+                    icon: FileText,
+                    badge: 'bg-gray-100 text-gray-800 border-gray-200'
+                  };
               }
             };
             
-            const getOrderNumber = (planId: string) => planId.slice(-8).toUpperCase();
+            const stateInfo = getStateInfo();
+            const StateIcon = stateInfo.icon;
             
             return (
-            <Card key={plan.plan_id} className={`bg-white/80 backdrop-blur-sm shadow-lg shadow-black/5 border ${getTopBarColor().split(' ')[1]} overflow-hidden relative`}>
-              {/* Top colored bar */}
-              <div className={`h-1 w-full ${getTopBarColor().split(' ')[0]}`} />
-              
-              <CardContent className="p-1 md:p-4 min-w-0">
-                 {/* Dropdown menu - top right */}
-                <div className="absolute top-2 right-1 md:top-3 md:right-4">
+            <Card key={plan.plan_id} className={`${stateInfo.bgClass} backdrop-blur-sm shadow-md hover:shadow-lg transition-all border-2 ${stateInfo.borderClass} overflow-hidden relative group`}>
+              <CardContent className="p-4">
+                {/* Dropdown menu - top right */}
+                <div className="absolute top-3 right-3 z-10">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline" className="h-8 px-2 gap-1 border-primary hover:bg-primary hover:text-primary-foreground">
+                      <Button size="sm" variant="outline" className="h-8 px-2 gap-1 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
                         <Settings className="h-3 w-3" />
                         <ChevronDown className="h-3 w-3" />
                       </Button>
@@ -1263,93 +1293,65 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                   </DropdownMenu>
                 </div>
                 
-                <div className="space-y-1 md:space-y-3 min-w-0 pr-12 md:pr-20">
-                  <div className="space-y-1 md:space-y-2">
-                    {/* Mobile: Inline layout, Tablet & Desktop: Stacked layout */}
-                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
-                      <Label className="text-xs font-medium text-muted-foreground">ชื่องาน</Label>
-                      <div className="text-sm font-semibold text-foreground break-words">{plan.plan_name}</div>
-                    </div>
-                    <div className="md:hidden flex items-center space-x-1 min-w-0">
-                      <span className="text-xs font-medium text-muted-foreground shrink-0">งาน:</span>
-                      <div className="text-xs font-semibold text-foreground break-words">{plan.plan_name}</div>
-                    </div>
-                  </div>
-                   
-                   <div className="space-y-1 md:space-y-2">
-                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
-                      <Label className="text-xs font-medium text-muted-foreground">สถานที่</Label>
-                      <div className="text-sm text-foreground break-words">{plan.plan_location}</div>
-                    </div>
-                    <div className="md:hidden flex items-center space-x-1 min-w-0">
-                      <span className="text-xs font-medium text-muted-foreground shrink-0">ที่:</span>
-                      <div className="text-xs text-foreground break-words">{plan.plan_location}</div>
-                    </div>
-                    
-                    <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 md:gap-2">
-                      <div className="flex flex-col space-y-1 min-w-0">
-                        <Label className="text-xs font-medium text-muted-foreground">วันที่</Label>
-                        <div className="text-sm text-foreground break-words">{formatThaiDate(plan.plan_date)}</div>
-                      </div>
-                      <div className="flex flex-col space-y-1 min-w-0">
-                        <Label className="text-xs font-medium text-muted-foreground">เวลา</Label>
-                        <div className="text-sm text-foreground break-words">{plan.plan_time}</div>
-                      </div>
-                    </div>
-                    <div className="md:hidden flex items-center space-x-3 min-w-0">
-                      <div className="flex items-center space-x-1 min-w-0">
-                        <span className="text-xs font-medium text-muted-foreground shrink-0">วัน:</span>
-                        <div className="text-xs text-foreground break-words">{formatThaiDate(plan.plan_date).replace(/\s+/g, '')}</div>
-                      </div>
-                      <div className="flex items-center space-x-1 min-w-0">
-                        <span className="text-xs font-medium text-muted-foreground shrink-0">เวลา:</span>
-                        <div className="text-xs text-foreground break-words">{plan.plan_time}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 md:gap-2">
-                      <div className="flex flex-col space-y-1 min-w-0">
-                        <Label className="text-xs font-medium text-muted-foreground">รหัส</Label>
-                        <div className="text-sm text-foreground break-words">{plan.plan_pwd}</div>
-                      </div>
-                      <div className="flex flex-col space-y-1 min-w-0">
-                        <Label className="text-xs font-medium text-muted-foreground">จำนวนคน</Label>
-                        <div className="text-sm text-foreground break-words">{plan.plan_maxp} คน</div>
-                      </div>
-                    </div>
-                    <div className="md:hidden flex items-center space-x-3 min-w-0">
-                      <div className="flex items-center space-x-1 min-w-0">
-                        <span className="text-xs font-medium text-muted-foreground shrink-0">รหัส:</span>
-                        <div className="text-xs text-foreground break-words">{plan.plan_pwd}</div>
-                      </div>
-                      <div className="flex items-center space-x-1 min-w-0">
-                        <span className="text-xs font-medium text-muted-foreground shrink-0">คน:</span>
-                        <div className="text-xs text-foreground break-words">{plan.plan_maxp}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="hidden md:flex md:flex-col md:space-y-1 min-w-0">
-                      <Label className="text-xs font-medium text-muted-foreground">ผู้สร้าง</Label>
-                      <div className="text-sm text-foreground break-words">{plan.plan_editor}</div>
-                    </div>
-                    <div className="md:hidden flex items-center space-x-1 min-w-0">
-                      <span className="text-xs font-medium text-muted-foreground shrink-0">สร้างโดย:</span>
-                      <div className="text-xs text-foreground break-words">{plan.plan_editor}</div>
-                    </div>
+                {/* Card content */}
+                <div className="flex gap-4">
+                  {/* Icon section */}
+                  <div className={`flex-shrink-0 w-16 h-16 rounded-lg ${stateInfo.iconBgClass} flex items-center justify-center`}>
+                    <StateIcon className={`w-8 h-8 ${stateInfo.iconTextClass}`} />
                   </div>
                   
-                  {filterState === 'published' && (
-                    <div className="flex items-center justify-between pt-2 border-t border-brand-pink/10">
-                      <div className="flex items-center space-x-2">
-                        <Label className="text-xs font-medium text-muted-foreground">เปิดรับ:</Label>
+                  {/* Info section */}
+                  <div className="flex-1 space-y-3 pr-12">
+                    {/* Title and badge */}
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground mb-1">{plan.plan_name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded border ${stateInfo.badge} font-medium`}>
+                          {filterState === 'waiting' ? 'กำลังเตรียม' : filterState === 'published' ? 'เปิดรับสั่ง' : 'เสร็จสิ้น'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Details grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">📍</span>
+                        <span className="text-foreground">{plan.plan_location}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">📅</span>
+                        <span className="text-foreground">{formatThaiDate(plan.plan_date)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">⏰</span>
+                        <span className="text-foreground">{plan.plan_time}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">👥</span>
+                        <span className="text-foreground">{plan.plan_maxp} คน</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">🔑</span>
+                        <span className="text-foreground font-mono">{plan.plan_pwd}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">✍️</span>
+                        <span className="text-foreground">{plan.plan_editor}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Toggle for published state */}
+                    {filterState === 'published' && (
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Power className="w-4 h-4 text-muted-foreground" />
+                        <Label className="text-sm font-medium text-foreground">เปิดรับออเดอร์</Label>
                         <Switch
                           checked={plan.is_open === 1}
                           onCheckedChange={(checked) => handleToggleOpen(plan, checked)}
                         />
                       </div>
-                    </div>
-                  )}
-                   
+                    )}
+                  </div>
                 </div>
                </CardContent>
             </Card>
