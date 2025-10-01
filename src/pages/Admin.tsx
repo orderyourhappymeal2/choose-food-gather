@@ -1310,10 +1310,10 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </span>
                     </div>
                     
-                    {/* Details - Stacked on mobile, Grid on tablet+ */}
-                    <div className="space-y-2 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-2.5 text-sm">
+                    {/* Details - Full width rows */}
+                    <div className="space-y-2 text-sm">
                       {/* Location */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100 sm:border-0">
+                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
                         <span className="text-base mt-0.5">📍</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-muted-foreground mb-0.5">สถานที่</div>
@@ -1322,7 +1322,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </div>
                       
                       {/* Date */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100 sm:border-0">
+                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
                         <span className="text-base mt-0.5">📅</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-muted-foreground mb-0.5">วันที่</div>
@@ -1331,7 +1331,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </div>
                       
                       {/* Time */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100 sm:border-0">
+                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
                         <span className="text-base mt-0.5">⏰</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-muted-foreground mb-0.5">เวลา</div>
@@ -1340,7 +1340,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </div>
                       
                       {/* People count */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100 sm:border-0">
+                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
                         <span className="text-base mt-0.5">👥</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-muted-foreground mb-0.5">จำนวนคน</div>
@@ -1349,7 +1349,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </div>
                       
                       {/* Password */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100 sm:border-0">
+                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
                         <span className="text-base mt-0.5">🔑</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-muted-foreground mb-0.5">รหัส</div>
@@ -1358,7 +1358,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </div>
                       
                       {/* Creator */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100 sm:border-0">
+                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
                         <span className="text-base mt-0.5">✍️</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-muted-foreground mb-0.5">ผู้สร้าง</div>
