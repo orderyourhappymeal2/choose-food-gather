@@ -1163,9 +1163,9 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
             
             return (
             <Card key={plan.plan_id} className={`${stateInfo.bgClass} backdrop-blur-sm shadow-md hover:shadow-lg transition-all border-2 ${stateInfo.borderClass} overflow-hidden relative group`}>
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 {/* Dropdown menu - top right */}
-                <div className="absolute top-3 right-3 z-10">
+                <div className="absolute top-2 right-2 z-10">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button size="sm" variant="outline" className="h-8 px-2 gap-1 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
@@ -1294,82 +1294,82 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                 </div>
                 
                 {/* Card content */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex flex-col sm:flex-row gap-2.5">
                   {/* Icon section */}
-                  <div className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg ${stateInfo.iconBgClass} flex items-center justify-center`}>
-                    <StateIcon className={`w-7 h-7 sm:w-8 sm:h-8 ${stateInfo.iconTextClass}`} />
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${stateInfo.iconBgClass} flex items-center justify-center`}>
+                    <StateIcon className={`w-6 h-6 ${stateInfo.iconTextClass}`} />
                   </div>
                   
                   {/* Info section */}
-                  <div className="flex-1 space-y-2.5 sm:space-y-3 pr-10 sm:pr-12">
+                  <div className="flex-1 space-y-1.5 pr-8 sm:pr-10">
                     {/* Title and badge */}
-                    <div className="pb-2 border-b border-gray-200/60">
-                      <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5">{plan.plan_name}</h3>
-                      <span className={`inline-block text-xs px-2.5 py-1 rounded-full border ${stateInfo.badge} font-medium`}>
+                    <div className="pb-1.5 border-b border-gray-200/60">
+                      <h3 className="text-base font-bold text-foreground mb-1">{plan.plan_name}</h3>
+                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full border ${stateInfo.badge} font-medium`}>
                         {filterState === 'waiting' ? 'กำลังเตรียม' : filterState === 'published' ? 'เปิดรับสั่ง' : 'เสร็จสิ้น'}
                       </span>
                     </div>
                     
                     {/* Details - Full width rows */}
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-1 text-sm">
                       {/* Location */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                        <span className="text-base mt-0.5">📍</span>
+                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
+                        <span className="text-sm mt-0.5">📍</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground mb-0.5">สถานที่</div>
-                          <div className="text-foreground font-medium break-words">{plan.plan_location}</div>
+                          <div className="text-xs text-muted-foreground">สถานที่</div>
+                          <div className="text-sm text-foreground font-medium break-words">{plan.plan_location}</div>
                         </div>
                       </div>
                       
                       {/* Date */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                        <span className="text-base mt-0.5">📅</span>
+                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
+                        <span className="text-sm mt-0.5">📅</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground mb-0.5">วันที่</div>
-                          <div className="text-foreground font-medium break-words">{formatThaiDate(plan.plan_date)}</div>
+                          <div className="text-xs text-muted-foreground">วันที่</div>
+                          <div className="text-sm text-foreground font-medium break-words">{formatThaiDate(plan.plan_date)}</div>
                         </div>
                       </div>
                       
                       {/* Time */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                        <span className="text-base mt-0.5">⏰</span>
+                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
+                        <span className="text-sm mt-0.5">⏰</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground mb-0.5">เวลา</div>
-                          <div className="text-foreground font-medium break-words">{plan.plan_time}</div>
+                          <div className="text-xs text-muted-foreground">เวลา</div>
+                          <div className="text-sm text-foreground font-medium break-words">{plan.plan_time}</div>
                         </div>
                       </div>
                       
                       {/* People count */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                        <span className="text-base mt-0.5">👥</span>
+                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
+                        <span className="text-sm mt-0.5">👥</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground mb-0.5">จำนวนคน</div>
-                          <div className="text-foreground font-medium">{plan.plan_maxp} คน</div>
+                          <div className="text-xs text-muted-foreground">จำนวนคน</div>
+                          <div className="text-sm text-foreground font-medium">{plan.plan_maxp} คน</div>
                         </div>
                       </div>
                       
                       {/* Password */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                        <span className="text-base mt-0.5">🔑</span>
+                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
+                        <span className="text-sm mt-0.5">🔑</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground mb-0.5">รหัส</div>
-                          <div className="text-foreground font-medium font-mono">{plan.plan_pwd}</div>
+                          <div className="text-xs text-muted-foreground">รหัส</div>
+                          <div className="text-sm text-foreground font-medium font-mono">{plan.plan_pwd}</div>
                         </div>
                       </div>
                       
                       {/* Creator */}
-                      <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                        <span className="text-base mt-0.5">✍️</span>
+                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
+                        <span className="text-sm mt-0.5">✍️</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground mb-0.5">ผู้สร้าง</div>
-                          <div className="text-foreground font-medium break-words">{plan.plan_editor}</div>
+                          <div className="text-xs text-muted-foreground">ผู้สร้าง</div>
+                          <div className="text-sm text-foreground font-medium break-words">{plan.plan_editor}</div>
                         </div>
                       </div>
                     </div>
                     
                     {/* Toggle for published state */}
                     {filterState === 'published' && (
-                      <div className="flex items-center gap-2.5 pt-2.5 mt-2.5 border-t border-gray-200/60">
+                      <div className="flex items-center gap-2 pt-1.5 mt-1.5 border-t border-gray-200/60">
                         <Power className="w-4 h-4 text-muted-foreground" />
                         <Label className="text-sm font-medium text-foreground flex-1">เปิดรับออเดอร์</Label>
                         <Switch
