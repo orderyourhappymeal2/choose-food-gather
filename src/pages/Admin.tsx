@@ -1115,7 +1115,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           ยังไม่มีแผนการจองอาหาร
         </div>
       ) : (
-        <div className="grid gap-2 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-0 md:px-4">
+        <div className="grid gap-2 md:gap-4 grid-cols-1 px-0 md:px-4">
           {plans.map((plan) => {
             const getStateInfo = () => {
               switch(filterState) {
