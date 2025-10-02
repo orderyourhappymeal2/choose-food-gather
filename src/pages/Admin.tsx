@@ -1310,60 +1310,48 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </span>
                     </div>
                     
-                    {/* Details - Full width rows */}
+                    {/* Details - Inline layout */}
                     <div className="space-y-1 text-sm">
                       {/* Location */}
-                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
-                        <span className="text-sm mt-0.5">📍</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground">สถานที่</div>
-                          <div className="text-sm text-foreground font-medium break-words">{plan.plan_location}</div>
-                        </div>
+                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                        <span className="text-sm">📍</span>
+                        <span className="text-xs text-muted-foreground">สถานที่:</span>
+                        <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_location}</span>
                       </div>
                       
                       {/* Date */}
-                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
-                        <span className="text-sm mt-0.5">📅</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground">วันที่</div>
-                          <div className="text-sm text-foreground font-medium break-words">{formatThaiDate(plan.plan_date)}</div>
-                        </div>
+                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                        <span className="text-sm">📅</span>
+                        <span className="text-xs text-muted-foreground">วันที่:</span>
+                        <span className="text-sm text-foreground font-medium break-words flex-1">{formatThaiDate(plan.plan_date)}</span>
                       </div>
                       
                       {/* Time */}
-                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
-                        <span className="text-sm mt-0.5">⏰</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground">เวลา</div>
-                          <div className="text-sm text-foreground font-medium break-words">{plan.plan_time}</div>
-                        </div>
+                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                        <span className="text-sm">⏰</span>
+                        <span className="text-xs text-muted-foreground">เวลา:</span>
+                        <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_time}</span>
                       </div>
                       
                       {/* People count */}
-                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
-                        <span className="text-sm mt-0.5">👥</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground">จำนวนคน</div>
-                          <div className="text-sm text-foreground font-medium">{plan.plan_maxp} คน</div>
-                        </div>
+                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                        <span className="text-sm">👥</span>
+                        <span className="text-xs text-muted-foreground">จำนวนคน:</span>
+                        <span className="text-sm text-foreground font-medium">{plan.plan_maxp} คน</span>
                       </div>
                       
                       {/* Password */}
-                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
-                        <span className="text-sm mt-0.5">🔑</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground">รหัส</div>
-                          <div className="text-sm text-foreground font-medium font-mono">{plan.plan_pwd}</div>
-                        </div>
+                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                        <span className="text-sm">🔑</span>
+                        <span className="text-xs text-muted-foreground">รหัส:</span>
+                        <span className="text-sm text-foreground font-medium font-mono">{plan.plan_pwd}</span>
                       </div>
                       
                       {/* Creator */}
-                      <div className="flex items-start gap-2 py-1 border-b border-gray-100">
-                        <span className="text-sm mt-0.5">✍️</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-muted-foreground">ผู้สร้าง</div>
-                          <div className="text-sm text-foreground font-medium break-words">{plan.plan_editor}</div>
-                        </div>
+                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                        <span className="text-sm">✍️</span>
+                        <span className="text-xs text-muted-foreground">ผู้สร้าง:</span>
+                        <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_editor}</span>
                       </div>
                     </div>
                     
