@@ -1233,16 +1233,18 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                             </div>
                           </DropdownMenuItem>
                           {plan.url_portal && (
-                            <DropdownMenuItem onClick={() => {
-                              navigator.clipboard.writeText(plan.url_portal);
-                              toast.success('คัดลอกลิงก์สำเร็จ');
-                            }} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                              <Link className="h-4 w-4 text-indigo-600" />
-                              <div className="flex flex-col">
-                                <span className="font-medium text-sm">ลิ้ง Portal</span>
-                                <span className="text-xs text-muted-foreground">แชร์ลิ้งให้ผู้ใช้</span>
-                              </div>
-                            </DropdownMenuItem>
+                            <PortalLinkModal
+                              url={plan.url_portal}
+                              trigger={
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                                  <Link className="h-4 w-4 text-indigo-600" />
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-sm">ลิ้ง Portal</span>
+                                    <span className="text-xs text-muted-foreground">แชร์ลิ้งให้ผู้ใช้</span>
+                                  </div>
+                                </DropdownMenuItem>
+                              }
+                            />
                           )}
                           <DropdownMenuItem onClick={() => handleDeleteIndividualOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
                             <UserCog className="h-4 w-4 text-orange-600" />
