@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ChefHat, Receipt, Check } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, ChefHat, Receipt, Check, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -188,6 +189,67 @@ const FoodCategories = () => {
             <p className="text-sm text-foreground/80 mt-2">สวัสดี {userInfo.nickname}</p>
           )}
         </div>
+
+        {/* Progress Section */}
+        {meals.length > 0 && (() => {
+          const totalMeals = meals.length;
+          const completedMeals = meals.filter(meal => {
+            if (meal.food_id) return true;
+            if (meal.shop_id && !meal.food_id) {
+              return !!getSelectedFood(meal.meal_id, meal.shop_id);
+            }
+            return false;
+          }).length;
+          const progressPercentage = (completedMeals / totalMeals) * 100;
+          const missingMeals = getMissingSelections();
+
+          return (
+            <Card className="mb-6 bg-white/90 backdrop-blur-sm border-2 border-primary/30">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-lg">ความคืบหน้า</h3>
+                    <span className="text-sm font-medium text-primary">
+                      {completedMeals} / {totalMeals} มื้อ
+                    </span>
+                  </div>
+                  
+                  <Progress value={progressPercentage} className="h-3" />
+                  
+                  {missingMeals.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-medium text-red-700 text-sm mb-2">
+                            ยังต้องเลือกอีก {missingMeals.length} มื้อ:
+                          </p>
+                          <ul className="space-y-1">
+                            {missingMeals.map(meal => (
+                              <li key={meal.meal_id} className="text-red-600 text-sm flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                {meal.meal_name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {completedMeals === totalMeals && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                      <Check className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                      <p className="text-green-700 font-medium text-sm">
+                        เลือกครบทุกมื้อแล้ว!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Meals */}
         <div className="space-y-6 mb-8">
