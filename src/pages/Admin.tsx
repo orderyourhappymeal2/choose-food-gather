@@ -1408,29 +1408,31 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                           <h4 className="text-sm font-semibold text-foreground">รายการมื้ออาหาร</h4>
                           <span className="text-xs text-muted-foreground">({plan.meals.length} มื้อ)</span>
                         </div>
-                        <ScrollArea className="h-[200px]">
-                          <div className="space-y-2 pr-3">
+                        <ScrollArea className="h-[280px] pr-1">
+                          <div className="space-y-2 pr-2">
                             {plan.meals.map((meal: any, index: number) => (
-                              <div key={meal.meal_id} className="flex items-start gap-2 p-2 bg-white/50 rounded-md border border-gray-200/40">
-                                <div className="flex-shrink-0 w-6 h-6 bg-white border border-gray-300 rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
+                              <div key={meal.meal_id} className="flex items-start gap-2 p-2.5 bg-white/60 rounded-md border border-gray-200/50 hover:bg-white/80 hover:border-gray-300/60 transition-colors">
+                                <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-full flex items-center justify-center text-xs font-semibold text-primary">
                                   {index + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-foreground truncate">{meal.meal_name}</p>
-                                  {meal.shop && (
-                                    <div className="flex items-center gap-1.5 mt-1">
+                                  <p className="text-sm font-semibold text-foreground truncate">{meal.meal_name}</p>
+                                  {meal.shop ? (
+                                    <div className="flex items-center gap-1.5 mt-1.5">
                                       {meal.shop.url_pic && (
                                         <img 
                                           src={meal.shop.url_pic} 
                                           alt={meal.shop.shop_name}
-                                          className="w-5 h-5 rounded-full object-cover"
+                                          className="w-6 h-6 rounded-full object-cover border border-gray-200"
                                           onError={(e) => {
                                             e.currentTarget.src = '/placeholder.svg';
                                           }}
                                         />
                                       )}
-                                      <p className="text-xs text-muted-foreground truncate">{meal.shop.shop_name}</p>
+                                      <p className="text-xs text-muted-foreground truncate font-medium">{meal.shop.shop_name}</p>
                                     </div>
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground/70 italic mt-1">ยังไม่เลือกร้านอาหาร</p>
                                   )}
                                 </div>
                               </div>
