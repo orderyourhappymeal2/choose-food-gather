@@ -503,7 +503,33 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPlans(data || []);
+      
+      // Fetch meals and shops for each plan
+      const plansWithMeals = await Promise.all(
+        (data || []).map(async (plan) => {
+          const { data: mealsData } = await supabase
+            .from('meal')
+            .select(`
+              meal_id,
+              meal_name,
+              meal_index,
+              shop:shop_id (
+                shop_id,
+                shop_name,
+                url_pic
+              )
+            `)
+            .eq('plan_id', plan.plan_id)
+            .order('meal_index', { ascending: true });
+          
+          return {
+            ...plan,
+            meals: mealsData || []
+          };
+        })
+      );
+      
+      setPlans(plansWithMeals);
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการดึงข้อมูลแผน');
     } finally {
@@ -1295,80 +1321,125 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                   </DropdownMenu>
                 </div>
                 
-                {/* Card content */}
-                <div className="flex flex-col sm:flex-row gap-2.5">
-                  {/* Icon section */}
-                  <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${stateInfo.iconBgClass} flex items-center justify-center`}>
-                    <StateIcon className={`w-6 h-6 ${stateInfo.iconTextClass}`} />
+                {/* Card content - Responsive Layout */}
+                <div className="flex flex-col lg:flex-row gap-4">
+                  {/* Left Section - Plan Info */}
+                  <div className="flex flex-col sm:flex-row gap-2.5 flex-1">
+                    {/* Icon section */}
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${stateInfo.iconBgClass} flex items-center justify-center`}>
+                      <StateIcon className={`w-6 h-6 ${stateInfo.iconTextClass}`} />
+                    </div>
+                    
+                    {/* Info section */}
+                    <div className="flex-1 space-y-1.5 pr-8 sm:pr-10 lg:pr-0">
+                      {/* Title and badge */}
+                      <div className="pb-1.5 border-b border-gray-200/60">
+                        <h3 className="text-base font-bold text-foreground mb-1">{plan.plan_name}</h3>
+                        <span className={`inline-block text-xs px-2 py-0.5 rounded-full border ${stateInfo.badge} font-medium`}>
+                          {filterState === 'waiting' ? 'กำลังเตรียม' : filterState === 'published' ? 'เปิดรับสั่ง' : 'เสร็จสิ้น'}
+                        </span>
+                      </div>
+                      
+                      {/* Details - Inline layout */}
+                      <div className="space-y-1 text-sm">
+                        {/* Location */}
+                        <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                          <span className="text-sm">📍</span>
+                          <span className="text-xs text-muted-foreground">สถานที่:</span>
+                          <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_location}</span>
+                        </div>
+                        
+                        {/* Date */}
+                        <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                          <span className="text-sm">📅</span>
+                          <span className="text-xs text-muted-foreground">วันที่:</span>
+                          <span className="text-sm text-foreground font-medium break-words flex-1">{formatThaiDate(plan.plan_date)}</span>
+                        </div>
+                        
+                        {/* Time */}
+                        <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                          <span className="text-sm">⏰</span>
+                          <span className="text-xs text-muted-foreground">เวลา:</span>
+                          <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_time}</span>
+                        </div>
+                        
+                        {/* People count */}
+                        <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                          <span className="text-sm">👥</span>
+                          <span className="text-xs text-muted-foreground">จำนวนคน:</span>
+                          <span className="text-sm text-foreground font-medium">{plan.plan_maxp} คน</span>
+                        </div>
+                        
+                        {/* Password */}
+                        <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                          <span className="text-sm">🔑</span>
+                          <span className="text-xs text-muted-foreground">รหัส:</span>
+                          <span className="text-sm text-foreground font-medium font-mono">{plan.plan_pwd}</span>
+                        </div>
+                        
+                        {/* Creator */}
+                        <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                          <span className="text-sm">✍️</span>
+                          <span className="text-xs text-muted-foreground">ผู้สร้าง:</span>
+                          <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_editor}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Toggle for published state */}
+                      {filterState === 'published' && (
+                        <div className="flex items-center gap-2 pt-1.5 mt-1.5 border-t border-gray-200/60">
+                          <Power className="w-4 h-4 text-muted-foreground" />
+                          <Label className="text-sm font-medium text-foreground flex-1">เปิดรับออเดอร์</Label>
+                          <Switch
+                            checked={plan.is_open === 1}
+                            onCheckedChange={(checked) => handleToggleOpen(plan, checked)}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
-                  {/* Info section */}
-                  <div className="flex-1 space-y-1.5 pr-8 sm:pr-10">
-                    {/* Title and badge */}
-                    <div className="pb-1.5 border-b border-gray-200/60">
-                      <h3 className="text-base font-bold text-foreground mb-1">{plan.plan_name}</h3>
-                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full border ${stateInfo.badge} font-medium`}>
-                        {filterState === 'waiting' ? 'กำลังเตรียม' : filterState === 'published' ? 'เปิดรับสั่ง' : 'เสร็จสิ้น'}
-                      </span>
-                    </div>
-                    
-                    {/* Details - Inline layout */}
-                    <div className="space-y-1 text-sm">
-                      {/* Location */}
-                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
-                        <span className="text-sm">📍</span>
-                        <span className="text-xs text-muted-foreground">สถานที่:</span>
-                        <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_location}</span>
-                      </div>
-                      
-                      {/* Date */}
-                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
-                        <span className="text-sm">📅</span>
-                        <span className="text-xs text-muted-foreground">วันที่:</span>
-                        <span className="text-sm text-foreground font-medium break-words flex-1">{formatThaiDate(plan.plan_date)}</span>
-                      </div>
-                      
-                      {/* Time */}
-                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
-                        <span className="text-sm">⏰</span>
-                        <span className="text-xs text-muted-foreground">เวลา:</span>
-                        <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_time}</span>
-                      </div>
-                      
-                      {/* People count */}
-                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
-                        <span className="text-sm">👥</span>
-                        <span className="text-xs text-muted-foreground">จำนวนคน:</span>
-                        <span className="text-sm text-foreground font-medium">{plan.plan_maxp} คน</span>
-                      </div>
-                      
-                      {/* Password */}
-                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
-                        <span className="text-sm">🔑</span>
-                        <span className="text-xs text-muted-foreground">รหัส:</span>
-                        <span className="text-sm text-foreground font-medium font-mono">{plan.plan_pwd}</span>
-                      </div>
-                      
-                      {/* Creator */}
-                      <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
-                        <span className="text-sm">✍️</span>
-                        <span className="text-xs text-muted-foreground">ผู้สร้าง:</span>
-                        <span className="text-sm text-foreground font-medium break-words flex-1">{plan.plan_editor}</span>
+                  {/* Right Section - Meals (Desktop Only) */}
+                  {plan.meals && plan.meals.length > 0 && (
+                    <div className="hidden lg:block lg:w-80 border-l border-gray-200/60 pl-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 pb-2 border-b border-gray-200/60">
+                          <UtensilsIcon className="w-4 h-4 text-muted-foreground" />
+                          <h4 className="text-sm font-semibold text-foreground">รายการมื้ออาหาร</h4>
+                          <span className="text-xs text-muted-foreground">({plan.meals.length} มื้อ)</span>
+                        </div>
+                        <ScrollArea className="h-[200px]">
+                          <div className="space-y-2 pr-3">
+                            {plan.meals.map((meal: any, index: number) => (
+                              <div key={meal.meal_id} className="flex items-start gap-2 p-2 bg-white/50 rounded-md border border-gray-200/40">
+                                <div className="flex-shrink-0 w-6 h-6 bg-white border border-gray-300 rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
+                                  {index + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{meal.meal_name}</p>
+                                  {meal.shop && (
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                      {meal.shop.url_pic && (
+                                        <img 
+                                          src={meal.shop.url_pic} 
+                                          alt={meal.shop.shop_name}
+                                          className="w-5 h-5 rounded-full object-cover"
+                                          onError={(e) => {
+                                            e.currentTarget.src = '/placeholder.svg';
+                                          }}
+                                        />
+                                      )}
+                                      <p className="text-xs text-muted-foreground truncate">{meal.shop.shop_name}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
                       </div>
                     </div>
-                    
-                    {/* Toggle for published state */}
-                    {filterState === 'published' && (
-                      <div className="flex items-center gap-2 pt-1.5 mt-1.5 border-t border-gray-200/60">
-                        <Power className="w-4 h-4 text-muted-foreground" />
-                        <Label className="text-sm font-medium text-foreground flex-1">เปิดรับออเดอร์</Label>
-                        <Switch
-                          checked={plan.is_open === 1}
-                          onCheckedChange={(checked) => handleToggleOpen(plan, checked)}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
                </CardContent>
             </Card>
