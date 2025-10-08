@@ -62,7 +62,6 @@ const planFormSchema = z.object({
   plan_time_end: z.string().min(1, "กรุณาเลือกเวลาสิ้นสุด"),
   plan_pwd: z.string().min(1, "กรุณากรอกรหัส"),
   plan_maxp: z.string().min(1, "กรุณากรอกจำนวนผู้เข้าร่วม"),
-  plan_editor: z.string().min(1, "กรุณากรอกชื่อผู้สร้างฟอร์ม"),
 });
 
 type PlanFormData = z.infer<typeof planFormSchema>;
@@ -357,7 +356,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMov
 };
 
 // PlanList component
-const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?: string; restaurants?: any[]; refreshRef?: React.MutableRefObject<(() => void) | undefined> }) => {
+const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filterState?: string; restaurants?: any[]; refreshRef?: React.MutableRefObject<(() => void) | undefined>; admin?: any }) => {
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingPlan, setEditingPlan] = useState<any>(null);
@@ -560,7 +559,6 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
       plan_time_end: endTime,
       plan_pwd: plan.plan_pwd,
       plan_maxp: plan.plan_maxp.toString(),
-      plan_editor: plan.plan_editor,
     });
     setIsEditModalOpen(true);
   };
@@ -642,7 +640,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
           plan_time: planTime,
           plan_pwd: data.plan_pwd,
           plan_maxp: parseInt(data.plan_maxp),
-          plan_editor: data.plan_editor,
+          plan_editor: admin?.username || 'admin',
         })
         .eq('plan_id', editingPlan.plan_id);
 
@@ -1616,20 +1614,6 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={editForm.control}
-                    name="plan_editor"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>ชื่อผู้สร้างฟอร์ม</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="กรอกชื่อผู้สร้างฟอร์ม" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
                 <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
@@ -2177,7 +2161,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef }: { filterState?:
 };
 
 const Admin = () => {
-  const { signOut } = useAuth();
+  const { signOut, admin } = useAuth();
   const navigate = useNavigate();
   
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
@@ -2272,7 +2256,6 @@ const Admin = () => {
       plan_time_end: '',
       plan_pwd: '',
       plan_maxp: '',
-      plan_editor: '',
     },
   });
 
@@ -2562,7 +2545,7 @@ const Admin = () => {
           plan_time: timeRange,
           plan_pwd: data.plan_pwd,
           plan_maxp: parseInt(data.plan_maxp),
-          plan_editor: data.plan_editor,
+          plan_editor: admin?.username || 'admin',
         }])
         .select()
         .single();
@@ -4271,31 +4254,6 @@ const Admin = () => {
                                   </div>
                                 </div>
 
-                                {/* Editor Name */}
-                                <div className="grid grid-cols-1 gap-4">
-                                  <div>
-                                    <FormField
-                                      control={planForm.control}
-                                      name="plan_editor"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel className="text-sm font-medium text-foreground">
-                                            ชื่อผู้สร้างฟอร์ม *
-                                          </FormLabel>
-                                          <FormControl>
-                                            <Input
-                                              {...field}
-                                              placeholder="กรุณากรอกชื่อผู้สร้างฟอร์ม"
-                                              className="bg-white/80 border-brand-pink/20 focus:border-primary"
-                                            />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
-
                                 </form>
                               </Form>
                             </div>
@@ -4327,7 +4285,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList filterState="waiting" restaurants={restaurants} refreshRef={waitingPlansRefreshRef} />
+                          <PlanList filterState="waiting" restaurants={restaurants} refreshRef={waitingPlansRefreshRef} admin={admin} />
                         </CardContent>
                       </Card>
                     </div>
@@ -4357,7 +4315,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList filterState="published" restaurants={restaurants} refreshRef={publishedPlansRefreshRef} />
+                          <PlanList filterState="published" restaurants={restaurants} refreshRef={publishedPlansRefreshRef} admin={admin} />
                         </CardContent>
                       </Card>
                     </div>
@@ -4387,7 +4345,7 @@ const Admin = () => {
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
                         <CardContent className="p-4">
-                          <PlanList filterState="finished" restaurants={restaurants} refreshRef={finishedPlansRefreshRef} />
+                          <PlanList filterState="finished" restaurants={restaurants} refreshRef={finishedPlansRefreshRef} admin={admin} />
                         </CardContent>
                       </Card>
                     </div>
