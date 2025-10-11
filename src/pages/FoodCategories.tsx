@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ChefHat, Receipt, Check } from "lucide-react";
+import { ArrowLeft, ChefHat, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -204,9 +204,17 @@ const FoodCategories = () => {
               const preSelectedFood = meal.food_id ? mealFoods[meal.food_id] : null;
               const selectedFood = getSelectedFood(meal.meal_id, meal.shop_id || '');
               const isPreSelected = !!meal.food_id;
+              const isSelected = isPreSelected || !!selectedFood;
               
               return (
-                <Card key={meal.meal_id} className="mb-6 bg-white/80 backdrop-blur-sm border-2 border-brand-orange/30">
+                <Card 
+                  key={meal.meal_id} 
+                  className={`mb-6 bg-white/80 backdrop-blur-sm transition-all border-4 ${
+                    isSelected 
+                      ? 'border-green-500 shadow-lg shadow-green-500/20' 
+                      : 'border-gray-300'
+                  }`}
+                >
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-4 text-center">{meal.meal_name}</h2>
                     
@@ -220,12 +228,10 @@ const FoodCategories = () => {
                         <Card 
                           className={`transition-all border-2 ${
                             isPreSelected 
-                              ? 'border-gray-300 bg-gray-50 opacity-75' 
+                              ? 'border-green-400 bg-green-50/50' 
                               : selectedFood 
-                                ? 'border-primary bg-primary/5 cursor-pointer hover:scale-[1.02]' 
-                                : getMissingSelections().some(m => m.meal_id === meal.meal_id)
-                                  ? 'border-red-300 bg-red-50 hover:border-red-400 cursor-pointer hover:scale-[1.02]'
-                                  : 'border-brand-pink/30 hover:border-primary/50 cursor-pointer hover:scale-[1.02]'
+                                ? 'border-green-500 bg-green-50/30 cursor-pointer hover:scale-[1.02] hover:shadow-md' 
+                                : 'border-gray-300 bg-gray-50/30 cursor-pointer hover:scale-[1.02] hover:border-gray-400 hover:shadow-md'
                           }`}
                           onClick={() => !isPreSelected && handleShopSelect(meal, shop)}
                         >
@@ -239,18 +245,10 @@ const FoodCategories = () => {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h3 className="font-semibold text-lg">{shop.shop_name}</h3>
-                                  {(selectedFood || isPreSelected) && (
-                                    <Check className="w-5 h-5 text-primary" />
-                                  )}
                                   {isPreSelected && (
-                                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                                    <span className="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">
                                       กำหนดแล้ว
                                     </span>
-                                   )}
-                                   {!isPreSelected && !selectedFood && getMissingSelections().some(m => m.meal_id === meal.meal_id) && (
-                                     <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
-                                       กรุณาเลือกอาหาร
-                                     </span>
                                    )}
                                  </div>
                                  <p className="text-sm text-muted-foreground">{shop.description}</p>
