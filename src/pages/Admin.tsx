@@ -1140,7 +1140,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         </div>
       ) : (
         <div className="grid gap-2 md:gap-4 grid-cols-1 px-0 md:px-4">
-          {plans.map((plan) => {
+          {plans.map((plan, index) => {
             const getStateInfo = () => {
               switch(filterState) {
                 case 'waiting': 
@@ -1185,8 +1185,16 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             const stateInfo = getStateInfo();
             const StateIcon = stateInfo.icon;
             
+            // Add card color variety based on index
+            const cardVariant = index % 3;
+            const cardColorClass = cardVariant === 0 
+              ? 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20' 
+              : cardVariant === 1 
+              ? 'bg-gradient-to-br from-secondary/5 to-secondary/10 border-secondary/20' 
+              : 'bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20';
+            
             return (
-            <Card key={plan.plan_id} className={`${stateInfo.bgClass} backdrop-blur-sm shadow-md hover:shadow-lg transition-all border-2 ${stateInfo.borderClass} overflow-hidden relative group`}>
+            <Card key={plan.plan_id} className={`${stateInfo.bgClass} ${cardColorClass} backdrop-blur-sm shadow-md hover:shadow-lg transition-all border-2 ${stateInfo.borderClass} overflow-hidden relative group`}>
               <CardContent className="p-3">
                 {/* Dropdown menu - top right */}
                 <div className="absolute top-2 right-2 z-10">
@@ -1399,38 +1407,53 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                   
                   {/* Right Section - Meals (Desktop Only) */}
                   {plan.meals && plan.meals.length > 0 && (
-                    <div className="hidden lg:block lg:w-80 border-l border-gray-200/60 pl-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 pb-2 border-b border-gray-200/60">
-                          <UtensilsIcon className="w-4 h-4 text-muted-foreground" />
-                          <h4 className="text-sm font-semibold text-foreground">รายการมื้ออาหาร</h4>
-                          <span className="text-xs text-muted-foreground">({plan.meals.length} มื้อ)</span>
+                    <div className="hidden lg:block lg:w-80 border-l border-border/50 pl-4">
+                      <div className="space-y-2 bg-card/50 rounded-lg p-4">
+                        <div className="flex items-start gap-2 pb-3 border-b-2 border-primary/30">
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-primary text-lg">📋</span>
+                            <div className="flex-1">
+                              <h4 className="text-sm font-semibold text-foreground">ใบสั่งอาหาร</h4>
+                              <p className="text-xs text-muted-foreground">Order Details</p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold text-primary/70 bg-primary/10 px-2 py-1 rounded-full">
+                            {plan.meals.length} มื้อ
+                          </span>
                         </div>
                         <ScrollArea className="h-[280px] pr-1">
                           <div className="space-y-2 pr-2">
-                            {plan.meals.map((meal: any, index: number) => (
-                              <div key={meal.meal_id} className="flex items-start gap-2 p-2.5 bg-white/60 rounded-md border border-gray-200/50 hover:bg-white/80 hover:border-gray-300/60 transition-colors">
-                                <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-full flex items-center justify-center text-xs font-semibold text-primary">
-                                  {index + 1}
-                                </div>
+                            {plan.meals.map((meal: any, idx: number) => (
+                              <div key={meal.meal_id} className="flex items-start gap-3 p-3 rounded-md bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 hover:border-primary/40 hover:shadow-sm transition-all group">
+                                {meal.shop?.url_pic && (
+                                  <img 
+                                    src={meal.shop.url_pic} 
+                                    alt={meal.shop.shop_name}
+                                    className="w-14 h-14 object-cover rounded border border-border/50 flex-shrink-0"
+                                    onError={(e) => {
+                                      e.currentTarget.src = '/placeholder.svg';
+                                    }}
+                                  />
+                                )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-foreground truncate">{meal.meal_name}</p>
+                                  <div className="flex items-start justify-between gap-2 mb-1">
+                                    <p className="font-medium text-sm text-foreground">
+                                      {meal.meal_name}
+                                    </p>
+                                    <span className="text-xs font-semibold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-full flex-shrink-0">
+                                      #{idx + 1}
+                                    </span>
+                                  </div>
                                   {meal.shop ? (
-                                    <div className="flex items-center gap-1.5 mt-1.5">
-                                      {meal.shop.url_pic && (
-                                        <img 
-                                          src={meal.shop.url_pic} 
-                                          alt={meal.shop.shop_name}
-                                          className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                                          onError={(e) => {
-                                            e.currentTarget.src = '/placeholder.svg';
-                                          }}
-                                        />
-                                      )}
-                                      <p className="text-xs text-muted-foreground truncate font-medium">{meal.shop.shop_name}</p>
-                                    </div>
+                                    <p className="text-xs text-muted-foreground/80 truncate flex items-center gap-1">
+                                      <span className="w-1 h-1 rounded-full bg-primary/50"></span>
+                                      {meal.shop.shop_name}
+                                    </p>
                                   ) : (
-                                    <p className="text-xs text-muted-foreground/70 italic mt-1">ยังไม่เลือกร้านอาหาร</p>
+                                    <p className="text-xs text-muted-foreground/60 italic flex items-center gap-1">
+                                      <span className="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                                      ยังไม่ได้เลือกร้าน
+                                    </p>
                                   )}
                                 </div>
                               </div>
