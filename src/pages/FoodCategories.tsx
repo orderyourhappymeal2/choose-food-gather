@@ -209,10 +209,10 @@ const FoodCategories = () => {
               return (
                 <Card 
                   key={meal.meal_id} 
-                  className={`mb-6 bg-white/80 backdrop-blur-sm transition-all border-4 ${
+                  className={`mb-6 bg-white/80 backdrop-blur-sm transition-all border-2 ${
                     isSelected 
-                      ? 'border-green-500 shadow-lg shadow-green-500/20' 
-                      : 'border-gray-300'
+                      ? 'border-green-300/60 shadow-sm' 
+                      : 'border-gray-200'
                   }`}
                 >
                   <CardContent className="p-6">
@@ -226,12 +226,12 @@ const FoodCategories = () => {
                     ) : (
                       <div className="grid grid-cols-1 gap-4">
                         <Card 
-                          className={`transition-all border-2 ${
+                          className={`transition-all border ${
                             isPreSelected 
-                              ? 'border-green-400 bg-green-50/50' 
+                              ? 'border-green-200 bg-green-50/30' 
                               : selectedFood 
-                                ? 'border-green-500 bg-green-50/30 cursor-pointer hover:scale-[1.02] hover:shadow-md' 
-                                : 'border-gray-300 bg-gray-50/30 cursor-pointer hover:scale-[1.02] hover:border-gray-400 hover:shadow-md'
+                                ? 'border-green-200 bg-white cursor-pointer hover:scale-[1.02] hover:shadow-sm' 
+                                : 'border-gray-200 bg-white/50 cursor-pointer hover:scale-[1.02] hover:border-gray-300 hover:shadow-sm'
                           }`}
                           onClick={() => !isPreSelected && handleShopSelect(meal, shop)}
                         >
@@ -246,7 +246,7 @@ const FoodCategories = () => {
                                 <div className="flex items-center gap-2 mb-1">
                                   <h3 className="font-semibold text-lg">{shop.shop_name}</h3>
                                   {isPreSelected && (
-                                    <span className="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">
+                                    <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
                                       กำหนดแล้ว
                                     </span>
                                    )}
