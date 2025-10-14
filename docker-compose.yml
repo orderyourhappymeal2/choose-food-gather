@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: food-order-web
+    ports:
+      - "3000:80"
+    environment:
+      # Update these values to point to your local Supabase instance
+      - VITE_SUPABASE_URL=http://localhost:54321
+      - VITE_SUPABASE_PUBLISHABLE_KEY=your_local_supabase_anon_key
+      - VITE_SUPABASE_PROJECT_ID=your_local_project_id
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
