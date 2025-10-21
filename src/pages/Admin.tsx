@@ -372,6 +372,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
   const [selectedPlanForMeal, setSelectedPlanForMeal] = useState<any>(null);
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [finishingPlan, setFinishingPlan] = useState<any>(null);
+  const [isRevertDialogOpen, setIsRevertDialogOpen] = useState(false);
+  const [revertingPlan, setRevertingPlan] = useState<any>(null);
 
   // Delete confirmation states
   const [planDeleteConfirmName, setPlanDeleteConfirmName] = useState('');
@@ -696,6 +698,33 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
       fetchPlans();
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+    }
+  };
+
+  // Handle revert to draft
+  const handleRevertToDraft = async (plan: any) => {
+    setRevertingPlan(plan);
+    setIsRevertDialogOpen(true);
+  };
+
+  // Confirm revert to draft
+  const confirmRevertToDraft = async () => {
+    if (!revertingPlan) return;
+
+    try {
+      const { error } = await supabase
+        .from('plan')
+        .update({ plan_state: 'waiting', is_open: 0 })
+        .eq('plan_id', revertingPlan.plan_id);
+
+      if (error) throw error;
+
+      toast.success('ย้อนกลับเป็นแบบร่างสำเร็จ');
+      setIsRevertDialogOpen(false);
+      setRevertingPlan(null);
+      fetchPlans();
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการย้อนกลับ');
     }
   };
 
@@ -1232,6 +1261,13 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                             <div className="flex flex-col">
                               <span className="font-medium text-sm">ส่งออก Excel</span>
                               <span className="text-xs text-muted-foreground">ดาวน์โหลดไฟล์รายงาน</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleRevertToDraft(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                            <FileText className="h-4 w-4 text-orange-600" />
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">ย้อนกลับเป็นแบบร่าง</span>
+                              <span className="text-xs text-muted-foreground">เปลี่ยนสถานะเป็นแบบร่าง</span>
                             </div>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleFinishPlan(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
@@ -2152,6 +2188,26 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
             <AlertDialogAction onClick={confirmFinishPlan} className="bg-blue-600 hover:bg-blue-700">
               ยืนยันการดำเนินการ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Revert to Draft Confirmation */}
+      <AlertDialog open={isRevertDialogOpen} onOpenChange={setIsRevertDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการย้อนกลับเป็นแบบร่าง</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการย้อนกลับแผน "{revertingPlan?.plan_name}" เป็นสถานะแบบร่างหรือไม่?
+              <br />
+              การรับออเดอร์จะถูกปิดและสถานะจะเปลี่ยนเป็นแบบร่าง
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRevertToDraft} className="bg-orange-600 hover:bg-orange-700">
+              ยืนยันการย้อนกลับ
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
