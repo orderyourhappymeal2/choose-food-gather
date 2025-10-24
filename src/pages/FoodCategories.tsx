@@ -50,13 +50,24 @@ const FoodCategories = () => {
       return;
     }
     
-    setUserInfo(JSON.parse(storedUserInfo));
-    fetchMealsAndShops(JSON.parse(storedUserInfo).plan_id);
+    const parsedUserInfo = JSON.parse(storedUserInfo);
+    setUserInfo(parsedUserInfo);
+    fetchMealsAndShops(parsedUserInfo.plan_id);
     
-    // Load order cache
-    const cachedOrders = localStorage.getItem('orderCache');
+    // Load order cache with plan isolation
+    const cacheKey = `orderCache_${parsedUserInfo.plan_id}`;
+    const cachedOrders = localStorage.getItem(cacheKey);
     if (cachedOrders) {
-      setOrderCache(JSON.parse(cachedOrders));
+      const allCachedOrders = JSON.parse(cachedOrders);
+      // Filter to only show orders for current plan
+      const filteredOrders: any = {};
+      Object.entries(allCachedOrders).forEach(([key, value]) => {
+        const order = value as any;
+        if (order.plan_id === parsedUserInfo.plan_id) {
+          filteredOrders[key] = order;
+        }
+      });
+      setOrderCache(filteredOrders);
     }
   }, []);
 
@@ -124,7 +135,8 @@ const FoodCategories = () => {
   };
 
   const getSelectedFood = (mealId: string, shopId: string) => {
-    const key = `${mealId}_${shopId}`;
+    if (!userInfo) return null;
+    const key = `${userInfo.plan_id}_${mealId}_${shopId}`;
     return orderCache[key];
   };
 

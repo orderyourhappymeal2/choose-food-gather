@@ -45,9 +45,8 @@ const OrderSummary = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Load user info and order cache
+    // Load user info and order cache with plan isolation
     const userInfoStr = localStorage.getItem('userInfo');
-    const orderCacheStr = localStorage.getItem('orderCache');
     
     if (!userInfoStr) {
       navigate('/');
@@ -57,8 +56,21 @@ const OrderSummary = () => {
     const userInfo = JSON.parse(userInfoStr);
     setUserInfo(userInfo);
     
+    // Load cache specific to this plan
+    const cacheKey = `orderCache_${userInfo.plan_id}`;
+    const orderCacheStr = localStorage.getItem(cacheKey);
+    
     if (orderCacheStr) {
-      setOrderCache(JSON.parse(orderCacheStr));
+      const allCachedOrders = JSON.parse(orderCacheStr);
+      // Filter to only show orders for current plan (extra safety check)
+      const filteredOrders: Record<string, CachedOrder> = {};
+      Object.entries(allCachedOrders).forEach(([key, value]) => {
+        const order = value as CachedOrder;
+        if (order.plan_id === userInfo.plan_id) {
+          filteredOrders[key] = order;
+        }
+      });
+      setOrderCache(filteredOrders);
     }
 
     // Fetch plan data and pre-defined meals
@@ -277,8 +289,9 @@ const OrderSummary = () => {
         }
       }
 
-      // Clear cache after successful submission
-      localStorage.removeItem('orderCache');
+      // Clear cache after successful submission (plan-specific)
+      const cacheKey = `orderCache_${userInfo.plan_id}`;
+      localStorage.removeItem(cacheKey);
 
       // Store final order data for ThankYou page
       const finalOrderData = {

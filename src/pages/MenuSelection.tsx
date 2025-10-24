@@ -51,9 +51,10 @@ const MenuSelection = () => {
     setUserInfo(JSON.parse(storedUserInfo));
     fetchMenuItems(shop.shop_id);
 
-    // Load existing selection from cache
-    const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
-    const mealKey = `${meal.meal_id}_${shop.shop_id}`;
+    // Load existing selection from cache with plan isolation
+    const cacheKey = `orderCache_${userInfo.plan_id}`;
+    const orderCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+    const mealKey = `${userInfo.plan_id}_${meal.meal_id}_${shop.shop_id}`;
     const existingOrder = orderCache[mealKey];
     
     if (existingOrder) {
@@ -65,9 +66,10 @@ const MenuSelection = () => {
 
   // Load default selection after menu items are fetched
   useEffect(() => {
-    if (menuItems.length > 0 && meal && shop) {
-      const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
-      const mealKey = `${meal.meal_id}_${shop.shop_id}`;
+    if (menuItems.length > 0 && meal && shop && userInfo) {
+      const cacheKey = `orderCache_${userInfo.plan_id}`;
+      const orderCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+      const mealKey = `${userInfo.plan_id}_${meal.meal_id}_${shop.shop_id}`;
       const existingOrder = orderCache[mealKey];
       
       if (existingOrder) {
@@ -168,9 +170,10 @@ const MenuSelection = () => {
     }
 
     try {
-      // Save to cache instead of database
-      const orderCache = JSON.parse(localStorage.getItem('orderCache') || '{}');
-      const mealKey = `${meal.meal_id}_${shop.shop_id}`;
+      // Save to cache with plan isolation
+      const cacheKey = `orderCache_${userInfo.plan_id}`;
+      const orderCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+      const mealKey = `${userInfo.plan_id}_${meal.meal_id}_${shop.shop_id}`;
       
       orderCache[mealKey] = {
         meal_id: meal.meal_id,
@@ -188,7 +191,7 @@ const MenuSelection = () => {
         order_type: "custom"
       };
 
-      localStorage.setItem('orderCache', JSON.stringify(orderCache));
+      localStorage.setItem(cacheKey, JSON.stringify(orderCache));
 
       toast({
         title: "เพิ่มรายการสำเร็จ",

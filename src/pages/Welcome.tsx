@@ -200,6 +200,11 @@ const Welcome = () => {
       };
       
       localStorage.setItem('userInfo', JSON.stringify(userData));
+      
+      // Clear order cache for this plan to start fresh
+      const cacheKey = `orderCache_${planData.plan_id}`;
+      localStorage.removeItem(cacheKey);
+      
       navigate('/food-categories');
       
     } catch (error) {
