@@ -280,7 +280,7 @@ const Welcome = () => {
               
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="block text-sm font-medium">ช่องทางติดต่อ</label>
+                  <label className="block text-sm font-medium">ช่องทางติดต่อ (ไม่บังคับ)</label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
