@@ -36,19 +36,40 @@ const MenuSelection = () => {
   const { meal, shop } = location.state || {};
 
   useEffect(() => {
-    if (!meal || !shop) {
-      navigate('/food-categories');
-      return;
-    }
+    console.log('🔍 MenuSelection mounted:', { 
+      has_meal: !!meal, 
+      has_shop: !!shop,
+      restaurantId,
+      location_state: location.state 
+    });
 
-    // Get user info from localStorage
+    // Get user info from localStorage first
     const storedUserInfo = localStorage.getItem('userInfo');
     if (!storedUserInfo) {
+      console.log('❌ No user info, redirecting to home');
       navigate('/');
       return;
     }
     
-    setUserInfo(JSON.parse(storedUserInfo));
+    const parsedUserInfo = JSON.parse(storedUserInfo);
+    setUserInfo(parsedUserInfo);
+
+    // Check if we have meal and shop from navigation state
+    if (!meal || !shop) {
+      console.log('⚠️ Missing meal or shop from state');
+      
+      // If we have restaurantId, try to fetch shop data
+      if (restaurantId) {
+        console.log('🔄 Attempting to fetch shop data for:', restaurantId);
+        fetchShopData(restaurantId);
+      } else {
+        console.log('❌ No restaurantId, redirecting to food-categories');
+        navigate('/food-categories');
+      }
+      return;
+    }
+
+    console.log('✅ Has meal and shop, fetching menu items');
     fetchMenuItems(shop.shop_id);
 
     // Load existing selection from cache with plan isolation
@@ -91,8 +112,45 @@ const MenuSelection = () => {
     }
   }, [menuItems, meal, shop]);
 
+  const fetchShopData = async (shopId: string) => {
+    try {
+      console.log('🔍 Fetching shop data for:', shopId);
+      const { data: shopData, error: shopError } = await supabase
+        .from('shop')
+        .select('*')
+        .eq('shop_id', shopId)
+        .maybeSingle();
+
+      if (shopError) throw shopError;
+      
+      if (!shopData) {
+        console.log('❌ Shop not found');
+        toast({
+          title: "ไม่พบข้อมูลร้านอาหาร",
+          variant: "destructive"
+        });
+        navigate('/food-categories');
+        return;
+      }
+
+      console.log('✅ Shop data loaded:', shopData.shop_name);
+      // Note: When coming from direct link, we don't have meal info
+      // This is a limitation - consider storing meal_id in URL or showing meal selector
+      toast({
+        title: "กรุณาเลือกมื้ออาหารก่อน",
+        description: "กรุณากลับไปที่หน้าเลือกมื้ออาหาร",
+        variant: "destructive"
+      });
+      navigate('/food-categories');
+    } catch (error) {
+      console.error('Error fetching shop data:', error);
+      navigate('/food-categories');
+    }
+  };
+
   const fetchMenuItems = async (shopId: string) => {
     try {
+      console.log('🔍 Fetching menu items for shop:', shopId);
       const { data, error } = await supabase
         .from('food')
         .select('*')
@@ -100,6 +158,7 @@ const MenuSelection = () => {
 
       if (error) throw error;
       
+      console.log('✅ Loaded', data?.length || 0, 'menu items');
       setMenuItems(data || []);
     } catch (error) {
       console.error('Error fetching menu items:', error);
