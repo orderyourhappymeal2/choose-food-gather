@@ -127,8 +127,20 @@ const FoodCategories = () => {
   };
 
   const handleShopSelect = (meal: Meal, shop: Shop) => {
-    if (meal.food_id) return; // Prevent selection if food is already set
+    console.log('🔍 handleShopSelect called:', { 
+      meal_name: meal.meal_name,
+      has_food_id: !!meal.food_id,
+      shop_name: shop.shop_name 
+    });
     
+    // Pre-defined meals (with food_id) should not allow navigation
+    // This is already handled by UI (!isPreSelected check), but adding safety here
+    if (meal.food_id) {
+      console.log('❌ Navigation blocked: Meal is pre-defined');
+      return;
+    }
+    
+    console.log('✅ Navigating to menu selection');
     navigate(`/menu/${shop.shop_id}`, {
       state: { meal, shop }
     });
