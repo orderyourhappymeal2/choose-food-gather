@@ -176,7 +176,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMov
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
                   <ScrollArea className="h-full">
-                    {shops.slice(0, 5).map((shop) => (
+                    {shops.map((shop) => (
                       <SelectItem key={shop.shop_id} value={shop.shop_id} className="flex items-center gap-2 p-2">
                         <div className="flex items-center gap-2 w-full">
                           {shop.url_pic && (
@@ -214,7 +214,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMov
                       <SelectItem value="user-choice" className="p-2">
                         <span>ให้ผู้ใช้เลือกเอง</span>
                       </SelectItem>
-                      {filteredFoods.slice(0, 5).map((food) => (
+                      {filteredFoods.map((food) => (
                         <SelectItem key={food.food_id} value={food.food_id} className="flex items-center gap-2 p-2">
                           <div className="flex items-center gap-2 w-full">
                             {food.url_pic && (
@@ -274,7 +274,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMov
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     <ScrollArea className="h-full">
-                      {shops.slice(0, 5).map((shop) => (
+                      {shops.map((shop) => (
                         <SelectItem key={shop.shop_id} value={shop.shop_id} className="flex items-center gap-2 p-2">
                           <div className="flex items-center gap-2 w-full">
                             {shop.url_pic && (
@@ -313,7 +313,7 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMov
                         <SelectItem value="user-choice" className="p-2">
                           <span>ให้ผู้ใช้เลือกเอง</span>
                         </SelectItem>
-                        {filteredFoods.slice(0, 5).map((food) => (
+                        {filteredFoods.map((food) => (
                           <SelectItem key={food.food_id} value={food.food_id} className="flex items-center gap-2 p-2">
                             <div className="flex items-center gap-2 w-full">
                               {food.url_pic && (
