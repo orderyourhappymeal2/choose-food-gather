@@ -32,21 +32,21 @@ const MenuSelection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  
+  // States for handling direct links
+  const [loadedShop, setLoadedShop] = useState<any>(null);
+  const [loadedMeal, setLoadedMeal] = useState<any>(null);
 
   const { meal, shop } = location.state || {};
+  
+  // Use meal/shop from either navigation state or loaded state
+  const currentMeal = meal || loadedMeal;
+  const currentShop = shop || loadedShop;
 
   useEffect(() => {
-    console.log('🔍 MenuSelection mounted:', { 
-      has_meal: !!meal, 
-      has_shop: !!shop,
-      restaurantId,
-      location_state: location.state 
-    });
-
     // Get user info from localStorage first
     const storedUserInfo = localStorage.getItem('userInfo');
     if (!storedUserInfo) {
-      console.log('❌ No user info, redirecting to home');
       navigate('/');
       return;
     }
@@ -54,67 +54,54 @@ const MenuSelection = () => {
     const parsedUserInfo = JSON.parse(storedUserInfo);
     setUserInfo(parsedUserInfo);
 
-    // Check if we have meal and shop from navigation state
-    if (!meal || !shop) {
-      console.log('⚠️ Missing meal or shop from state');
-      
-      // If we have restaurantId, try to fetch shop data
-      if (restaurantId) {
-        console.log('🔄 Attempting to fetch shop data for:', restaurantId);
-        fetchShopData(restaurantId);
-      } else {
-        console.log('❌ No restaurantId, redirecting to food-categories');
-        navigate('/food-categories');
-      }
+    // Case 1: Has meal and shop from navigation state (normal flow)
+    if (meal && shop) {
+      console.log('✅ Has meal and shop from navigation state');
+      fetchMenuItems(shop.shop_id);
       return;
     }
 
-    console.log('✅ Has meal and shop, fetching menu items');
-    fetchMenuItems(shop.shop_id);
-
-    // Load existing selection from cache with plan isolation
-    const cacheKey = `orderCache_${userInfo.plan_id}`;
-    const orderCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
-    const mealKey = `${userInfo.plan_id}_${meal.meal_id}_${shop.shop_id}`;
-    const existingOrder = orderCache[mealKey];
-    
-    if (existingOrder) {
-      // Find the menu item that matches the cached selection
-      // We'll set this after menu items are loaded
-      console.log('Found existing order:', existingOrder);
+    // Case 2: Direct link with restaurantId - fetch data
+    if (restaurantId && !meal && !shop) {
+      console.log('🔄 Direct link detected, fetching data for:', restaurantId);
+      fetchShopAndMealsData(restaurantId, parsedUserInfo.plan_id);
+      return;
     }
-  }, [meal, shop]);
+
+    // Case 3: No data available - redirect
+    console.log('❌ Missing required data, redirecting');
+    navigate('/food-categories');
+  }, [meal, shop, restaurantId]);
 
   // Load default selection after menu items are fetched
   useEffect(() => {
-    if (menuItems.length > 0 && meal && shop && userInfo) {
+    if (menuItems.length > 0 && currentMeal && currentShop && userInfo) {
       const cacheKey = `orderCache_${userInfo.plan_id}`;
       const orderCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
-      const mealKey = `${userInfo.plan_id}_${meal.meal_id}_${shop.shop_id}`;
+      const mealKey = `${userInfo.plan_id}_${currentMeal.meal_id}_${currentShop.shop_id}`;
       const existingOrder = orderCache[mealKey];
       
       if (existingOrder) {
-        // Find the menu item that matches the cached selection
         const cachedItem = menuItems.find(item => item.food_id === existingOrder.food_id);
         if (cachedItem) {
           setSelectedItem(cachedItem);
-          // Handle both old array format and new string format
           const toppings = existingOrder.selected_toppings;
           if (Array.isArray(toppings)) {
-            setSelectedTopping(toppings[0] || ""); // Take first item from old array format
+            setSelectedTopping(toppings[0] || "");
           } else {
-            setSelectedTopping(toppings || ""); // Use string format
+            setSelectedTopping(toppings || "");
           }
           setOrderNote(existingOrder.order_note || '');
-          console.log('Restored selection:', cachedItem.food_name);
         }
       }
     }
-  }, [menuItems, meal, shop]);
+  }, [menuItems, currentMeal, currentShop, userInfo]);
 
-  const fetchShopData = async (shopId: string) => {
+  const fetchShopAndMealsData = async (shopId: string, planId: string) => {
     try {
-      console.log('🔍 Fetching shop data for:', shopId);
+      console.log('🔍 Fetching shop and meals for:', { shopId, planId });
+      
+      // Fetch shop data
       const { data: shopData, error: shopError } = await supabase
         .from('shop')
         .select('*')
@@ -124,7 +111,6 @@ const MenuSelection = () => {
       if (shopError) throw shopError;
       
       if (!shopData) {
-        console.log('❌ Shop not found');
         toast({
           title: "ไม่พบข้อมูลร้านอาหาร",
           variant: "destructive"
@@ -133,17 +119,44 @@ const MenuSelection = () => {
         return;
       }
 
-      console.log('✅ Shop data loaded:', shopData.shop_name);
-      // Note: When coming from direct link, we don't have meal info
-      // This is a limitation - consider storing meal_id in URL or showing meal selector
+      console.log('✅ Shop loaded:', shopData.shop_name);
+      setLoadedShop(shopData);
+
+      // Fetch meals that use this shop and don't have pre-defined food
+      const { data: mealsData, error: mealsError } = await supabase
+        .from('meal')
+        .select('*')
+        .eq('plan_id', planId)
+        .eq('shop_id', shopId)
+        .is('food_id', null) // Only meals that need food selection
+        .order('meal_index');
+
+      if (mealsError) throw mealsError;
+
+      if (!mealsData || mealsData.length === 0) {
+        toast({
+          title: "ไม่พบมื้ออาหารที่ใช้ร้านนี้",
+          description: "กรุณาเลือกจากหน้ารายการมื้ออาหาร",
+          variant: "destructive"
+        });
+        navigate('/food-categories');
+        return;
+      }
+
+      // Use the first meal found
+      const selectedMeal = mealsData[0];
+      console.log('✅ Meal loaded:', selectedMeal.meal_name);
+      setLoadedMeal(selectedMeal);
+
+      // Now fetch menu items
+      await fetchMenuItems(shopId);
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
       toast({
-        title: "กรุณาเลือกมื้ออาหารก่อน",
-        description: "กรุณากลับไปที่หน้าเลือกมื้ออาหาร",
+        title: "เกิดข้อผิดพลาด",
         variant: "destructive"
       });
-      navigate('/food-categories');
-    } catch (error) {
-      console.error('Error fetching shop data:', error);
       navigate('/food-categories');
     }
   };
@@ -232,13 +245,13 @@ const MenuSelection = () => {
       // Save to cache with plan isolation
       const cacheKey = `orderCache_${userInfo.plan_id}`;
       const orderCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
-      const mealKey = `${userInfo.plan_id}_${meal.meal_id}_${shop.shop_id}`;
+      const mealKey = `${userInfo.plan_id}_${currentMeal.meal_id}_${currentShop.shop_id}`;
       
       orderCache[mealKey] = {
-        meal_id: meal.meal_id,
-        meal_name: meal.meal_name,
-        shop_id: shop.shop_id,
-        shop_name: shop.shop_name,
+        meal_id: currentMeal.meal_id,
+        meal_name: currentMeal.meal_name,
+        shop_id: currentShop.shop_id,
+        shop_name: currentShop.shop_name,
         food_id: selectedItem.food_id,
         food_name: selectedItem.food_name,
         food_price: selectedItem.price,
@@ -254,7 +267,7 @@ const MenuSelection = () => {
 
       toast({
         title: "เพิ่มรายการสำเร็จ",
-        description: `เลือก ${selectedItem.food_name} จาก ${shop.shop_name}`
+        description: `เลือก ${selectedItem.food_name} จาก ${currentShop.shop_name}`
       });
 
       navigate('/food-categories');
@@ -269,7 +282,7 @@ const MenuSelection = () => {
     }
   };
 
-  if (!meal || !shop) {
+  if (!currentMeal || !currentShop) {
     return null;
   }
 
@@ -300,8 +313,8 @@ const MenuSelection = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">{shop.shop_name}</h1>
-              <p className="text-sm text-muted-foreground">{meal.meal_name}</p>
+              <h1 className="text-xl font-bold">{currentShop.shop_name}</h1>
+              <p className="text-sm text-muted-foreground">{currentMeal.meal_name}</p>
             </div>
           </div>
         </div>
