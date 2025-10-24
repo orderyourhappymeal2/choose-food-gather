@@ -262,8 +262,9 @@ const Welcome = () => {
           <CardContent className="p-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">กรอกชื่อของท่าน</label>
+                <label className="block text-sm font-medium mb-2">ชื่อเล่น</label>
                 <Input
+                  placeholder="กรอกชื่อเล่น"
                   value={formData.nickname}
                   onChange={(e) => handleInputChange('nickname', e.target.value)}
                   className="bg-white border-brand-pink/50 focus:border-primary"
@@ -273,6 +274,7 @@ const Welcome = () => {
               <div>
                 <label className="block text-sm font-medium mb-2">รหัสเข้างาน</label>
                 <Input
+                  placeholder="กรอกเลขรหัสเข้างานตามที่แนบไว้"
                   value={formData.code}
                   onChange={(e) => handleInputChange('code', e.target.value)}
                   className="bg-white border-brand-pink/50 focus:border-primary"
@@ -297,6 +299,7 @@ const Welcome = () => {
                   type="tel"
                   inputMode="numeric"
                   pattern="[0-9]*"
+                  placeholder="เบอร์โทรติดต่อ"
                   value={formData.contact}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^0-9]/g, '');
