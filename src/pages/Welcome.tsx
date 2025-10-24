@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { ChefHat, MapPin, Calendar, Clock, Users, Info } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -218,8 +218,9 @@ const Welcome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
-      <div className="max-w-md mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
+    <TooltipProvider>
+      <div className="min-h-screen bg-[var(--gradient-welcome)] px-0 py-4 sm:p-4">
+        <div className="max-w-md mx-auto pt-4 sm:pt-8 relative px-2 sm:px-0">
         
         {/* Header */}
         <div className="text-center mb-8">
@@ -281,9 +282,11 @@ const Welcome = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <label className="block text-sm font-medium">ช่องทางติดต่อ (ไม่บังคับ)</label>
-                  <Tooltip>
+                  <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
-                      <Info className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
+                      <button type="button" className="focus:outline-none">
+                        <Info className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground cursor-pointer" />
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">
                       <p className="text-xs">ติดต่อในกรณีอาหารหมด ทางร้านเกิดปัญหา หรือ อื่นๆ</p>
@@ -314,8 +317,9 @@ const Welcome = () => {
           <ChefHat className="w-5 h-5 mr-2" />
           เริ่มสั่งอาหารกัน!
         </Button>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
