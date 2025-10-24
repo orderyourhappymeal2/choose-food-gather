@@ -67,12 +67,13 @@ const planFormSchema = z.object({
 type PlanFormData = z.infer<typeof planFormSchema>;
 
 // Sortable Meal Item Component
-const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onMoveUp, onMoveDown, isFirst, isLast }: {
+const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: {
   meal: any;
   index: number;
   shops: any[];
   foods: any[];
   onUpdate: (id: string, updates: any) => void;
+  onRemove: (id: string) => void;
   onMoveUp: (id: string) => void;
   onMoveDown: (id: string) => void;
   isFirst: boolean;
@@ -143,6 +144,14 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onMoveUp, onMov
                 className="p-1 h-8 w-8"
               >
                 <ArrowDown className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white p-1 h-8 w-8"
+                onClick={() => onRemove(meal.id)}
+              >
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -331,6 +340,15 @@ const SortableMealItem = ({ meal, index, shops, foods, onUpdate, onMoveUp, onMov
               </div>
             </div>
           </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+            onClick={() => onRemove(meal.id)}
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </div>
       )}
     </div>
@@ -1081,54 +1099,21 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
     }
 
     try {
-      // Get existing meals from database
-      const { data: existingMeals, error: fetchError } = await supabase
+      // Delete existing meals for this plan
+      await supabase
         .from('meal')
-        .select('*')
+        .delete()
         .eq('plan_id', selectedPlanForMeal.plan_id);
 
-      if (fetchError) throw fetchError;
-
-      // Separate meals into updates and inserts
-      const mealsToUpdate = [];
-      const mealsToInsert = [];
-
-      for (let i = 0; i < meals.length; i++) {
-        const meal = meals[i];
-        const mealData = {
-          plan_id: selectedPlanForMeal.plan_id,
-          shop_id: meal.shopId || null,
-          food_id: meal.foodId || null,
-          meal_name: meal.name,
-          meal_index: i + 1
-        };
-
-        // Check if this meal exists in DB (has UUID format id)
-        const isExistingMeal = existingMeals?.some(em => em.meal_id === meal.id);
-        
-        if (isExistingMeal) {
-          mealsToUpdate.push({ ...mealData, meal_id: meal.id });
-        } else {
-          mealsToInsert.push(mealData);
-        }
-      }
-
-      // Update existing meals
-      for (const meal of mealsToUpdate) {
-        const { error } = await supabase
-          .from('meal')
-          .update({
-            shop_id: meal.shop_id,
-            food_id: meal.food_id,
-            meal_name: meal.meal_name,
-            meal_index: meal.meal_index
-          })
-          .eq('meal_id', meal.meal_id);
-
-        if (error) throw error;
-      }
-
       // Insert new meals
+      const mealsToInsert = meals.map((meal, index) => ({
+        plan_id: selectedPlanForMeal.plan_id,
+        shop_id: meal.shopId || null,
+        food_id: meal.foodId || null,
+        meal_name: meal.name,
+        meal_index: index + 1
+      })).filter(meal => meal.meal_name.trim() !== '');
+
       if (mealsToInsert.length > 0) {
         const { error } = await supabase
           .from('meal')
@@ -2135,6 +2120,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                             shops={shops}
                             foods={foods}
                             onUpdate={updateMeal}
+                            onRemove={removeMeal}
                             onMoveUp={moveMealUp}
                             onMoveDown={moveMealDown}
                             isFirst={index === 0}
