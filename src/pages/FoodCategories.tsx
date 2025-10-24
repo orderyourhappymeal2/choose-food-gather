@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ChefHat, Receipt } from "lucide-react";
+import { ArrowLeft, ChefHat, Receipt, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -219,18 +219,19 @@ const FoodCategories = () => {
               const isSelected = isPreSelected || !!selectedFood;
               
               return (
-                <Card 
-                  key={meal.meal_id} 
-                  className={`mb-6 bg-white/80 backdrop-blur-sm transition-all border-2 ${
-                    isSelected 
-                      ? 'border-green-300/60 shadow-sm' 
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4 text-center">{meal.meal_name}</h2>
-                    
-                    {!shop ? (
+                <div key={meal.meal_id} className="mb-6">
+                  {/* Meal Name - Centered above container */}
+                  <h2 className="text-xl font-semibold mb-3 text-center text-foreground">{meal.meal_name}</h2>
+                  
+                  <Card 
+                    className={`bg-white/80 backdrop-blur-sm transition-all border-2 ${
+                      isSelected 
+                        ? 'border-green-500 shadow-md' 
+                        : 'border-red-400 shadow-sm'
+                    }`}
+                  >
+                    <CardContent className="p-6">
+                      {!shop ? (
                       <div className="text-center py-8">
                         <ChefHat className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                         <p className="text-muted-foreground">ยังไม่มีร้านอาหารสำหรับมื้อนี้</p>
@@ -257,6 +258,9 @@ const FoodCategories = () => {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h3 className="font-semibold text-lg">{shop.shop_name}</h3>
+                                  {isSelected && (
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                  )}
                                   {isPreSelected && (
                                     <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
                                       กำหนดแล้ว
@@ -319,8 +323,9 @@ const FoodCategories = () => {
                         </Card>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               );
             })
           )}
@@ -339,13 +344,21 @@ const FoodCategories = () => {
         
         {/* Show message if not all selections are complete */}
         {!hasCompletedAllRequiredSelections() && getMissingSelections().length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-600 text-sm">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600 text-sm font-semibold text-center mb-2">
               กรุณาเลือกอาหารให้ครบทุกมื้อก่อนดูสรุปรายการ
             </p>
-            <p className="text-red-500 text-xs mt-1">
+            <p className="text-red-500 text-xs text-center mb-2">
               ยังต้องเลือกอีก {getMissingSelections().length} มื้อ
             </p>
+            <div className="mt-2 space-y-1">
+              <p className="text-red-600 text-xs font-medium">มื้อที่ยังไม่ได้เลือก:</p>
+              {getMissingSelections().map((meal) => (
+                <p key={meal.meal_id} className="text-red-500 text-xs ml-4">
+                  • {meal.meal_name}
+                </p>
+              ))}
+            </div>
           </div>
         )}
       </div>
