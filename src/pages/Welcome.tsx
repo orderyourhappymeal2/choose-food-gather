@@ -261,9 +261,8 @@ const Welcome = () => {
           <CardContent className="p-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">ชื่อเล่น</label>
+                <label className="block text-sm font-medium mb-2">กรอกชื่อของท่าน</label>
                 <Input
-                  placeholder="กรอกชื่อเล่นของคุณ"
                   value={formData.nickname}
                   onChange={(e) => handleInputChange('nickname', e.target.value)}
                   className="bg-white border-brand-pink/50 focus:border-primary"
@@ -271,9 +270,8 @@ const Welcome = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-2">รหัส</label>
+                <label className="block text-sm font-medium mb-2">รหัสเข้างาน</label>
                 <Input
-                  placeholder="กรอกรหัสเข้าร่วมงาน"
                   value={formData.code}
                   onChange={(e) => handleInputChange('code', e.target.value)}
                   className="bg-white border-brand-pink/50 focus:border-primary"
@@ -282,7 +280,7 @@ const Welcome = () => {
               
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="block text-sm font-medium">ช่องทางติดต่อ</label>
+                  <label className="block text-sm font-medium">เบอร์โทร 08xx</label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground cursor-help" />
@@ -293,9 +291,14 @@ const Welcome = () => {
                   </Tooltip>
                 </div>
                 <Input
-                  placeholder="กรอกเบอร์โทรของคุณ"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.contact}
-                  onChange={(e) => handleInputChange('contact', e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    handleInputChange('contact', value);
+                  }}
                   className="bg-white border-brand-pink/50 focus:border-primary"
                 />
               </div>

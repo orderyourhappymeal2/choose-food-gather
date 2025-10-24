@@ -121,4 +121,9 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-kanit;
   }
+
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-muted-foreground/40;
+  }
 }
