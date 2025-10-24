@@ -1002,10 +1002,11 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       const formattedMeals = (data || []).map((meal, index) => ({
         id: meal.meal_id,
+        meal_id: meal.meal_id, // Keep the actual meal_id for updates
         name: meal.meal_name,
         shopId: meal.shop_id || '',
         foodId: meal.food_id || '',
-        customFoodText: 'ให้ผู้ใช้เลือกเอง', // Default text, could be stored in DB if needed
+        customFoodText: 'ให้ผู้ใช้เลือกเอง',
         index: meal.meal_index
       }));
 
@@ -1099,27 +1100,43 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
     }
 
     try {
-      // Delete existing meals for this plan
-      await supabase
+      // Fetch existing meals to compare
+      const { data: existingMeals, error: fetchError } = await supabase
         .from('meal')
-        .delete()
+        .select('meal_id')
         .eq('plan_id', selectedPlanForMeal.plan_id);
 
-      // Insert new meals
-      const mealsToInsert = meals.map((meal, index) => ({
-        plan_id: selectedPlanForMeal.plan_id,
-        shop_id: meal.shopId || null,
-        food_id: meal.foodId || null,
-        meal_name: meal.name,
-        meal_index: index + 1
-      })).filter(meal => meal.meal_name.trim() !== '');
+      if (fetchError) throw fetchError;
 
-      if (mealsToInsert.length > 0) {
-        const { error } = await supabase
-          .from('meal')
-          .insert(mealsToInsert);
+      const existingMealIds = new Set(existingMeals?.map(m => m.meal_id) || []);
 
-        if (error) throw error;
+      // Process each meal - update if exists, insert if new
+      for (let i = 0; i < meals.length; i++) {
+        const meal = meals[i];
+        const mealData = {
+          plan_id: selectedPlanForMeal.plan_id,
+          shop_id: meal.shopId || null,
+          food_id: meal.foodId || null,
+          meal_name: meal.name,
+          meal_index: i + 1
+        };
+
+        if (meal.meal_id && existingMealIds.has(meal.meal_id)) {
+          // Update existing meal
+          const { error: updateError } = await supabase
+            .from('meal')
+            .update(mealData)
+            .eq('meal_id', meal.meal_id);
+
+          if (updateError) throw updateError;
+        } else {
+          // Insert new meal
+          const { error: insertError } = await supabase
+            .from('meal')
+            .insert(mealData);
+
+          if (insertError) throw insertError;
+        }
       }
 
       toast.success('บันทึกมื้ออาหารสำเร็จ');
