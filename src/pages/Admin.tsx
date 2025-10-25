@@ -505,7 +505,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       if (error) throw error;
       
-      // Fetch meals and shops for each plan
+      // Fetch meals, shops, and order count for each plan
       const plansWithMeals = await Promise.all(
         (data || []).map(async (plan) => {
           const { data: mealsData } = await supabase
@@ -523,9 +523,23 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             .eq('plan_id', plan.plan_id)
             .order('meal_index', { ascending: true });
           
+          // Fetch unique person count for published plans
+          let orderCount = 0;
+          if (filterState === 'published') {
+            const { data: ordersData } = await supabase
+              .from('order')
+              .select('person_id')
+              .eq('plan_id', plan.plan_id);
+            
+            // Count unique persons
+            const uniquePersons = new Set(ordersData?.map(o => o.person_id) || []);
+            orderCount = uniquePersons.size;
+          }
+          
           return {
             ...plan,
-            meals: mealsData || []
+            meals: mealsData || [],
+            orderCount
           };
         })
       );
@@ -1420,6 +1434,15 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                           <span className="text-xs text-muted-foreground">จำนวนคน:</span>
                           <span className="text-sm text-foreground font-medium">{plan.plan_maxp} คน</span>
                         </div>
+                        
+                        {/* Order count - only show for published plans */}
+                        {filterState === 'published' && (
+                          <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
+                            <span className="text-sm">📝</span>
+                            <span className="text-xs text-muted-foreground">มีผู้สั่งแล้ว:</span>
+                            <span className="text-sm text-foreground font-medium">{plan.orderCount || 0} คน</span>
+                          </div>
+                        )}
                         
                         {/* Password */}
                         <div className="flex items-center gap-2 py-0.5 border-b border-gray-100">
