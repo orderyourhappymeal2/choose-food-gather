@@ -2270,7 +2270,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                         {filteredOrders.map((order, index) => (
                           <TableRow key={order.order_id} className="border-b border-brand-pink/40 hover:bg-brand-pink/10">
                             <TableCell className="border-r border-brand-pink/40 text-center">
-                              <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
+                              <span className="bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold px-2 py-1 rounded-full text-xs">
                                 {index + 1}
                               </span>
                             </TableCell>

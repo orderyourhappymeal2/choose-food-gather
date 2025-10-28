@@ -281,7 +281,7 @@ const FoodCategories = () => {
                                  </div>
                                  <p className="text-sm text-muted-foreground">{shop.description}</p>
                                 <div className="flex gap-2 mt-1">
-                                  <span className="text-xs bg-brand-pink/20 text-primary px-2 py-1 rounded">
+                                  <span className="text-xs bg-gradient-to-r from-brand-pink/20 to-brand-orange/20 text-primary px-2 py-1 rounded">
                                     {shop.food_type_1}
                                   </span>
                                   {shop.food_type_2 && (
