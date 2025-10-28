@@ -428,9 +428,13 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         .select(`
           *,
           person:person_id (person_name, person_agent),
-          food:food_id (food_name, price, url_pic, shop_id),
-          meal:meal_id (meal_name),
-          shop:food(shop:shop_id(shop_name))
+          food:food_id (
+            food_name, 
+            price, 
+            url_pic, 
+            shop:shop_id (shop_name)
+          ),
+          meal:meal_id (meal_name)
         `)
         .eq('plan_id', plan.plan_id)
         .order('created_at', { ascending: false });
@@ -445,7 +449,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         'มื้ออาหาร': order.meal?.meal_name || '-',
         'ชื่ออาหาร': order.food?.food_name || '-',
         'ราคา': order.food?.price || 0,
-        'ร้านอาหาร': order.food?.shop_name || '-',
+        'ร้านอาหาร': order.food?.shop?.shop_name || '-',
         'ท็อปปิ้ง': order.topping || '-',
         'หมายเหตุ': order.order_note || '-',
         'เวลาสั่ง': formatThaiDateTime(order.created_at),
