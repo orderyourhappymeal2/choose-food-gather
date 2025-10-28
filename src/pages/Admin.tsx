@@ -3335,8 +3335,8 @@ const Admin = () => {
                             <span className="hidden md:inline">เพิ่มร้านอาหาร</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
-                          <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+                        <DialogContent className="w-[95vw] max-w-[500px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+                          <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-primary/10 flex-shrink-0">
                             <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                               <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
                                 <Store className="h-6 w-6 text-primary-foreground" />
@@ -3347,8 +3347,8 @@ const Admin = () => {
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="flex-1 max-h-[calc(90vh-10rem)] px-4">
-                            <div className="py-4 space-y-6">
+                          <ScrollArea className="flex-1 w-full">
+                            <div className="px-6 py-6 space-y-6">
                               {/* Shop Name */}
                               <div>
                                 <Label htmlFor="shop_name" className="text-sm font-medium text-foreground">
@@ -3511,7 +3511,7 @@ const Admin = () => {
                             </div>
                           </ScrollArea>
                           
-                          <DialogFooter className="p-4 border-t bg-gradient-to-r from-background to-muted/30 mt-auto">
+                          <DialogFooter className="p-6 border-t bg-gradient-to-r from-background to-muted/30 flex-shrink-0">
                             <div className="flex gap-3 w-full sm:w-auto">
                               <Button 
                                 variant="outline" 
@@ -3967,7 +3967,7 @@ const Admin = () => {
 
                       {/* Add Menu Modal */}
                       <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] p-0 overflow-hidden flex flex-col">
+                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
                           <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-green-500/5 to-emerald-500/10 flex-shrink-0">
                             <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -3984,8 +3984,8 @@ const Admin = () => {
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="flex-1 max-h-[calc(90vh-240px)]">
-                            <div className="space-y-4 px-6 py-4">
+                          <ScrollArea className="flex-1 w-full">
+                            <div className="space-y-6 px-6 py-4">
                               {/* Food Category */}
                               <div className="space-y-2">
                                 <Label htmlFor="foodCategory" className="text-sm font-medium text-foreground">
