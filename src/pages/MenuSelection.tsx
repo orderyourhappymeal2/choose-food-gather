@@ -335,10 +335,10 @@ const MenuSelection = () => {
               {menuItems.map((item) => (
                 <Card 
                   key={item.food_id} 
-                  className={`cursor-pointer transition-all bg-white/80 backdrop-blur-sm border-2 ${
+                  className={`cursor-pointer transition-all duration-300 bg-white/80 backdrop-blur-sm border-2 ${
                     selectedItem?.food_id === item.food_id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-brand-orange/30 hover:border-primary/50'
+                      ? 'border-primary bg-primary/15 shadow-lg shadow-primary/25 scale-[1.02] ring-2 ring-primary/30'
+                      : 'border-brand-orange/30 hover:border-primary/60 hover:shadow-md hover:scale-[1.01] hover:bg-white/95'
                   }`}
                   onClick={() => handleItemSelect(item)}
                 >
@@ -346,7 +346,11 @@ const MenuSelection = () => {
                     <img 
                       src={item.url_pic || '/placeholder.svg'} 
                       alt={item.food_name}
-                      className="w-full h-32 object-cover rounded-lg mb-3"
+                      className={`w-full h-32 object-cover rounded-lg mb-3 transition-all duration-300 ${
+                        selectedItem?.food_id === item.food_id
+                          ? 'ring-2 ring-primary/50'
+                          : ''
+                      }`}
                     />
                     <h3 className="font-medium text-sm mb-1">{item.food_name}</h3>
                     {item.description && (
@@ -378,7 +382,7 @@ const MenuSelection = () => {
           )}
 
           {/* Order Note */}
-          {selectedItem && (
+          {selectedItem && selectedItem.food_name !== "-" && (
             <Card className="mb-4 bg-white/90 backdrop-blur-sm border-2 border-primary/30">
               <CardContent className="p-4">
                 <h3 className="font-semibold mb-3">หมายเหตุ</h3>
