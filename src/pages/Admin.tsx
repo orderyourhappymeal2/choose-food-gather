@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -3804,9 +3805,27 @@ const Admin = () => {
                                          )}
                                          
                                          {food.topping && (
-                                           <p className="text-muted-foreground text-xs">
-                                             <span className="font-medium">ส่วนเสริม:</span> {food.topping}
-                                           </p>
+                                           <div className="space-y-2">
+                                             <p className="text-xs font-medium text-foreground">ส่วนเสริม:</p>
+                                             <div className="flex flex-col gap-2">
+                                               {food.topping.split(',').map((topping, index) => (
+                                                 <div key={index} className="flex items-center gap-2">
+                                                   <Checkbox 
+                                                     id={`topping-${food.food_id}-${index}`}
+                                                     disabled 
+                                                     checked={false}
+                                                     className="h-3.5 w-3.5"
+                                                   />
+                                                   <label 
+                                                     htmlFor={`topping-${food.food_id}-${index}`}
+                                                     className="text-xs text-muted-foreground cursor-default"
+                                                   >
+                                                     {topping.trim()}
+                                                   </label>
+                                                 </div>
+                                               ))}
+                                             </div>
+                                           </div>
                                          )}
                                        </div>
                                        
