@@ -2026,18 +2026,47 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Publish Confirmation */}
       <AlertDialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการเผยแพร่แผน</AlertDialogTitle>
-            <AlertDialogDescription>
-              หากเผยแพร่แผน "{publishingPlan?.plan_name}" แล้ว จะไม่สามารถย้อนกลับมาแก้ไขได้อีก
-              <br />
-              คุณแน่ใจหรือไม่ที่จะเผยแพร่แผนนี้?
+        <AlertDialogContent className="sm:max-w-lg">
+          <AlertDialogHeader className="pb-2">
+            <AlertDialogTitle className="text-xl flex items-center gap-2">
+              <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center">
+                <Send className="h-5 w-5 text-green-600" />
+              </div>
+              ยืนยันการเผยแพร่แผน
+            </AlertDialogTitle>
+            <AlertDialogDescription className="pt-4">
+              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-green-600 font-bold text-sm">!</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-green-700 dark:text-green-400 font-semibold text-base mb-2">
+                      กำลังเผยแพร่แผน
+                    </p>
+                    <p className="text-foreground/80 text-sm leading-relaxed">
+                      หากเผยแพร่แผน <span className="font-bold text-green-700 dark:text-green-400">"{publishingPlan?.plan_name}"</span> แล้ว จะไม่สามารถย้อนกลับมาแก้ไขได้อีก
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-green-200 dark:border-green-800 pt-3">
+                  <p className="text-foreground/70 text-sm">
+                    คุณแน่ใจหรือไม่ที่จะเผยแพร่แผนนี้?
+                  </p>
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmPublish} className="bg-primary hover:bg-primary/90">
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="hover:bg-accent">
+              <X className="h-4 w-4 mr-2" />
+              ยกเลิก
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmPublish} 
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              <Send className="h-4 w-4 mr-2" />
               เผยแพร่แผน
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -2413,18 +2442,47 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Finish Confirmation */}
       <AlertDialog open={isFinishDialogOpen} onOpenChange={setIsFinishDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการดำเนินการให้เสร็จสิ้น</AlertDialogTitle>
-            <AlertDialogDescription>
-              หากดำเนินการแผน "{finishingPlan?.plan_name}" ให้เสร็จสิ้นแล้ว จะไม่สามารถย้อนกลับได้
-              <br />
-              คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?
+        <AlertDialogContent className="sm:max-w-lg">
+          <AlertDialogHeader className="pb-2">
+            <AlertDialogTitle className="text-xl flex items-center gap-2">
+              <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-blue-600" />
+              </div>
+              ยืนยันการดำเนินการให้เสร็จสิ้น
+            </AlertDialogTitle>
+            <AlertDialogDescription className="pt-4">
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-bold text-sm">✓</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-blue-700 dark:text-blue-400 font-semibold text-base mb-2">
+                      ดำเนินการให้เสร็จสิ้น
+                    </p>
+                    <p className="text-foreground/80 text-sm leading-relaxed">
+                      หากดำเนินการแผน <span className="font-bold text-blue-700 dark:text-blue-400">"{finishingPlan?.plan_name}"</span> ให้เสร็จสิ้นแล้ว จะไม่สามารถย้อนกลับได้
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-blue-200 dark:border-blue-800 pt-3">
+                  <p className="text-foreground/70 text-sm">
+                    คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?
+                  </p>
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmFinishPlan} className="bg-blue-600 hover:bg-blue-700">
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="hover:bg-accent">
+              <X className="h-4 w-4 mr-2" />
+              ยกเลิก
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmFinishPlan} 
+              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
               ยืนยันการดำเนินการ
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -2433,18 +2491,47 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Revert to Draft Confirmation */}
       <AlertDialog open={isRevertDialogOpen} onOpenChange={setIsRevertDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการย้อนกลับเป็นแบบร่าง</AlertDialogTitle>
-            <AlertDialogDescription>
-              คุณต้องการย้อนกลับแผน "{revertingPlan?.plan_name}" เป็นสถานะแบบร่างหรือไม่?
-              <br />
-              การรับออเดอร์จะถูกปิดและสถานะจะเปลี่ยนเป็นแบบร่าง
+        <AlertDialogContent className="sm:max-w-lg">
+          <AlertDialogHeader className="pb-2">
+            <AlertDialogTitle className="text-xl flex items-center gap-2">
+              <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center">
+                <Clock className="h-5 w-5 text-orange-600" />
+              </div>
+              ยืนยันการย้อนกลับเป็นแบบร่าง
+            </AlertDialogTitle>
+            <AlertDialogDescription className="pt-4">
+              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-orange-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-orange-600 font-bold text-sm">↶</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-orange-700 dark:text-orange-400 font-semibold text-base mb-2">
+                      ย้อนกลับเป็นแบบร่าง
+                    </p>
+                    <p className="text-foreground/80 text-sm leading-relaxed">
+                      คุณต้องการย้อนกลับแผน <span className="font-bold text-orange-700 dark:text-orange-400">"{revertingPlan?.plan_name}"</span> เป็นสถานะแบบร่างหรือไม่?
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-orange-200 dark:border-orange-800 pt-3">
+                  <p className="text-foreground/70 text-sm">
+                    การรับออเดอร์จะถูกปิดและสถานะจะเปลี่ยนเป็นแบบร่าง
+                  </p>
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmRevertToDraft} className="bg-orange-600 hover:bg-orange-700">
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="hover:bg-accent">
+              <X className="h-4 w-4 mr-2" />
+              ยกเลิก
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmRevertToDraft} 
+              className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              <Clock className="h-4 w-4 mr-2" />
               ยืนยันการย้อนกลับ
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -3249,9 +3336,14 @@ const Admin = () => {
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
-                          <DialogHeader className="p-4 pb-2 border-b bg-white/90">
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              เพิ่มร้านอาหาร
+                          <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+                            <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                              <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+                                <Store className="h-6 w-6 text-primary-foreground" />
+                              </div>
+                              <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                                เพิ่มร้านอาหาร
+                              </span>
                             </DialogTitle>
                           </DialogHeader>
                           
@@ -3419,26 +3511,28 @@ const Admin = () => {
                             </div>
                           </ScrollArea>
                           
-                          <DialogFooter className="p-4 border-t bg-white/90 mt-auto">
-                            <div className="flex gap-2 w-full sm:w-auto">
+                          <DialogFooter className="p-4 border-t bg-gradient-to-r from-background to-muted/30 mt-auto">
+                            <div className="flex gap-3 w-full sm:w-auto">
                               <Button 
                                 variant="outline" 
                                 onClick={() => {
                                   resetForm();
                                   setIsRestaurantModalOpen(false);
                                 }}
-                                className="flex-1 sm:flex-none border-brand-pink/30 hover:bg-brand-pink/10"
+                                className="flex-1 sm:flex-none border-2 hover:bg-accent hover:border-primary/40 transition-all"
                                 disabled={isSubmitting}
                               >
+                                <X className="h-4 w-4 mr-2" />
                                 ยกเลิก
                               </Button>
                               <Button 
                                 variant="default" 
                                 onClick={handleSubmit}
-                                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+                                className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all"
                                 disabled={isSubmitting}
                               >
-                                {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
+                                <Plus className="h-4 w-4 mr-2" />
+                                {isSubmitting ? 'กำลังบันทึก...' : 'เพิ่มร้าน'}
                               </Button>
                             </div>
                           </DialogFooter>
@@ -3873,10 +3967,20 @@ const Admin = () => {
 
                       {/* Add Menu Modal */}
                       <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh]">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                              เพิ่มรายการอาหาร - {selectedRestaurant?.shop_name}
+                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] p-0 overflow-hidden">
+                          <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-green-500/5 to-emerald-500/10">
+                            <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <UtensilsCrossed className="h-6 w-6 text-white" />
+                              </div>
+                              <div className="flex flex-col items-start">
+                                <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent text-xl">
+                                  เพิ่มรายการอาหาร
+                                </span>
+                                <span className="text-sm text-muted-foreground font-normal">
+                                  {selectedRestaurant?.shop_name}
+                                </span>
+                              </div>
                             </DialogTitle>
                           </DialogHeader>
                           
@@ -4013,7 +4117,7 @@ const Admin = () => {
                             </div>
                           </ScrollArea>
 
-                          <DialogFooter className="flex justify-end gap-2 pt-4 border-t">
+                          <DialogFooter className="flex justify-end gap-3 p-4 border-t bg-gradient-to-r from-background to-muted/30">
                             <Button 
                               variant="outline" 
                               onClick={() => {
@@ -4021,16 +4125,18 @@ const Admin = () => {
                                 setIsAddMenuModalOpen(false);
                                 setSelectedRestaurant(null);
                               }}
-                              className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                              className="border-2 hover:bg-accent hover:border-primary/40 transition-all"
                             >
+                              <X className="h-4 w-4 mr-2" />
                               ยกเลิก
                             </Button>
                             <Button 
                               onClick={handleMenuSubmit}
                               disabled={isMenuSubmitting}
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg hover:shadow-xl transition-all"
                             >
-                              {isMenuSubmitting ? 'กำลังบันทึก...' : 'ยืนยัน'}
+                              <Plus className="h-4 w-4 mr-2" />
+                              {isMenuSubmitting ? 'กำลังบันทึก...' : 'เพิ่มเมนู'}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -4367,32 +4473,59 @@ const Admin = () => {
                          </DialogContent>
                          </Dialog>
 
-                         {/* Delete Food Confirmation Dialog */}
-                         <AlertDialog open={isFoodDeleteConfirmOpen} onOpenChange={setIsFoodDeleteConfirmOpen}>
-                           <AlertDialogContent>
-                             <AlertDialogHeader>
-                               <AlertDialogTitle>ยืนยันการลบรายการอาหาร</AlertDialogTitle>
-                               <AlertDialogDescription>
-                                 คุณแน่ใจหรือไม่ที่จะลบรายการอาหาร "{deletingFood?.food_name}" 
-                                 <br />
-                                 การกระทำนี้ไม่สามารถย้อนกลับได้
-                               </AlertDialogDescription>
-                             </AlertDialogHeader>
-                             <AlertDialogFooter>
-                               <AlertDialogCancel onClick={() => {
-                                 setIsFoodDeleteConfirmOpen(false);
-                                 setDeletingFood(null);
-                               }}>
-                                 ยกเลิก
-                               </AlertDialogCancel>
-                               <AlertDialogAction
-                                 onClick={confirmDeleteFood}
-                                 className="bg-red-600 hover:bg-red-700"
-                               >
-                                 ลบรายการอาหาร
-                               </AlertDialogAction>
-                             </AlertDialogFooter>
-                           </AlertDialogContent>
+                           {/* Delete Food Confirmation Dialog */}
+                           <AlertDialog open={isFoodDeleteConfirmOpen} onOpenChange={setIsFoodDeleteConfirmOpen}>
+                            <AlertDialogContent className="sm:max-w-lg">
+                              <AlertDialogHeader className="pb-2">
+                                <AlertDialogTitle className="text-xl flex items-center gap-2">
+                                  <div className="w-10 h-10 bg-destructive/10 rounded-full flex items-center justify-center">
+                                    <UtensilsCrossed className="h-5 w-5 text-destructive" />
+                                  </div>
+                                  ยืนยันการลบรายการอาหาร
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="pt-4">
+                                  <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4 space-y-3">
+                                    <div className="flex items-start gap-3">
+                                      <div className="flex-shrink-0 w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center">
+                                        <span className="text-destructive font-bold text-sm">!</span>
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-destructive font-semibold text-base mb-2">
+                                          กำลังลบรายการอาหาร
+                                        </p>
+                                        <p className="text-foreground/80 text-sm leading-relaxed">
+                                          คุณแน่ใจหรือไม่ที่จะลบรายการอาหาร <span className="font-bold text-destructive">"{deletingFood?.food_name}"</span>
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="border-t border-destructive/20 pt-3">
+                                      <p className="text-destructive font-medium text-sm">
+                                        ⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้
+                                      </p>
+                                    </div>
+                                  </div>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="gap-2">
+                                <AlertDialogCancel 
+                                  onClick={() => {
+                                    setIsFoodDeleteConfirmOpen(false);
+                                    setDeletingFood(null);
+                                  }}
+                                  className="hover:bg-accent"
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  ยกเลิก
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={confirmDeleteFood}
+                                  className="bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive text-destructive-foreground shadow-lg hover:shadow-xl transition-all"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  ลบรายการอาหาร
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
                          </AlertDialog>
                       </div>
                   </CardContent>
