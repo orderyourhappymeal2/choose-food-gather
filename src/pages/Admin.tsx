@@ -3183,13 +3183,113 @@ const Admin = () => {
                           </CardContent>
                         </Card>
                       ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           {restaurants.map((restaurant) => (
-                            <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10 overflow-hidden">
+                            <Card key={restaurant.shop_id} className="bg-white/60 border border-brand-pink/10 overflow-hidden relative">
                               <CardContent className="p-0">
-                                <div className="flex flex-col">
+                                {/* Dropdown menu - top right */}
+                                <div className="absolute top-2 right-2 z-10">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="sm" variant="outline" className="h-8 px-2 gap-1 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
+                                        <Settings className="h-3 w-3" />
+                                        <ChevronDown className="h-3 w-3" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
+                                      <DropdownMenuItem 
+                                        onClick={() => {
+                                          setSelectedRestaurant(restaurant);
+                                          setIsAddMenuModalOpen(true);
+                                        }}
+                                        className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                      >
+                                        <Plus className="h-4 w-4 text-green-600" />
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-sm">เพิ่มรายการอาหาร</span>
+                                          <span className="text-xs text-muted-foreground">เพิ่มเมนูในร้าน</span>
+                                        </div>
+                                      </DropdownMenuItem>
+                                      
+                                      <DropdownMenuItem 
+                                        onClick={() => handleEditRestaurant(restaurant)}
+                                        className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                      >
+                                        <Edit className="h-4 w-4 text-blue-600" />
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-sm">แก้ไขร้าน</span>
+                                          <span className="text-xs text-muted-foreground">แก้ไขข้อมูลร้านอาหาร</span>
+                                        </div>
+                                      </DropdownMenuItem>
+                                      
+                                      <DropdownMenuItem 
+                                        onClick={() => {
+                                          setSelectedRestaurant(restaurant);
+                                          setIsViewMenuModalOpen(true);
+                                          fetchFoodItems(restaurant.shop_id);
+                                        }}
+                                        className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                      >
+                                        <Eye className="h-4 w-4 text-gray-600" />
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-sm">รายการอาหาร</span>
+                                          <span className="text-xs text-muted-foreground">ดูเมนูทั้งหมด</span>
+                                        </div>
+                                      </DropdownMenuItem>
+                                      
+                                      <DropdownMenuSeparator />
+                                      
+                                      <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
+                                        <AlertDialogTrigger asChild>
+                                          <DropdownMenuItem
+                                            onSelect={(e) => {
+                                              e.preventDefault();
+                                              setSelectedRestaurant(restaurant);
+                                              setIsDeleteConfirmOpen(true);
+                                            }}
+                                            className="gap-3 py-2.5 px-3 hover:bg-destructive hover:text-destructive-foreground cursor-pointer"
+                                          >
+                                            <Trash2 className="h-4 w-4 text-red-600" />
+                                            <div className="flex flex-col">
+                                              <span className="font-medium text-sm">ลบร้านอาหาร</span>
+                                              <span className="text-xs text-muted-foreground">ลบถาวร</span>
+                                            </div>
+                                          </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              <span className="text-red-600 font-medium">
+                                                ⚠️ การดำเนินการนี้มีผลกระทบสูง
+                                              </span>
+                                              <br />
+                                              หากลบร้าน "{restaurant.shop_name}" แล้ว รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
+                                              <br />
+                                              <span className="text-red-600 font-medium">
+                                                การกระทำนี้ไม่สามารถย้อนกลับได้
+                                              </span>
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel onClick={() => setIsDeleteConfirmOpen(false)}>ยกเลิก</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => handleDeleteRestaurant()}
+                                              className="bg-red-600 hover:bg-red-700"
+                                            >
+                                              ยืนยันการลบ
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+
+                                {/* Restaurant Content - Image on left, details on right */}
+                                <div className="flex flex-col sm:flex-row">
                                   {/* Restaurant Image */}
-                                  <div className="w-full h-48 bg-gradient-to-br from-brand-cream/20 to-brand-pink/10 relative overflow-hidden">
+                                  <div className="w-full sm:w-48 h-48 bg-gradient-to-br from-brand-cream/20 to-brand-pink/10 relative overflow-hidden flex-shrink-0">
                                     {restaurant.url_pic ? (
                                       <img
                                         src={restaurant.url_pic}
@@ -3204,9 +3304,9 @@ const Admin = () => {
                                   </div>
 
                                   {/* Restaurant Info */}
-                                  <div className="p-4 space-y-3">
+                                  <div className="flex-1 p-4 space-y-3">
                                     {/* Name and Description Container */}
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 pr-8 sm:pr-10">
                                       <h4 className="text-lg font-bold text-foreground line-clamp-2">
                                         {restaurant.shop_name}
                                       </h4>
@@ -3251,139 +3351,6 @@ const Admin = () => {
                                         )}
                                       </div>
                                     </div>
-
-                                    {/* Action Buttons Container */}
-                                     <div className="flex justify-center pt-3 border-t border-brand-pink/10">
-                                       <div className="flex gap-2">
-                                         <TooltipProvider>
-                                           {/* Add Menu Button */}
-                                           <Tooltip>
-                                             <TooltipTrigger asChild>
-                                               <Button
-                                                 size="sm"
-                                                 variant="outline"
-                                                 className="h-9 w-9 p-0 border-green-600 hover:bg-green-600 hover:border-green-600"
-                                                 onClick={() => {
-                                                   setSelectedRestaurant(restaurant);
-                                                   setIsAddMenuModalOpen(true);
-                                                 }}
-                                               >
-                                                 <Plus className="h-4 w-4 text-green-600" />
-                                               </Button>
-                                             </TooltipTrigger>
-                                             <TooltipContent>
-                                               <p>เพิ่มรายการอาหาร</p>
-                                             </TooltipContent>
-                                           </Tooltip>
-
-                                           {/* Edit Button */}
-                                           <Tooltip>
-                                             <TooltipTrigger asChild>
-                                               <Button
-                                                 size="sm"
-                                                 variant="outline"
-                                                 className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
-                                                 onClick={() => handleEditRestaurant(restaurant)}
-                                               >
-                                                 <Edit className="h-4 w-4 text-gray-800" />
-                                               </Button>
-                                             </TooltipTrigger>
-                                             <TooltipContent>
-                                               <p>แก้ไขร้านอาหาร</p>
-                                             </TooltipContent>
-                                           </Tooltip>
-
-                                           {/* View Menu Button */}
-                                           <Tooltip>
-                                             <TooltipTrigger asChild>
-                                               <Button
-                                                 size="sm"
-                                                 variant="outline"
-                                                 className="h-9 w-9 p-0 border-gray-800 hover:bg-gray-800 hover:border-gray-800"
-                                                 onClick={() => {
-                                                   setSelectedRestaurant(restaurant);
-                                                   setIsViewMenuModalOpen(true);
-                                                   fetchFoodItems(restaurant.shop_id);
-                                                 }}
-                                               >
-                                                 <Eye className="h-4 w-4 text-gray-800" />
-                                               </Button>
-                                             </TooltipTrigger>
-                                             <TooltipContent>
-                                               <p>ดูรายการอาหาร</p>
-                                             </TooltipContent>
-                                           </Tooltip>
-
-                                           {/* Delete Button */}
-                                           <AlertDialog open={isDeleteConfirmOpen && selectedRestaurant?.shop_id === restaurant.shop_id} onOpenChange={setIsDeleteConfirmOpen}>
-                                             <Tooltip>
-                                               <TooltipTrigger asChild>
-                                                 <AlertDialogTrigger asChild>
-                                                   <Button
-                                                     size="sm"
-                                                     variant="outline"
-                                                     className="h-9 w-9 p-0 border-red-600 hover:bg-red-600 hover:border-red-600"
-                                                     onClick={() => {
-                                                       setSelectedRestaurant(restaurant);
-                                                       setIsDeleteConfirmOpen(true);
-                                                     }}
-                                                   >
-                                                     <Trash2 className="h-4 w-4 text-red-600" />
-                                                   </Button>
-                                                 </AlertDialogTrigger>
-                                               </TooltipTrigger>
-                                               <TooltipContent>
-                                                 <p>ลบร้านอาหาร</p>
-                                               </TooltipContent>
-                                             </Tooltip>
-                                           <AlertDialogContent>
-                                             <AlertDialogHeader>
-                                               <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
-                                               <AlertDialogDescription>
-                                                 <span className="text-red-600 font-medium">
-                                                   ⚠️ การดำเนินการนี้มีผลกระทบสูง
-                                                 </span>
-                                                 <br />
-                                                 หากลบร้าน "{restaurant.shop_name}" แล้ว รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
-                                                 <br />
-                                                 <span className="text-red-600 font-medium">
-                                                   การกระทำนี้ไม่สามารถย้อนกลับได้
-                                                 </span>
-                                                 <br /><br />
-                                                 พิมพ์ชื่อร้าน <strong>"{restaurant.shop_name}"</strong> เพื่อยืนยันการลบ:
-                                               </AlertDialogDescription>
-                                             </AlertDialogHeader>
-                                             <div className="px-6 pb-4">
-                                               <Input
-                                                 value={restaurantDeleteConfirmName}
-                                                 onChange={(e) => setRestaurantDeleteConfirmName(e.target.value)}
-                                                 placeholder={`พิมพ์ "${restaurant.shop_name}" เพื่อยืนยัน`}
-                                                 className="mt-2"
-                                               />
-                                             </div>
-                                             <AlertDialogFooter>
-                                               <AlertDialogCancel 
-                                                 onClick={() => {
-                                                   setIsDeleteConfirmOpen(false);
-                                                   setSelectedRestaurant(null);
-                                                   setRestaurantDeleteConfirmName('');
-                                                 }}
-                                               >
-                                                 ยกเลิก
-                                               </AlertDialogCancel>
-                                               <AlertDialogAction
-                                                 onClick={handleDeleteRestaurant}
-                                                 disabled={restaurantDeleteConfirmName !== restaurant.shop_name}
-                                                 className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                               >
-                                                 ลบร้านอาหาร
-                                               </AlertDialogAction>
-                                             </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                         </AlertDialog>
-                                         </TooltipProvider>
-                                       </div>
-                                     </div>
                                   </div>
                                 </div>
                               </CardContent>
@@ -3391,6 +3358,8 @@ const Admin = () => {
                           ))}
                         </div>
                       )}
+
+                      {/* Edit Restaurant Modal */}
 
                       {/* Edit Restaurant Modal */}
                       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
