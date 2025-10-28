@@ -446,6 +446,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         'ลำดับ': index + 1,
         'ชื่อผู้สั่ง': order.person?.person_name || '-',
         'กลุ่ม': order.person?.person_agent || '-',
+        'มื้อ': order.meal?.meal_name || '-',
         'ร้าน': order.food?.shop?.shop_name || '-',
         'เมนู': order.food?.food_name || '-',
         'ส่วนเสริม': order.topping || '-',
@@ -464,6 +465,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         { wch: 8 },   // ลำดับ
         { wch: 20 },  // ชื่อผู้สั่ง
         { wch: 15 },  // กลุ่ม
+        { wch: 15 },  // มื้อ
         { wch: 25 },  // ร้าน
         { wch: 30 },  // เมนู
         { wch: 20 },  // ส่วนเสริม
