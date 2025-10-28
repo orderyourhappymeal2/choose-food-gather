@@ -3347,8 +3347,8 @@ const Admin = () => {
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="flex-1 w-full">
-                            <div className="px-6 py-6 space-y-6">
+                          <div className="flex-1 overflow-y-auto px-6 py-6">
+                            <div className="space-y-6">
                               {/* Shop Name */}
                               <div>
                                 <Label htmlFor="shop_name" className="text-sm font-medium text-foreground">
@@ -3374,142 +3374,117 @@ const Admin = () => {
                                   value={formData.description}
                                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                   placeholder="กรุณากรอกรายละเอียดร้านอาหาร"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
                                   rows={3}
-                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary resize-none"
                                 />
-                              </div>
-
-                              {/* Open Day and Time */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="open_day" className="text-sm font-medium text-foreground">
-                                    วันที่เปิด *
-                                  </Label>
-                                  <Input
-                                    id="open_day"
-                                    type="text"
-                                    value={formData.open_day}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
-                                    placeholder="เช่น จันทร์-ศุกร์"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="open_time" className="text-sm font-medium text-foreground">
-                                    เวลาเปิด *
-                                  </Label>
-                                  <Input
-                                    id="open_time"
-                                    type="text"
-                                    value={formData.open_time}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
-                                    placeholder="เช่น 08:00-17:00"
-                                    className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Food Types */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="food_type_1" className="text-sm font-medium text-foreground">
-                                    ประเภทร้าน *
-                                  </Label>
-                                  <Select 
-                                    value={formData.food_type_1} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_1: value }))}
-                                  >
-                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
-                                      <SelectValue placeholder="เลือกประเภทร้าน" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                          {type}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label htmlFor="food_type_2" className="text-sm font-medium text-foreground">
-                                    ประเภทร้าน (ถ้ามี)
-                                  </Label>
-                                  <Select 
-                                    value={formData.food_type_2} 
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, food_type_2: value === "none" ? "" : value }))}
-                                  >
-                                    <SelectTrigger className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary">
-                                      <SelectValue placeholder="เลือกประเภทร้าน (ไม่บังคับ)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="none">ไม่เลือก</SelectItem>
-                                      {foodTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                          {type}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
                               </div>
 
                               {/* Image Upload */}
                               <div>
-                                <Label htmlFor="image" className="text-sm font-medium text-foreground">
-                                  รูปภาพ *
+                                <Label htmlFor="logo" className="text-sm font-medium text-foreground">
+                                  โลโก้ร้านอาหาร
                                 </Label>
                                 <div className="mt-1">
-                                  <div className="border-2 border-dashed border-brand-pink/30 rounded-lg p-4 bg-white/50">
-                                    <input
-                                      id="image"
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageChange}
-                                      className="hidden"
-                                    />
-                                    <label
-                                      htmlFor="image"
-                                      className="cursor-pointer flex flex-col items-center justify-center space-y-2"
-                                    >
-                                      {imagePreview ? (
-                                        <div className="relative">
-                                          <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full max-w-[200px] h-32 object-cover rounded-lg"
-                                          />
-                                          <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="sm"
-                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              setSelectedImage(null);
-                                              setImagePreview(null);
-                                            }}
-                                          >
-                                            <X className="h-3 w-3" />
-                                          </Button>
+                                  <input
+                                    type="file"
+                                    id="logo"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                  />
+                                  <label
+                                    htmlFor="logo"
+                                    className="flex items-center justify-center px-4 py-3 border-2 border-dashed border-brand-pink/30 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all bg-white/80"
+                                  >
+                                    {imagePreview ? (
+                                      <div className="flex items-center gap-4">
+                                        <img
+                                          src={imagePreview}
+                                          alt="Preview"
+                                          className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                                        />
+                                        <div className="flex flex-col items-start">
+                                          <span className="text-sm text-foreground font-medium">
+                                            {selectedImage?.name || 'รูปภาพปัจจุบัน'}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">
+                                            คลิกเพื่อเปลี่ยน
+                                          </span>
                                         </div>
-                                      ) : (
-                                        <>
-                                          <Upload className="h-8 w-8 text-muted-foreground" />
-                                          <div className="text-center">
-                                            <span className="text-sm text-foreground">คลิกเพื่อเลือกรูปภาพ</span>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                              รองรับไฟล์ JPG, PNG, GIF (ขนาดไม่เกิน 5MB)
-                                            </p>
-                                          </div>
-                                        </>
-                                      )}
-                                    </label>
-                                  </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <Upload className="h-5 w-5 text-muted-foreground mr-2" />
+                                        <span className="text-sm text-muted-foreground">
+                                          เลือกรูปภาพ
+                                        </span>
+                                      </>
+                                    )}
+                                  </label>
                                 </div>
                               </div>
+
+                              {/* Open Day */}
+                              <div>
+                                <Label htmlFor="open_day" className="text-sm font-medium text-foreground">
+                                  วันเปิดทำการ
+                                </Label>
+                                <Input
+                                  id="open_day"
+                                  type="text"
+                                  value={formData.open_day}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, open_day: e.target.value }))}
+                                  placeholder="เช่น จันทร์-ศุกร์"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                />
+                              </div>
+
+                              {/* Open Time */}
+                              <div>
+                                <Label htmlFor="open_time" className="text-sm font-medium text-foreground">
+                                  เวลาเปิดทำการ
+                                </Label>
+                                <Input
+                                  id="open_time"
+                                  type="text"
+                                  value={formData.open_time}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, open_time: e.target.value }))}
+                                  placeholder="เช่น 08:00-20:00"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                />
+                              </div>
+
+                              {/* Food Type 1 */}
+                              <div>
+                                <Label htmlFor="food_type_1" className="text-sm font-medium text-foreground">
+                                  ประเภทอาหารหลัก
+                                </Label>
+                                <Input
+                                  id="food_type_1"
+                                  type="text"
+                                  value={formData.food_type_1}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, food_type_1: e.target.value }))}
+                                  placeholder="เช่น อาหารไทย"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                />
+                              </div>
+
+                              {/* Food Type 2 */}
+                              <div>
+                                <Label htmlFor="food_type_2" className="text-sm font-medium text-foreground">
+                                  ประเภทอาหารรอง
+                                </Label>
+                                <Input
+                                  id="food_type_2"
+                                  type="text"
+                                  value={formData.food_type_2}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, food_type_2: e.target.value }))}
+                                  placeholder="เช่น อาหารจีน"
+                                  className="mt-1 bg-white/80 border-brand-pink/20 focus:border-primary"
+                                />
+                              </div>
                             </div>
-                          </ScrollArea>
+                          </div>
                           
                           <DialogFooter className="p-6 border-t bg-gradient-to-r from-background to-muted/30 flex-shrink-0">
                             <div className="flex gap-3 w-full sm:w-auto">
@@ -3984,8 +3959,8 @@ const Admin = () => {
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="flex-1 w-full">
-                            <div className="space-y-6 px-6 py-4">
+                          <div className="flex-1 overflow-y-auto px-6 py-4">
+                            <div className="space-y-6">
                               {/* Food Category */}
                               <div className="space-y-2">
                                 <Label htmlFor="foodCategory" className="text-sm font-medium text-foreground">
@@ -3998,102 +3973,87 @@ const Admin = () => {
                                   <SelectTrigger className="bg-muted/50 border-muted">
                                     <SelectValue placeholder="เลือกหมวดอาหาร" />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-background border shadow-lg z-50">
-                                    <SelectItem value="จานหลัก">จานหลัก</SelectItem>
-                                    <SelectItem value="เครื่องดื่ม">เครื่องดื่ม</SelectItem>
-                                    <SelectItem value="ของหวาน">ของหวาน</SelectItem>
+                                  <SelectContent>
+                                    {foodTypes.map((type, index) => (
+                                      <SelectItem key={index} value={type}>
+                                        {type}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                               </div>
 
-                              {/* Image Upload */}
-                              <div className="space-y-2">
-                                <Label className="text-sm font-medium text-foreground">รูปภาพอาหาร</Label>
-                                <div className="flex flex-col items-center space-y-4">
-                                  <div 
-                                    className="w-48 h-48 border-2 border-dashed border-muted rounded-lg flex flex-col items-center justify-center bg-muted/20 cursor-pointer hover:bg-muted/30 transition-colors"
-                                    onClick={() => document.getElementById('menuImageInput')?.click()}
-                                  >
-                                    {menuImagePreview ? (
-                                      <div className="relative w-full h-full">
-                                        <img 
-                                          src={menuImagePreview} 
-                                          alt="Preview" 
-                                          className="w-full h-full object-cover rounded-lg"
-                                        />
-                                        <Button
-                                          type="button"
-                                          variant="destructive"
-                                          size="sm"
-                                          className="absolute top-2 right-2 w-8 h-8 p-0"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setMenuImage(null);
-                                            setMenuImagePreview(null);
-                                          }}
-                                        >
-                                          <X className="w-4 h-4" />
-                                        </Button>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        <Upload className="w-12 h-12 text-muted-foreground mb-2" />
-                                        <p className="text-sm text-muted-foreground text-center px-2">
-                                          คลิกเพื่ออัปโหลดรูปภาพ<br />
-                                          (รูปสี่เหลี่ยมจตุรัส)
-                                        </p>
-                                      </>
-                                    )}
-                                  </div>
-                                  
-                                  <Input
-                                    id="menuImageInput"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleMenuImageChange}
-                                    className="hidden"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Menu Name */}
+                              {/* Food Name */}
                               <div className="space-y-2">
                                 <Label htmlFor="menuName" className="text-sm font-medium text-foreground">
-                                  ชื่อเมนูอาหาร
+                                  ชื่ออาหาร *
                                 </Label>
                                 <Input
                                   id="menuName"
                                   type="text"
-                                  placeholder="กรอกชื่อเมนูอาหาร"
+                                  placeholder="กรอกชื่ออาหาร"
                                   value={menuFormData.menuName}
                                   onChange={(e) => setMenuFormData(prev => ({ ...prev, menuName: e.target.value }))}
                                   className="bg-muted/50 border-muted"
                                 />
                               </div>
 
+                              {/* Image Upload */}
+                              <div className="space-y-2">
+                                <Label htmlFor="menuImage" className="text-sm font-medium text-foreground">
+                                  รูปภาพ
+                                </Label>
+                                <div>
+                                  <input
+                                    type="file"
+                                    id="menuImage"
+                                    accept="image/*"
+                                    onChange={handleMenuImageChange}
+                                    className="hidden"
+                                  />
+                                  <label
+                                    htmlFor="menuImage"
+                                    className="flex items-center justify-center px-4 py-3 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary hover:bg-accent/50 transition-all bg-muted/30"
+                                  >
+                                    {menuImagePreview ? (
+                                      <div className="flex items-center gap-4">
+                                        <img
+                                          src={menuImagePreview}
+                                          alt="Preview"
+                                          className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                        <div className="flex flex-col items-start">
+                                          <span className="text-sm text-foreground font-medium">
+                                            {menuImage?.name || 'รูปภาพปัจจุบัน'}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">
+                                            คลิกเพื่อเปลี่ยน
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <Upload className="h-5 w-5 text-muted-foreground mr-2" />
+                                        <span className="text-sm text-muted-foreground">
+                                          เลือกรูปภาพ
+                                        </span>
+                                      </>
+                                    )}
+                                  </label>
+                                </div>
+                              </div>
+
                               {/* Description */}
                               <div className="space-y-2">
-                                <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                                <Label htmlFor="menuDescription" className="text-sm font-medium text-foreground">
                                   รายละเอียด
                                 </Label>
                                 <Textarea
-                                  id="description"
-                                  placeholder="กรอกรายละเอียดอาหาร"
+                                  id="menuDescription"
+                                  placeholder="กรอกรายละเอียด"
+                                  rows={3}
                                   value={menuFormData.description}
                                   onChange={(e) => setMenuFormData(prev => ({ ...prev, description: e.target.value }))}
-                                  className="bg-muted/50 border-muted min-h-[80px]"
-                                />
-                              </div>
-
-                              {/* Add-ons Section */}
-                              <div className="space-y-2 border-t pt-4">
-                                <Label htmlFor="addOns" className="text-sm font-medium text-foreground">ส่วนเสริม</Label>
-                                <Input
-                                  id="addOns"
-                                  type="text"
-                                  placeholder="กรอกส่วนเสริม"
-                                  value={menuFormData.addOns || ''}
-                                  onChange={(e) => setMenuFormData(prev => ({ ...prev, addOns: e.target.value }))}
                                   className="bg-muted/50 border-muted"
                                 />
                               </div>
@@ -4101,7 +4061,7 @@ const Admin = () => {
                               {/* Price */}
                               <div className="space-y-2">
                                 <Label htmlFor="price" className="text-sm font-medium text-foreground">
-                                  ราคา (บาท)
+                                  ราคา (บาท) *
                                 </Label>
                                 <Input
                                   id="price"
@@ -4115,7 +4075,7 @@ const Admin = () => {
                                 />
                               </div>
                             </div>
-                          </ScrollArea>
+                          </div>
 
                           <DialogFooter className="flex justify-end gap-3 p-6 border-t bg-gradient-to-r from-background to-muted/30 flex-shrink-0">
                             <Button 
