@@ -374,6 +374,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [finishingPlan, setFinishingPlan] = useState<any>(null);
   const [isRevertDialogOpen, setIsRevertDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [exportingPlan, setExportingPlan] = useState<any>(null);
   const [revertingPlan, setRevertingPlan] = useState<any>(null);
 
   // Delete confirmation states
@@ -417,7 +419,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
     }
   };
 
-  // Export to Excel function
+  // Export to Excel function - Full format
   const exportToExcel = async (plan: any) => {
     try {
       setIsLoadingOrders(true);
@@ -493,6 +495,129 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
     } finally {
       setIsLoadingOrders(false);
     }
+  };
+
+  // Export to Excel function - Compact format
+  const exportToExcelCompact = async (plan: any) => {
+    try {
+      setIsLoadingOrders(true);
+      
+      // Fetch orders for the plan
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('order')
+        .select(`
+          *,
+          person:person_id (person_name, person_agent),
+          food:food_id (food_name),
+          meal:meal_id (meal_name, meal_index, shop:shop_id (shop_name))
+        `)
+        .eq('plan_id', plan.plan_id)
+        .order('created_at', { ascending: false });
+
+      if (ordersError) throw ordersError;
+
+      // Get all unique meals ordered by meal_index
+      const mealsMap = new Map();
+      ordersData.forEach((order: any) => {
+        if (order.meal) {
+          const mealKey = order.meal.meal_name;
+          if (!mealsMap.has(mealKey)) {
+            mealsMap.set(mealKey, {
+              meal_name: order.meal.meal_name,
+              shop_name: order.meal.shop?.shop_name || '',
+              meal_index: order.meal.meal_index || 0
+            });
+          }
+        }
+      });
+
+      // Sort meals by index
+      const sortedMeals = Array.from(mealsMap.values()).sort((a, b) => a.meal_index - b.meal_index);
+
+      // Group orders by person
+      const personOrdersMap = new Map();
+      ordersData.forEach((order: any) => {
+        const personName = order.person?.person_name || '-';
+        if (!personOrdersMap.has(personName)) {
+          personOrdersMap.set(personName, []);
+        }
+        personOrdersMap.get(personName).push(order);
+      });
+
+      // Create Excel data structure
+      const excelData = [];
+      
+      personOrdersMap.forEach((orders, personName) => {
+        const row: any = { 'ชื่อคน': personName };
+        
+        // For each meal, find if this person ordered from it
+        sortedMeals.forEach((meal) => {
+          const mealOrders = orders.filter((o: any) => 
+            o.meal?.meal_name === meal.meal_name
+          );
+          
+          const mealColumnName = `${meal.meal_name} (${meal.shop_name})`;
+          const noteColumnName = `หมายเหตุ ${meal.meal_name}`;
+          
+          if (mealOrders.length > 0) {
+            // Combine all food names for this meal
+            const foodNames = mealOrders.map((o: any) => o.food?.food_name || '-').join(', ');
+            row[mealColumnName] = foodNames;
+            
+            // Combine all toppings and notes
+            const notes = mealOrders
+              .map((o: any) => {
+                const parts = [];
+                if (o.topping) parts.push(o.topping);
+                if (o.order_note) parts.push(o.order_note);
+                return parts.join(', ');
+              })
+              .filter(n => n.length > 0)
+              .join('; ');
+            row[noteColumnName] = notes || '-';
+          } else {
+            row[mealColumnName] = '-';
+            row[noteColumnName] = '-';
+          }
+        });
+        
+        excelData.push(row);
+      });
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [{ wch: 20 }]; // ชื่อคน
+      sortedMeals.forEach(() => {
+        colWidths.push({ wch: 30 }); // ชื่อร้านอาหาร
+        colWidths.push({ wch: 35 }); // หมายเหตุ
+      });
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'รายการสั่งอาหาร');
+
+      // Generate filename with plan name and date
+      const currentDate = new Date().toLocaleDateString('th-TH');
+      const filename = `รายการสั่งอาหาร_แบบย่อ_${plan.plan_name}_${currentDate}.xlsx`;
+
+      // Export file
+      XLSX.writeFile(wb, filename);
+      
+      toast.success('ส่งออกไฟล์ Excel แบบย่อสำเร็จ');
+    } catch (error) {
+      console.error('Error exporting to Excel (compact):', error);
+      toast.error('เกิดข้อผิดพลาดในการส่งออกไฟล์ Excel');
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  };
+
+  const handleExportClick = (plan: any) => {
+    setExportingPlan(plan);
+    setIsExportDialogOpen(true);
   };
 
   // Fetch plans
@@ -1291,7 +1416,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                       
                       {filterState === 'published' && (
                         <>
-                          <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleExportClick(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
                             <FileSpreadsheet className="h-4 w-4 text-green-600" />
                             <div className="flex flex-col">
                               <span className="font-medium text-sm">ส่งออก Excel</span>
@@ -1354,7 +1479,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                       
                       {filterState === 'finished' && (
                         <>
-                          <DropdownMenuItem onClick={() => exportToExcel(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleExportClick(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
                             <FileSpreadsheet className="h-4 w-4 text-green-600" />
                             <div className="flex flex-col">
                               <span className="font-medium text-sm">ส่งออก Excel</span>
@@ -2256,6 +2381,59 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Export Excel Format Selection Dialog */}
+      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>เลือกรูปแบบการส่งออก Excel</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <Button 
+              onClick={() => {
+                exportToExcel(exportingPlan);
+                setIsExportDialogOpen(false);
+              }}
+              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-2 hover:bg-primary/90"
+            >
+              <div className="flex items-center gap-2 w-full">
+                <FileSpreadsheet className="h-5 w-5" />
+                <span className="font-semibold text-base">แบบเต็ม</span>
+              </div>
+              <span className="text-xs text-left opacity-90">
+                แสดงข้อมูลทุกคอลัมน์ รวมราคา เวลาสั่ง และประเภทการเลือก
+              </span>
+            </Button>
+            
+            <Button 
+              onClick={() => {
+                exportToExcelCompact(exportingPlan);
+                setIsExportDialogOpen(false);
+              }}
+              variant="outline"
+              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-2 hover:bg-accent"
+            >
+              <div className="flex items-center gap-2 w-full">
+                <FileSpreadsheet className="h-5 w-5" />
+                <span className="font-semibold text-base">แบบย่อ</span>
+              </div>
+              <span className="text-xs text-left text-muted-foreground">
+                จัดเรียงตามชื่อคน และมื้ออาหาร เหมาะสำหรับการดูแบบสรุป
+              </span>
+            </Button>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => setIsExportDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              ยกเลิก
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
