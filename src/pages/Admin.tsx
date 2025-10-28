@@ -2427,43 +2427,69 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Export Excel Format Selection Dialog */}
       <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>เลือกรูปแบบการส่งออก Excel</DialogTitle>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <FileSpreadsheet className="h-6 w-6 text-primary" />
+              เลือกรูปแบบการส่งออก Excel
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 py-4">
-            <Button 
+          <div className="space-y-4 py-6">
+            {/* Full Format Option */}
+            <button 
               onClick={() => {
                 exportToExcel(exportingPlan);
                 setIsExportDialogOpen(false);
               }}
-              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-2 hover:bg-primary/90"
+              className="group w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground rounded-xl p-5 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] border-2 border-primary/20"
             >
-              <div className="flex items-center gap-2 w-full">
-                <FileSpreadsheet className="h-5 w-5" />
-                <span className="font-semibold text-base">แบบเต็ม</span>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                  <Receipt className="h-6 w-6" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-bold text-lg mb-1 flex items-center gap-2">
+                    แบบเต็ม (Full Report)
+                  </div>
+                  <p className="text-sm opacity-95 leading-relaxed">
+                    แสดงข้อมูลทุกคอลัมน์ รวมราคา เวลาสั่ง ประเภทการเลือก และรายละเอียดครบถ้วน
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <ChevronDown className="h-5 w-5 rotate-[-90deg]" />
+                  </div>
+                </div>
               </div>
-              <span className="text-xs text-left opacity-90">
-                แสดงข้อมูลทุกคอลัมน์ รวมราคา เวลาสั่ง และประเภทการเลือก
-              </span>
-            </Button>
+            </button>
             
-            <Button 
+            {/* Compact Format Option */}
+            <button 
               onClick={() => {
                 exportToExcelCompact(exportingPlan);
                 setIsExportDialogOpen(false);
               }}
-              variant="outline"
-              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-2 hover:bg-accent"
+              className="group w-full bg-white dark:bg-card hover:bg-accent/50 dark:hover:bg-accent/50 rounded-xl p-5 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] border-2 border-border hover:border-primary/40"
             >
-              <div className="flex items-center gap-2 w-full">
-                <FileSpreadsheet className="h-5 w-5" />
-                <span className="font-semibold text-base">แบบย่อ</span>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-bold text-lg mb-1 flex items-center gap-2 text-foreground">
+                    แบบย่อ (Summary)
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    จัดเรียงตามชื่อผู้สั่งและมื้ออาหาร เหมาะสำหรับการดูข้อมูลแบบสรุป กระทัดรัด
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <ChevronDown className="h-5 w-5 text-primary rotate-[-90deg]" />
+                  </div>
+                </div>
               </div>
-              <span className="text-xs text-left text-muted-foreground">
-                จัดเรียงตามชื่อคน และมื้ออาหาร เหมาะสำหรับการดูแบบสรุป
-              </span>
-            </Button>
+            </button>
           </div>
           <DialogFooter className="sm:justify-start">
             <Button 
