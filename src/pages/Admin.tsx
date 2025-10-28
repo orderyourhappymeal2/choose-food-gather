@@ -546,9 +546,13 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       // Create Excel data structure
       const excelData = [];
+      let rowIndex = 1;
       
       personOrdersMap.forEach((orders, personName) => {
-        const row: any = { 'ชื่อคน': personName };
+        const row: any = { 
+          'ลำดับที่': rowIndex++,
+          'ชื่อผู้สั่ง': personName 
+        };
         
         // For each meal, find if this person ordered from it
         sortedMeals.forEach((meal) => {
@@ -589,12 +593,43 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
       const ws = XLSX.utils.json_to_sheet(excelData);
 
       // Set column widths
-      const colWidths = [{ wch: 20 }]; // ชื่อคน
+      const colWidths = [
+        { wch: 10 }, // ลำดับที่
+        { wch: 20 }  // ชื่อผู้สั่ง
+      ];
       sortedMeals.forEach(() => {
         colWidths.push({ wch: 30 }); // ชื่อร้านอาหาร
         colWidths.push({ wch: 35 }); // หมายเหตุ
       });
       ws['!cols'] = colWidths;
+
+      // Freeze first row (header)
+      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+      // Apply alternating background colors for meal pairs
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      const lightGrayFill = { patternType: 'solid', fgColor: { rgb: 'F3F4F6' } };
+      
+      // Apply background color to alternating meal pairs (2 columns per meal)
+      for (let R = range.s.r; R <= range.e.r; R++) {
+        let mealPairIndex = 0;
+        for (let C = 2; C <= range.e.c; C += 2) { // Start from column 2 (after ลำดับที่ and ชื่อผู้สั่ง)
+          const shouldApplyGray = mealPairIndex % 2 === 0;
+          
+          if (shouldApplyGray) {
+            // Apply to both columns of the meal pair
+            for (let col = C; col < C + 2 && col <= range.e.c; col++) {
+              const cellAddress = XLSX.utils.encode_cell({ r: R, c: col });
+              if (!ws[cellAddress]) continue;
+              
+              if (!ws[cellAddress].s) ws[cellAddress].s = {};
+              ws[cellAddress].s.fill = lightGrayFill;
+            }
+          }
+          
+          mealPairIndex++;
+        }
+      }
 
       // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, 'รายการสั่งอาหาร');
