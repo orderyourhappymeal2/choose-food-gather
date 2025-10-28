@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ChefHat, Store, FileText, Clock, CheckCircle, Plus, FilePlus, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, UtensilsCrossed, Upload, X, Edit, Eye, Trash2, Calendar as CalendarIcon, Send, Power, Link, ShoppingCart, Receipt, GripVertical, Filter, FileSpreadsheet, User, UtensilsCrossed as UtensilsIcon, UserMinus, UserCog, LogOut, Settings } from "lucide-react";
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { Switch } from "@/components/ui/switch";
 
 import { useState, useEffect, useRef } from "react";
@@ -544,15 +545,27 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         personOrdersMap.get(personName).push(order);
       });
 
-      // Create Excel data structure
-      const excelData = [];
+      // Create workbook using ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('รายการสั่งอาหาร');
+
+      // Create header row
+      const headerRow = ['ลำดับที่', 'ชื่อผู้สั่ง'];
+      sortedMeals.forEach((meal) => {
+        headerRow.push(`${meal.meal_name} (${meal.shop_name})`);
+        headerRow.push(`หมายเหตุ ${meal.meal_name}`);
+      });
+      worksheet.addRow(headerRow);
+
+      // Freeze the first row (header)
+      worksheet.views = [
+        { state: 'frozen', ySplit: 1 }
+      ];
+
+      // Add data rows
       let rowIndex = 1;
-      
       personOrdersMap.forEach((orders, personName) => {
-        const row: any = { 
-          'ลำดับที่': rowIndex++,
-          'ชื่อผู้สั่ง': personName 
-        };
+        const rowData: any[] = [rowIndex++, personName];
         
         // For each meal, find if this person ordered from it
         sortedMeals.forEach((meal) => {
@@ -560,13 +573,10 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             o.meal?.meal_name === meal.meal_name
           );
           
-          const mealColumnName = `${meal.meal_name} (${meal.shop_name})`;
-          const noteColumnName = `หมายเหตุ ${meal.meal_name}`;
-          
           if (mealOrders.length > 0) {
             // Combine all food names for this meal
             const foodNames = mealOrders.map((o: any) => o.food?.food_name || '-').join(', ');
-            row[mealColumnName] = foodNames;
+            rowData.push(foodNames);
             
             // Combine all toppings and notes
             const notes = mealOrders
@@ -578,68 +588,66 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
               })
               .filter(n => n.length > 0)
               .join('; ');
-            row[noteColumnName] = notes || '-';
+            rowData.push(notes || '-');
           } else {
-            row[mealColumnName] = '-';
-            row[noteColumnName] = '-';
+            rowData.push('-');
+            rowData.push('-');
           }
         });
         
-        excelData.push(row);
+        worksheet.addRow(rowData);
       });
-
-      // Create workbook and worksheet
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(excelData);
 
       // Set column widths
-      const colWidths = [
-        { wch: 10 }, // ลำดับที่
-        { wch: 20 }  // ชื่อผู้สั่ง
-      ];
-      sortedMeals.forEach(() => {
-        colWidths.push({ wch: 30 }); // ชื่อร้านอาหาร
-        colWidths.push({ wch: 35 }); // หมายเหตุ
-      });
-      ws['!cols'] = colWidths;
-
-      // Freeze first row (header)
-      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+      worksheet.getColumn(1).width = 10; // ลำดับที่
+      worksheet.getColumn(2).width = 20; // ชื่อผู้สั่ง
+      for (let i = 0; i < sortedMeals.length; i++) {
+        worksheet.getColumn(3 + i * 2).width = 30; // ชื่อร้านอาหาร
+        worksheet.getColumn(4 + i * 2).width = 35; // หมายเหตุ
+      }
 
       // Apply alternating background colors for meal pairs
-      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-      const lightGrayFill = { patternType: 'solid', fgColor: { rgb: 'F3F4F6' } };
-      
-      // Apply background color to alternating meal pairs (2 columns per meal)
-      for (let R = range.s.r; R <= range.e.r; R++) {
+      const lightGrayFill = {
+        type: 'pattern' as const,
+        pattern: 'solid' as const,
+        fgColor: { argb: 'FFF3F4F6' }
+      };
+
+      // Loop through all rows (including header)
+      worksheet.eachRow((row, rowNumber) => {
         let mealPairIndex = 0;
-        for (let C = 2; C <= range.e.c; C += 2) { // Start from column 2 (after ลำดับที่ and ชื่อผู้สั่ง)
+        // Start from column 3 (after ลำดับที่ and ชื่อผู้สั่ง)
+        for (let colIndex = 3; colIndex <= headerRow.length; colIndex += 2) {
           const shouldApplyGray = mealPairIndex % 2 === 0;
           
           if (shouldApplyGray) {
-            // Apply to both columns of the meal pair
-            for (let col = C; col < C + 2 && col <= range.e.c; col++) {
-              const cellAddress = XLSX.utils.encode_cell({ r: R, c: col });
-              if (!ws[cellAddress]) continue;
-              
-              if (!ws[cellAddress].s) ws[cellAddress].s = {};
-              ws[cellAddress].s.fill = lightGrayFill;
+            // Apply gray background to both columns of the meal pair
+            const cell1 = row.getCell(colIndex);
+            const cell2 = row.getCell(colIndex + 1);
+            
+            cell1.fill = lightGrayFill;
+            if (colIndex + 1 <= headerRow.length) {
+              cell2.fill = lightGrayFill;
             }
           }
           
           mealPairIndex++;
         }
-      }
-
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'รายการสั่งอาหาร');
+      });
 
       // Generate filename with plan name and date
       const currentDate = new Date().toLocaleDateString('th-TH');
       const filename = `รายการสั่งอาหาร_แบบย่อ_${plan.plan_name}_${currentDate}.xlsx`;
 
       // Export file
-      XLSX.writeFile(wb, filename);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      window.URL.revokeObjectURL(url);
       
       toast.success('ส่งออกไฟล์ Excel แบบย่อสำเร็จ');
     } catch (error) {
