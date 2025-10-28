@@ -3967,8 +3967,8 @@ const Admin = () => {
 
                       {/* Add Menu Modal */}
                       <Dialog open={isAddMenuModalOpen} onOpenChange={setIsAddMenuModalOpen}>
-                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] p-0 overflow-hidden">
-                          <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-green-500/5 to-emerald-500/10">
+                        <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] p-0 overflow-hidden flex flex-col">
+                          <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-green-500/5 to-emerald-500/10 flex-shrink-0">
                             <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                                 <UtensilsCrossed className="h-6 w-6 text-white" />
@@ -3984,8 +3984,8 @@ const Admin = () => {
                             </DialogTitle>
                           </DialogHeader>
                           
-                          <ScrollArea className="max-h-[70vh] pr-4">
-                            <div className="space-y-4 p-1">
+                          <ScrollArea className="flex-1 max-h-[calc(90vh-240px)]">
+                            <div className="space-y-4 px-6 py-4">
                               {/* Food Category */}
                               <div className="space-y-2">
                                 <Label htmlFor="foodCategory" className="text-sm font-medium text-foreground">
@@ -4117,7 +4117,7 @@ const Admin = () => {
                             </div>
                           </ScrollArea>
 
-                          <DialogFooter className="flex justify-end gap-3 p-4 border-t bg-gradient-to-r from-background to-muted/30">
+                          <DialogFooter className="flex justify-end gap-3 p-6 border-t bg-gradient-to-r from-background to-muted/30 flex-shrink-0">
                             <Button 
                               variant="outline" 
                               onClick={() => {
@@ -4297,15 +4297,25 @@ const Admin = () => {
 
                         {/* Edit Food Modal */}
                          <Dialog open={isEditFoodModalOpen} onOpenChange={setIsEditFoodModalOpen}>
-                           <DialogContent className="w-[95vw] max-w-[700px] p-0 overflow-hidden">
-                             <DialogHeader className="p-4 pb-2 border-b bg-white/90">
-                               <DialogTitle className="text-xl font-semibold text-center text-foreground">
-                                 แก้ไขรายการอาหาร - {selectedRestaurant?.shop_name}
+                           <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] p-0 overflow-hidden flex flex-col">
+                             <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-blue-500/5 to-blue-600/10 flex-shrink-0">
+                               <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                                   <Edit className="h-6 w-6 text-white" />
+                                 </div>
+                                 <div className="flex flex-col items-start">
+                                   <span className="bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent text-xl">
+                                     แก้ไขรายการอาหาร
+                                   </span>
+                                   <span className="text-sm text-muted-foreground font-normal">
+                                     {selectedRestaurant?.shop_name}
+                                   </span>
+                                 </div>
                                </DialogTitle>
                              </DialogHeader>
                              
-                             <ScrollArea className="max-h-[calc(90vh-10rem)] px-4">
-                               <div className="space-y-6 py-4">
+                             <ScrollArea className="flex-1 max-h-[calc(90vh-240px)]">
+                               <div className="space-y-6 px-6 py-4">
                                {/* Food Category */}
                                <div>
                                  <Label htmlFor="edit_food_category" className="text-sm font-medium text-foreground">
@@ -4450,7 +4460,7 @@ const Admin = () => {
                              </div>
                            </ScrollArea>
                            
-                            <DialogFooter className="flex flex-col sm:flex-row gap-2 p-4 border-t bg-white/90">
+                            <DialogFooter className="flex flex-col sm:flex-row gap-3 p-6 border-t bg-gradient-to-r from-background to-muted/30 flex-shrink-0">
                               <Button 
                                 variant="outline" 
                                 onClick={() => {
@@ -4458,15 +4468,17 @@ const Admin = () => {
                                   setIsEditFoodModalOpen(false);
                                   setSelectedFood(null);
                                 }}
-                                className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 w-full sm:w-auto order-2 sm:order-1"
+                                className="w-full sm:w-auto border-2 hover:bg-accent hover:border-primary/40 transition-all"
                               >
+                                <X className="h-4 w-4 mr-2" />
                                 ยกเลิก
                               </Button>
                               <Button 
                                 onClick={handleEditFoodSubmit}
                                 disabled={isMenuSubmitting}
-                                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto order-1 sm:order-2"
+                                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all"
                               >
+                                <Edit className="h-4 w-4 mr-2" />
                                 {isMenuSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
                               </Button>
                             </DialogFooter>
