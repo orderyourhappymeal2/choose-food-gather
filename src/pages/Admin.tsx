@@ -1252,9 +1252,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                 <div className="absolute top-2 right-2 z-10">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline" className="h-8 px-2 gap-1 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
+                      <Button size="sm" variant="outline" className="h-8 px-2 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
                         <Settings className="h-3 w-3" />
-                        <ChevronDown className="h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
@@ -3191,9 +3190,8 @@ const Admin = () => {
                                 <div className="absolute top-2 right-2 z-10">
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button size="sm" variant="outline" className="h-8 px-2 gap-1 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
+                                      <Button size="sm" variant="outline" className="h-8 px-2 bg-white/90 border-primary hover:bg-primary hover:text-primary-foreground">
                                         <Settings className="h-3 w-3" />
-                                        <ChevronDown className="h-3 w-3" />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
