@@ -444,16 +444,15 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
       // Format data for Excel
       const excelData = ordersData.map((order: any, index: number) => ({
         'ลำดับ': index + 1,
-        'ผู้สั่งอาหาร': order.person?.person_name || '-',
-        'ตัวแทน': order.person?.person_agent || '-',
-        'มื้ออาหาร': order.meal?.meal_name || '-',
-        'ชื่ออาหาร': order.food?.food_name || '-',
-        'ราคา': order.food?.price || 0,
-        'ร้านอาหาร': order.food?.shop?.shop_name || '-',
-        'ท็อปปิ้ง': order.topping || '-',
+        'ชื่อผู้สั่ง': order.person?.person_name || '-',
+        'กลุ่ม': order.person?.person_agent || '-',
+        'ร้าน': order.food?.shop?.shop_name || '-',
+        'เมนู': order.food?.food_name || '-',
+        'ส่วนเสริม': order.topping || '-',
         'หมายเหตุ': order.order_note || '-',
+        'ราคา': order.food?.price || 0,
         'เวลาสั่ง': formatThaiDateTime(order.created_at),
-        'ประเภท': order.order_type === 'custom' ? 'สั่งเพิ่ม' : 'กำหนดไว้'
+        'ประเภทเลือก': order.order_type === 'custom' ? 'ผู้สั่งเลือก' : 'กำหนด'
       }));
 
       // Create workbook and worksheet
@@ -463,16 +462,15 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
       // Set column widths
       const colWidths = [
         { wch: 8 },   // ลำดับ
-        { wch: 20 },  // ผู้สั่งอาหาร
-        { wch: 15 },  // ตัวแทน
-        { wch: 20 },  // มื้ออาหาร
-        { wch: 30 },  // ชื่ออาหาร
-        { wch: 10 },  // ราคา
-        { wch: 25 },  // ร้านอาหาร
-        { wch: 20 },  // ท็อปปิ้ง
+        { wch: 20 },  // ชื่อผู้สั่ง
+        { wch: 15 },  // กลุ่ม
+        { wch: 25 },  // ร้าน
+        { wch: 30 },  // เมนู
+        { wch: 20 },  // ส่วนเสริม
         { wch: 30 },  // หมายเหตุ
+        { wch: 10 },  // ราคา
         { wch: 20 },  // เวลาสั่ง
-        { wch: 15 }   // ประเภท
+        { wch: 15 }   // ประเภทเลือก
       ];
       ws['!cols'] = colWidths;
 
