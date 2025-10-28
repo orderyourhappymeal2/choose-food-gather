@@ -1888,21 +1888,40 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Delete Confirmation */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการลบแผน</AlertDialogTitle>
-            <AlertDialogDescription>
-              <span className="text-red-600 font-medium">
-                ⚠️ การดำเนินการนี้มีผลกระทบสูง
-              </span>
-              <br />
-              หากลบแผน "{deletingPlan?.plan_name}" แผนการสั่งจองทั้งหมดจะถูกลบออกไปด้วย
-              <br />
-              <span className="text-red-600 font-medium">
-                การกระทำนี้ไม่สามารถย้อนกลับได้
-              </span>
-              <br /><br />
-              พิมพ์ชื่องาน <strong>"{deletingPlan?.plan_name}"</strong> เพื่อยืนยันการลบ:
+        <AlertDialogContent className="sm:max-w-lg">
+          <AlertDialogHeader className="pb-2">
+            <AlertDialogTitle className="text-xl flex items-center gap-2">
+              <div className="w-10 h-10 bg-destructive/10 rounded-full flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-destructive" />
+              </div>
+              ยืนยันการลบแผน
+            </AlertDialogTitle>
+            <AlertDialogDescription className="pt-4">
+              <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center">
+                    <span className="text-destructive font-bold text-sm">!</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-destructive font-semibold text-base mb-2">
+                      การดำเนินการนี้มีผลกระทบสูง
+                    </p>
+                    <p className="text-foreground/80 text-sm leading-relaxed">
+                      หากลบแผน <span className="font-bold text-destructive">"{deletingPlan?.plan_name}"</span> แผนการสั่งจองทั้งหมดจะถูกลบออกไปด้วย
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-destructive/20 pt-3">
+                  <p className="text-destructive font-medium text-sm">
+                    ⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-foreground/70 mb-2">
+                  พิมพ์ชื่องาน <strong className="text-foreground">"{deletingPlan?.plan_name}"</strong> เพื่อยืนยันการลบ:
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="px-6 pb-4">
@@ -1910,17 +1929,24 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
               value={planDeleteConfirmName}
               onChange={(e) => setPlanDeleteConfirmName(e.target.value)}
               placeholder={`พิมพ์ "${deletingPlan?.plan_name}" เพื่อยืนยัน`}
-              className="mt-2"
+              className="mt-2 border-destructive/30 focus:border-destructive focus:ring-destructive"
             />
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPlanDeleteConfirmName('')}>ยกเลิก</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel 
+              onClick={() => setPlanDeleteConfirmName('')}
+              className="hover:bg-accent"
+            >
+              <X className="h-4 w-4 mr-2" />
+              ยกเลิก
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete} 
               disabled={planDeleteConfirmName !== deletingPlan?.plan_name}
-              className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive text-destructive-foreground disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-destructive disabled:hover:to-destructive/90 shadow-lg hover:shadow-xl transition-all"
             >
-              ลบแผน
+              <Trash2 className="h-4 w-4 mr-2" />
+              ยืนยันลบแผน
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3506,28 +3532,51 @@ const Admin = () => {
                                             </div>
                                           </DropdownMenuItem>
                                         </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>ยืนยันการลบร้านอาหาร</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              <span className="text-red-600 font-medium">
-                                                ⚠️ การดำเนินการนี้มีผลกระทบสูง
-                                              </span>
-                                              <br />
-                                              หากลบร้าน "{restaurant.shop_name}" แล้ว รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
-                                              <br />
-                                              <span className="text-red-600 font-medium">
-                                                การกระทำนี้ไม่สามารถย้อนกลับได้
-                                              </span>
+                                        <AlertDialogContent className="sm:max-w-lg">
+                                          <AlertDialogHeader className="pb-2">
+                                            <AlertDialogTitle className="text-xl flex items-center gap-2">
+                                              <div className="w-10 h-10 bg-destructive/10 rounded-full flex items-center justify-center">
+                                                <Store className="h-5 w-5 text-destructive" />
+                                              </div>
+                                              ยืนยันการลบร้านอาหาร
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription className="pt-4">
+                                              <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4 space-y-3">
+                                                <div className="flex items-start gap-3">
+                                                  <div className="flex-shrink-0 w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center">
+                                                    <span className="text-destructive font-bold text-sm">!</span>
+                                                  </div>
+                                                  <div className="flex-1">
+                                                    <p className="text-destructive font-semibold text-base mb-2">
+                                                      การดำเนินการนี้มีผลกระทบสูง
+                                                    </p>
+                                                    <p className="text-foreground/80 text-sm leading-relaxed">
+                                                      หากลบร้าน <span className="font-bold text-destructive">"{restaurant.shop_name}"</span> แล้ว รายการอาหารทั้งหมดในร้านนี้จะถูกลบออกไปด้วย
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                                <div className="border-t border-destructive/20 pt-3">
+                                                  <p className="text-destructive font-medium text-sm">
+                                                    ⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้
+                                                  </p>
+                                                </div>
+                                              </div>
                                             </AlertDialogDescription>
                                           </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel onClick={() => setIsDeleteConfirmOpen(false)}>ยกเลิก</AlertDialogCancel>
+                                          <AlertDialogFooter className="gap-2">
+                                            <AlertDialogCancel 
+                                              onClick={() => setIsDeleteConfirmOpen(false)}
+                                              className="hover:bg-accent"
+                                            >
+                                              <X className="h-4 w-4 mr-2" />
+                                              ยกเลิก
+                                            </AlertDialogCancel>
                                             <AlertDialogAction
                                               onClick={() => handleDeleteRestaurant()}
-                                              className="bg-red-600 hover:bg-red-700"
+                                              className="bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive text-destructive-foreground shadow-lg hover:shadow-xl transition-all"
                                             >
-                                              ยืนยันการลบ
+                                              <Trash2 className="h-4 w-4 mr-2" />
+                                              ยืนยันลบร้าน
                                             </AlertDialogAction>
                                           </AlertDialogFooter>
                                         </AlertDialogContent>
