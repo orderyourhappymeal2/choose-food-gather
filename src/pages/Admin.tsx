@@ -405,6 +405,12 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
   const [personsWithOrders, setPersonsWithOrders] = useState<any[]>([]);
   const [isLoadingPersonsWithOrders, setIsLoadingPersonsWithOrders] = useState(false);
 
+  // Edit/Delete individual order states
+  const [isEditOrderDialogOpen, setIsEditOrderDialogOpen] = useState(false);
+  const [isDeleteOrderDialogOpen, setIsDeleteOrderDialogOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<any>(null);
+  const [deletingOrder, setDeletingOrder] = useState<any>(null);
+
   // Edit form
   const editForm = useForm<PlanFormData>({
     resolver: zodResolver(planFormSchema),
@@ -1131,6 +1137,131 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
     filterOrders();
   }, [selectedPersonFilter, selectedMealFilter, selectedShopFilter, orders]);
 
+  // Handle edit order
+  const handleEditOrder = (order: any) => {
+    setEditingOrder({
+      order_id: order.order_id,
+      meal_id: order.meal_id,
+      shop_id: order.shop_id,
+      food_id: order.food_id,
+      topping: order.topping || '',
+      order_note: order.order_note || '',
+      person_name: order.person_name
+    });
+    setIsEditOrderDialogOpen(true);
+  };
+
+  // Handle delete order
+  const handleDeleteOrder = (order: any) => {
+    setDeletingOrder({
+      order_id: order.order_id,
+      person_name: order.person_name
+    });
+    setIsDeleteOrderDialogOpen(true);
+  };
+
+  // Save edited order
+  const handleSaveEditOrder = async () => {
+    if (!editingOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from('order')
+        .update({
+          food_id: editingOrder.food_id,
+          topping: editingOrder.topping || null,
+          order_note: editingOrder.order_note || null
+        })
+        .eq('order_id', editingOrder.order_id);
+
+      if (error) throw error;
+
+      toast.success('แก้ไขรายการสำเร็จ');
+      setIsEditOrderDialogOpen(false);
+      setEditingOrder(null);
+      
+      // Refresh orders
+      if (selectedPlanForOrder) {
+        await fetchOrders(selectedPlanForOrder.plan_id);
+      }
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('ไม่สามารถแก้ไขรายการได้');
+    }
+  };
+
+  // Confirm delete order
+  const handleConfirmDeleteOrder = async () => {
+    if (!deletingOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from('order')
+        .delete()
+        .eq('order_id', deletingOrder.order_id);
+
+      if (error) throw error;
+
+      toast.success('ลบรายการสำเร็จ');
+      setIsDeleteOrderDialogOpen(false);
+      setDeletingOrder(null);
+      
+      // Refresh orders
+      if (selectedPlanForOrder) {
+        await fetchOrders(selectedPlanForOrder.plan_id);
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('ไม่สามารถลบรายการได้');
+    }
+  };
+
+  // Get filtered foods for editing
+  const getFilteredFoodsForEdit = () => {
+    if (!editingOrder?.shop_id) return [];
+    return foods.filter(food => food.shop_id === editingOrder.shop_id);
+  };
+
+  // Get selected food details
+  const getSelectedFoodForEdit = () => {
+    return foods.find(food => food.food_id === editingOrder?.food_id);
+  };
+
+  // Get topping options
+  const getToppingOptionsForEdit = () => {
+    const selectedFood = getSelectedFoodForEdit();
+    if (!selectedFood?.topping) return [];
+    
+    return selectedFood.topping
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0);
+  };
+
+  // Get selected toppings
+  const getSelectedToppingsForEdit = () => {
+    if (!editingOrder?.topping) return [];
+    return editingOrder.topping
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0);
+  };
+
+  // Toggle topping selection
+  const toggleToppingForEdit = (topping: string) => {
+    if (!editingOrder) return;
+    
+    const currentToppings = getSelectedToppingsForEdit();
+    const newToppings = currentToppings.includes(topping)
+      ? currentToppings.filter(t => t !== topping)
+      : [...currentToppings, topping];
+    
+    setEditingOrder({
+      ...editingOrder,
+      topping: newToppings.join(', ')
+    });
+  };
+
   // Format Thai Buddhist date
   const formatThaiDateTime = (dateString: string) => {
     try {
@@ -1484,8 +1615,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                           <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
                             <FileText className="h-4 w-4 text-gray-600" />
                             <div className="flex flex-col">
-                              <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
-                              <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
+                              <span className="font-medium text-sm">สรุปรายการสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">สรุปแยกตามร้าน/เมนู</span>
                             </div>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
@@ -1532,8 +1663,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                           <DropdownMenuItem onClick={() => handleShowMealList(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
                             <FileText className="h-4 w-4 text-gray-600" />
                             <div className="flex flex-col">
-                              <span className="font-medium text-sm">ดูรายการมื้ออาหาร</span>
-                              <span className="text-xs text-muted-foreground">แสดงเมนูทั้งหมด</span>
+                              <span className="font-medium text-sm">สรุปรายการสั่งอาหาร</span>
+                              <span className="text-xs text-muted-foreground">สรุปแยกตามร้าน/เมนู</span>
                             </div>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleShowOrders(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
@@ -2263,7 +2394,8 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                           <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">เมนู</TableHead>
                           <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">หมายเหตุ</TableHead>
                           <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">ท็อปปิ้ง</TableHead>
-                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold">เวลาสั่ง</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">เวลาสั่ง</TableHead>
+                          <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center">จัดการ</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -2300,9 +2432,35 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                             <TableCell className="border-r border-brand-pink/40">
                               <div className="text-gray-700 dark:text-gray-200">{order.topping || '-'}</div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="border-r border-brand-pink/40">
                               <div className="text-xs text-gray-600 dark:text-gray-300">
                                 {formatThaiDateTime(order.created_at)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditOrder(order);
+                                  }}
+                                  className="h-8 w-8 p-0 border-blue-500 text-blue-600 hover:bg-blue-50"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteOrder(order);
+                                  }}
+                                  className="h-8 w-8 p-0 border-red-500 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2331,6 +2489,124 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Order Dialog */}
+      <Dialog open={isEditOrderDialogOpen} onOpenChange={setIsEditOrderDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>แก้ไขรายการอาหาร - {editingOrder?.person_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>เลือกเมนูอาหาร</Label>
+              <Select
+                value={editingOrder?.food_id || ''}
+                onValueChange={(value) => setEditingOrder(prev => prev ? { ...prev, food_id: value } : null)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกเมนูอาหาร" />
+                </SelectTrigger>
+                <SelectContent>
+                  <ScrollArea className="h-60">
+                    {getFilteredFoodsForEdit().map((food) => (
+                      <SelectItem key={food.food_id} value={food.food_id}>
+                        <div className="flex items-center gap-2">
+                          {food.url_pic && (
+                            <img 
+                              src={food.url_pic} 
+                              alt={food.food_name}
+                              className="w-8 h-8 rounded object-cover"
+                            />
+                          )}
+                          <span>{food.food_name} - ฿{food.price}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>ท็อปปิ้งเพิ่มเติม</Label>
+              {getToppingOptionsForEdit().length > 0 ? (
+                <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
+                  {getToppingOptionsForEdit().map((topping) => (
+                    <div key={topping} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`edit-topping-${topping}`}
+                        checked={getSelectedToppingsForEdit().includes(topping)}
+                        onCheckedChange={() => toggleToppingForEdit(topping)}
+                      />
+                      <label
+                        htmlFor={`edit-topping-${topping}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {topping}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Input
+                  value={editingOrder?.topping || ''}
+                  onChange={(e) => setEditingOrder(prev => prev ? { ...prev, topping: e.target.value } : null)}
+                  placeholder="ระบุท็อปปิ้งเพิ่มเติม (ถ้ามี)"
+                />
+              )}
+              {getSelectedToppingsForEdit().length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  ที่เลือก: {getSelectedToppingsForEdit().join(', ')}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>หมายเหตุ</Label>
+              <Textarea
+                value={editingOrder?.order_note || ''}
+                onChange={(e) => setEditingOrder(prev => prev ? { ...prev, order_note: e.target.value } : null)}
+                placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOrderDialogOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button 
+              onClick={handleSaveEditOrder}
+              className="bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90"
+            >
+              บันทึก
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Order Confirmation Dialog */}
+      <AlertDialog open={isDeleteOrderDialogOpen} onOpenChange={setIsDeleteOrderDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการลบรายการ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการลบรายการของ <span className="font-bold text-red-600">{deletingOrder?.person_name}</span> ใช่หรือไม่?
+              <br />
+              การกระทำนี้ไม่สามารถย้อนกลับได้
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteOrder}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              ลบรายการ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Add Meal Modal */}
       <Dialog open={isAddMealModalOpen} onOpenChange={setIsAddMealModalOpen}>
@@ -2422,7 +2698,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
         <DialogContent className="w-[98vw] max-w-5xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[92vh] flex flex-col">
           <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
-              รายการมื้ออาหาร - {selectedPlanForMeal?.plan_name}
+              สรุปรายการสั่งอาหาร - {selectedPlanForMeal?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
