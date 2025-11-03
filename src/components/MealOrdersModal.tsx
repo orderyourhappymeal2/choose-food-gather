@@ -476,7 +476,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                         </div>
                       </TableCell>
                       <TableCell className="border-r border-brand-pink/40 text-center">
-                        <Badge variant="destructive" className="bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold">
+                        <Badge variant="destructive" className="bg-pink-700 hover:bg-pink-800 text-white font-bold">
                           {restaurant.total_items} รายการ
                         </Badge>
                       </TableCell>
