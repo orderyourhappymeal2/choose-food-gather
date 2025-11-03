@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -359,6 +360,43 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     return foods.filter(food => food.shop_id === editingOrder.shop_id);
   };
 
+  const getSelectedFood = () => {
+    return foods.find(food => food.food_id === editingOrder?.food_id);
+  };
+
+  const getToppingOptions = () => {
+    const selectedFood = getSelectedFood();
+    if (!selectedFood?.topping) return [];
+    
+    // Split by comma and trim whitespace
+    return selectedFood.topping
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0);
+  };
+
+  const getSelectedToppings = () => {
+    if (!editingOrder?.topping) return [];
+    return editingOrder.topping
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t.length > 0);
+  };
+
+  const toggleTopping = (topping: string) => {
+    if (!editingOrder) return;
+    
+    const currentToppings = getSelectedToppings();
+    const newToppings = currentToppings.includes(topping)
+      ? currentToppings.filter(t => t !== topping)
+      : [...currentToppings, topping];
+    
+    setEditingOrder({
+      ...editingOrder,
+      topping: newToppings.join(', ')
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -601,11 +639,36 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
 
             <div className="space-y-2">
               <Label>ท็อปปิ้งเพิ่มเติม</Label>
-              <Input
-                value={editingOrder?.topping || ''}
-                onChange={(e) => setEditingOrder(prev => prev ? { ...prev, topping: e.target.value } : null)}
-                placeholder="ระบุท็อปปิ้งเพิ่มเติม (ถ้ามี)"
-              />
+              {getToppingOptions().length > 0 ? (
+                <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
+                  {getToppingOptions().map((topping) => (
+                    <div key={topping} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`topping-${topping}`}
+                        checked={getSelectedToppings().includes(topping)}
+                        onCheckedChange={() => toggleTopping(topping)}
+                      />
+                      <label
+                        htmlFor={`topping-${topping}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {topping}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Input
+                  value={editingOrder?.topping || ''}
+                  onChange={(e) => setEditingOrder(prev => prev ? { ...prev, topping: e.target.value } : null)}
+                  placeholder="ระบุท็อปปิ้งเพิ่มเติม (ถ้ามี)"
+                />
+              )}
+              {getSelectedToppings().length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  ที่เลือก: {getSelectedToppings().join(', ')}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
