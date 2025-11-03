@@ -3558,9 +3558,9 @@ const Admin = () => {
           <div className="absolute top-0 right-0">
             <Button
               onClick={handleLogout}
-              variant="outline"
+              variant="destructive"
               size="sm"
-              className="flex items-center gap-2 bg-white/80 backdrop-blur-sm hover:bg-white/90"
+              className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold shadow-lg border-2 border-red-800"
             >
               <LogOut className="h-4 w-4" />
               ออกจากระบบ
