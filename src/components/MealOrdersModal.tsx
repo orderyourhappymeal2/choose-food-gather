@@ -6,10 +6,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronDown, ChevronUp, UtensilsCrossed, Store } from "lucide-react";
+import { ChevronDown, ChevronUp, UtensilsCrossed, Store, Edit2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface MealOrdersModalProps {
   plan: any;
@@ -20,41 +27,39 @@ interface OrderData {
   food_id: string;
   topping: string | null;
   order_note: string | null;
+  meal_id: string;
   person: {
+    person_id: string;
     person_name: string;
     contact: string | null;
   };
   food: {
+    food_id: string;
     food_name: string;
     url_pic: string | null;
   };
   meal: {
+    meal_id: string;
     meal_name: string;
     meal_index: number;
+    shop_id: string;
     shop: {
+      shop_id: string;
       shop_name: string;
       url_pic: string | null;
     };
   };
 }
 
-interface FoodVariant {
-  food_name: string;
-  food_url_pic: string | null;
-  topping: string | null;
-  order_note: string | null;
-  persons: {
-    name: string;
-    contact: string | null;
-  }[];
-  count: number;
+interface OrderItem extends OrderData {
   index: number;
 }
 
 interface RestaurantSection {
   shop_name: string;
   shop_url_pic: string | null;
-  food_variants: FoodVariant[];
+  shop_id: string;
+  orders: OrderItem[];
   total_items: number;
 }
 
@@ -65,17 +70,70 @@ interface MealGroup {
   total_items: number;
 }
 
+interface EditOrderData {
+  order_id: string;
+  meal_id: string;
+  shop_id: string;
+  food_id: string;
+  topping: string;
+  order_note: string;
+  person_name: string;
+}
+
 const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   const [mealGroups, setMealGroups] = useState<MealGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [openRestaurants, setOpenRestaurants] = useState<Set<string>>(new Set());
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<EditOrderData | null>(null);
+  const [deletingOrder, setDeletingOrder] = useState<{ order_id: string; person_name: string } | null>(null);
+  const [foods, setFoods] = useState<any[]>([]);
+  const [shops, setShops] = useState<any[]>([]);
+  const [meals, setMeals] = useState<any[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     if (plan?.plan_id) {
       fetchMealOrders();
+      fetchShopsAndFoods();
+      fetchMeals();
     }
   }, [plan?.plan_id]);
+
+  const fetchShopsAndFoods = async () => {
+    try {
+      const [shopsResult, foodsResult] = await Promise.all([
+        supabase.from('shop').select('*').order('shop_name'),
+        supabase.from('food').select('*').order('food_name')
+      ]);
+
+      if (shopsResult.error) throw shopsResult.error;
+      if (foodsResult.error) throw foodsResult.error;
+
+      setShops(shopsResult.data || []);
+      setFoods(foodsResult.data || []);
+    } catch (error) {
+      console.error('Error fetching shops/foods:', error);
+      toast.error('ไม่สามารถดึงข้อมูลร้านและเมนูได้');
+    }
+  };
+
+  const fetchMeals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('meal')
+        .select('*')
+        .eq('plan_id', plan.plan_id)
+        .order('meal_index');
+
+      if (error) throw error;
+      setMeals(data || []);
+    } catch (error) {
+      console.error('Error fetching meals:', error);
+      toast.error('ไม่สามารถดึงข้อมูลมื้ออาหารได้');
+    }
+  };
 
   const fetchMealOrders = async () => {
     try {
@@ -89,18 +147,24 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
           food_id,
           topping,
           order_note,
+          meal_id,
           person:person_id (
+            person_id,
             person_name,
             contact
           ),
           food:food_id (
+            food_id,
             food_name,
             url_pic
           ),
           meal:meal_id (
+            meal_id,
             meal_name,
             meal_index,
+            shop_id,
             shop:shop_id (
+              shop_id,
               shop_name,
               url_pic
             )
@@ -145,6 +209,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
       restaurants: Map<string, {
         shop_name: string;
         shop_url_pic: string | null;
+        shop_id: string;
         orders: OrderData[];
       }>;
     }>();
@@ -169,6 +234,7 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
         meal.restaurants.set(restaurantKey, {
           shop_name: order.meal.shop.shop_name,
           shop_url_pic: order.meal.shop.url_pic,
+          shop_id: order.meal.shop.shop_id,
           orders: []
         });
       }
@@ -179,49 +245,18 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     // Convert to final structure
     const mealGroups: MealGroup[] = Array.from(mealMap.values()).map(meal => {
       const restaurants: RestaurantSection[] = Array.from(meal.restaurants.values()).map(restaurant => {
-        const foodVariantMap = new Map<string, FoodVariant>();
-        
-         restaurant.orders.forEach(order => {
-           if (!order.food || !order.person) return;
-           
-           const variantKey = `${order.food.food_name}|${order.topping || ''}|${order.order_note || ''}`;
-           
-           if (!foodVariantMap.has(variantKey)) {
-             foodVariantMap.set(variantKey, {
-               food_name: order.food.food_name,
-               food_url_pic: order.food.url_pic,
-               topping: order.topping,
-               order_note: order.order_note,
-               persons: [],
-               count: 0,
-               index: 0
-             });
-           }
-           
-           const variant = foodVariantMap.get(variantKey)!;
-           variant.persons.push({
-             name: order.person.person_name,
-             contact: order.person.contact || null
-           });
-           variant.count++;
-        });
-
-        const sortedVariants = Array.from(foodVariantMap.values()).sort((a, b) => 
-          a.food_name.localeCompare(b.food_name, 'th')
-        );
-        
-        // Add index to each food variant
-        sortedVariants.forEach((variant, index) => {
-          variant.index = index + 1;
-        });
-
-        const totalItems = sortedVariants.reduce((sum, variant) => sum + variant.count, 0);
+        // Add index to each order
+        const ordersWithIndex: OrderItem[] = restaurant.orders.map((order, index) => ({
+          ...order,
+          index: index + 1
+        }));
 
         return {
           shop_name: restaurant.shop_name,
           shop_url_pic: restaurant.shop_url_pic,
-          food_variants: sortedVariants,
-          total_items: totalItems
+          shop_id: restaurant.shop_id,
+          orders: ordersWithIndex,
+          total_items: ordersWithIndex.length
         };
       });
 
@@ -252,6 +287,78 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
     setOpenRestaurants(newOpenRestaurants);
   };
 
+  const handleEditClick = (order: OrderItem) => {
+    setEditingOrder({
+      order_id: order.order_id,
+      meal_id: order.meal_id,
+      shop_id: order.meal.shop_id,
+      food_id: order.food_id,
+      topping: order.topping || '',
+      order_note: order.order_note || '',
+      person_name: order.person.person_name
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (order: OrderItem) => {
+    setDeletingOrder({
+      order_id: order.order_id,
+      person_name: order.person.person_name
+    });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from('order')
+        .update({
+          food_id: editingOrder.food_id,
+          topping: editingOrder.topping || null,
+          order_note: editingOrder.order_note || null
+        })
+        .eq('order_id', editingOrder.order_id);
+
+      if (error) throw error;
+
+      toast.success('แก้ไขรายการสำเร็จ');
+      setIsEditDialogOpen(false);
+      setEditingOrder(null);
+      fetchMealOrders();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('ไม่สามารถแก้ไขรายการได้');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from('order')
+        .delete()
+        .eq('order_id', deletingOrder.order_id);
+
+      if (error) throw error;
+
+      toast.success('ลบรายการสำเร็จ');
+      setIsDeleteDialogOpen(false);
+      setDeletingOrder(null);
+      fetchMealOrders();
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('ไม่สามารถลบรายการได้');
+    }
+  };
+
+  const getFilteredFoods = () => {
+    if (!editingOrder?.shop_id) return [];
+    return foods.filter(food => food.shop_id === editingOrder.shop_id);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -275,173 +382,280 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
   }
 
   return (
-    <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
-      <div className="w-full overflow-x-auto">
-        <Table className="border border-brand-pink/60">
-          <TableHeader>
-            <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
-              <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-          {mealGroups.map((meal, mealIndex) => (
-            <React.Fragment key={meal.meal_index}>
-              {/* Add meal separator */}
-              {mealIndex > 0 && (
-                <TableRow className="border-none">
-                  <TableCell colSpan={4} className="p-0">
-                    <div className="bg-gradient-to-r from-brand-pink/30 via-brand-orange/30 to-brand-pink/30 h-3 border-y-2 border-brand-pink/60 shadow-inner"></div>
-                  </TableCell>
-                </TableRow>
-              )}
-              {meal.restaurants.map((restaurant) => {
-              const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
-              const isOpen = openRestaurants.has(restaurantKey);
-
-              return (
-                <React.Fragment key={restaurantKey}>
-                  <TableRow 
-                    className="border-b border-brand-pink/40 hover:bg-brand-pink/10 cursor-pointer"
-                    onClick={() => toggleRestaurant(restaurantKey)}
-                  >
-                    <TableCell className="border-r border-brand-pink/40 text-center">
-                      <span className="bg-brand-pink text-white font-bold px-3 py-1 rounded-full text-sm">
-                        {meal.meal_index}
-                      </span>
-                    </TableCell>
-                    <TableCell className="border-r border-brand-pink/40">
-                      <div className="flex items-center gap-3">
-                        {restaurant.shop_url_pic && (
-                          <Avatar className="h-10 w-10 flex-shrink-0">
-                            <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
-                            <AvatarFallback className="bg-brand-orange/20">
-                              <Store className="h-4 w-4 text-brand-orange" />
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
-                            {meal.meal_name} - {restaurant.shop_name}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="border-orange-600 text-orange-600 font-bold text-xs">
-                              {restaurant.food_variants.length} เมนู
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="border-r border-brand-pink/40 text-center">
-                      <Badge variant="destructive" className="bg-brand-pink text-white font-bold">
-                        {restaurant.total_items} รายการ
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {isOpen ? (
-                        <ChevronUp className="h-5 w-5 text-brand-orange mx-auto" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-brand-orange mx-auto" />
-                      )}
+    <>
+      <div className={isMobile ? "w-full max-w-none -mx-2" : "w-full max-w-none"}>
+        <div className="w-full overflow-x-auto">
+          <Table className="border border-brand-pink/60">
+            <TableHeader>
+              <TableRow className="bg-brand-pink/20 hover:bg-brand-pink/20 border-b-2 border-brand-pink/60">
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้อ</TableHead>
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">มื้ออาหาร - ร้าน</TableHead>
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold border-r border-brand-pink/40">จำนวนรายการ</TableHead>
+                <TableHead className="text-gray-800 dark:text-gray-100 font-bold text-center w-16">แสดง</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+            {mealGroups.map((meal, mealIndex) => (
+              <React.Fragment key={meal.meal_index}>
+                {/* Add meal separator */}
+                {mealIndex > 0 && (
+                  <TableRow className="border-none">
+                    <TableCell colSpan={4} className="p-0">
+                      <div className="bg-gradient-to-r from-brand-pink/30 via-brand-orange/30 to-brand-pink/30 h-3 border-y-2 border-brand-pink/60 shadow-inner"></div>
                     </TableCell>
                   </TableRow>
-                  
-                  {/* Collapsible Content Row */}
-                  {isOpen && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="p-0">
-                        <div className="bg-brand-pink/5 border-t border-brand-pink/40">
-                          <Table className="border-none">
-                            <TableHeader>
-                              <TableRow className="bg-brand-pink/10 hover:bg-brand-pink/10 border-b border-brand-pink/40">
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-16">ลำดับ</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-20">รูป</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ชื่ออาหาร</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-24">จำนวน</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">เพิ่มเติม</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold">ผู้สั่ง</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {restaurant.food_variants.map((variant, index) => (
-                                <TableRow key={index} className="border-b border-brand-pink/30 hover:bg-brand-pink/5">
-                                  <TableCell className="border-r border-brand-pink/30 text-center">
-                                    <span className="bg-brand-pink text-white font-bold px-2 py-1 rounded-full text-xs">
-                                      {meal.meal_index}.{variant.index}
-                                    </span>
-                                  </TableCell>
-                                  <TableCell className="border-r border-brand-pink/30">
-                                    {variant.food_url_pic ? (
-                                      <div className="w-16 h-16 relative overflow-hidden rounded-lg border border-brand-pink/20">
-                                        <img 
-                                          src={variant.food_url_pic} 
-                                          alt={variant.food_name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                                        <UtensilsCrossed className="h-6 w-6 text-gray-400" />
-                                      </div>
-                                    )}
-                                  </TableCell>
-                                  <TableCell className="border-r border-brand-pink/30">
-                                    <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
-                                      {variant.food_name}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="border-r border-brand-pink/30 text-center">
-                                    <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
-                                      {variant.count}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell className="border-r border-brand-pink/30">
-                                    {(variant.topping || variant.order_note) && (
-                                      <div className="space-y-1 text-sm">
-                                        {variant.topping && variant.topping !== "-" && (
-                                          <div>
-                                            <span className="font-semibold text-brand-orange">เพิ่ม:</span>
-                                            <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.topping}</span>
-                                          </div>
-                                        )}
-                                        {variant.order_note && (
-                                          <div>
-                                            <span className="font-semibold text-brand-orange">หมายเหตุ:</span>
-                                            <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.order_note}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </TableCell>
-                                   <TableCell>
-                                       <div className="flex flex-wrap gap-1">
-                                          {variant.persons.map((person, personIndex) => (
-                                            <div key={personIndex} className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs">
-                                              <div className="font-bold text-orange-700">{person.name}</div>
-                                            </div>
-                                          ))}
-                                       </div>
-                                   </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                )}
+                {meal.restaurants.map((restaurant) => {
+                const restaurantKey = `${meal.meal_index}-${restaurant.shop_name}`;
+                const isOpen = openRestaurants.has(restaurantKey);
+
+                return (
+                  <React.Fragment key={restaurantKey}>
+                    <TableRow 
+                      className="border-b border-brand-pink/40 hover:bg-brand-pink/10 cursor-pointer"
+                      onClick={() => toggleRestaurant(restaurantKey)}
+                    >
+                      <TableCell className="border-r border-brand-pink/40 text-center">
+                        <span className="bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold px-3 py-1 rounded-full text-sm">
+                          {meal.meal_index}
+                        </span>
+                      </TableCell>
+                      <TableCell className="border-r border-brand-pink/40">
+                        <div className="flex items-center gap-3">
+                          {restaurant.shop_url_pic && (
+                            <Avatar className="h-10 w-10 flex-shrink-0">
+                              <AvatarImage src={restaurant.shop_url_pic} alt={restaurant.shop_name} />
+                              <AvatarFallback className="bg-brand-orange/20">
+                                <Store className="h-4 w-4 text-brand-orange" />
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                              {meal.meal_name} - {restaurant.shop_name}
+                            </div>
+                          </div>
                         </div>
                       </TableCell>
+                      <TableCell className="border-r border-brand-pink/40 text-center">
+                        <Badge variant="destructive" className="bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold">
+                          {restaurant.total_items} รายการ
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {isOpen ? (
+                          <ChevronUp className="h-5 w-5 text-brand-orange mx-auto" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-brand-orange mx-auto" />
+                        )}
+                      </TableCell>
                     </TableRow>
-                   )}
-                </React.Fragment>
+                    
+                    {/* Collapsible Content Row */}
+                    {isOpen && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="p-0">
+                          <div className="bg-brand-pink/5 border-t border-brand-pink/40">
+                            <Table className="border-none">
+                              <TableHeader>
+                                <TableRow className="bg-brand-pink/10 hover:bg-brand-pink/10 border-b border-brand-pink/40">
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-16">ลำดับ</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-20">รูป</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ชื่ออาหาร</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">เพิ่มเติม</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ผู้สั่ง</TableHead>
+                                  <TableHead className="text-gray-700 dark:text-gray-200 font-semibold text-center w-24">จัดการ</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {restaurant.orders.map((order, index) => (
+                                  <TableRow key={order.order_id} className="border-b border-brand-pink/30 hover:bg-brand-pink/5">
+                                    <TableCell className="border-r border-brand-pink/30 text-center">
+                                      <span className="bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold px-2 py-1 rounded-full text-xs">
+                                        {meal.meal_index}.{order.index}
+                                      </span>
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
+                                      {order.food.url_pic ? (
+                                        <div className="w-16 h-16 relative overflow-hidden rounded-lg border border-brand-pink/20">
+                                          <img 
+                                            src={order.food.url_pic} 
+                                            alt={order.food.food_name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                          <UtensilsCrossed className="h-6 w-6 text-gray-400" />
+                                        </div>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
+                                      <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                                        {order.food.food_name}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
+                                      {(order.topping || order.order_note) && (
+                                        <div className="space-y-1 text-sm">
+                                          {order.topping && order.topping !== "-" && (
+                                            <div>
+                                              <span className="font-semibold text-brand-orange">เพิ่ม:</span>
+                                              <span className="ml-1 text-gray-700 dark:text-gray-200">{order.topping}</span>
+                                            </div>
+                                          )}
+                                          {order.order_note && (
+                                            <div>
+                                              <span className="font-semibold text-brand-orange">หมายเหตุ:</span>
+                                              <span className="ml-1 text-gray-700 dark:text-gray-200">{order.order_note}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="border-r border-brand-pink/30">
+                                      <div className="bg-orange-600/30 border border-orange-600/50 rounded px-2 py-1 text-xs inline-block">
+                                        <div className="font-bold text-orange-700">{order.person.person_name}</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      <div className="flex items-center justify-center gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditClick(order);
+                                          }}
+                                          className="h-8 w-8 p-0 border-blue-500 text-blue-600 hover:bg-blue-50"
+                                        >
+                                          <Edit2 className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteClick(order);
+                                          }}
+                                          className="h-8 w-8 p-0 border-red-500 text-red-600 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 );
               })}
-            </React.Fragment>
-          ))}
-          </TableBody>
-        </Table>
+              </React.Fragment>
+            ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-    </div>
-   );
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>แก้ไขรายการอาหาร - {editingOrder?.person_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>เลือกเมนูอาหาร</Label>
+              <Select
+                value={editingOrder?.food_id || ''}
+                onValueChange={(value) => setEditingOrder(prev => prev ? { ...prev, food_id: value } : null)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกเมนูอาหาร" />
+                </SelectTrigger>
+                <SelectContent>
+                  <ScrollArea className="h-60">
+                    {getFilteredFoods().map((food) => (
+                      <SelectItem key={food.food_id} value={food.food_id}>
+                        <div className="flex items-center gap-2">
+                          {food.url_pic && (
+                            <img 
+                              src={food.url_pic} 
+                              alt={food.food_name}
+                              className="w-8 h-8 rounded object-cover"
+                            />
+                          )}
+                          <span>{food.food_name} - ฿{food.price}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>ท็อปปิ้งเพิ่มเติม</Label>
+              <Input
+                value={editingOrder?.topping || ''}
+                onChange={(e) => setEditingOrder(prev => prev ? { ...prev, topping: e.target.value } : null)}
+                placeholder="ระบุท็อปปิ้งเพิ่มเติม (ถ้ามี)"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>หมายเหตุ</Label>
+              <Textarea
+                value={editingOrder?.order_note || ''}
+                onChange={(e) => setEditingOrder(prev => prev ? { ...prev, order_note: e.target.value } : null)}
+                placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button 
+              onClick={handleSaveEdit}
+              className="bg-gradient-to-r from-brand-pink to-brand-orange hover:from-brand-pink/90 hover:to-brand-orange/90"
+            >
+              บันทึก
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการลบรายการ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการลบรายการของ <span className="font-bold text-red-600">{deletingOrder?.person_name}</span> ใช่หรือไม่?
+              <br />
+              การกระทำนี้ไม่สามารถย้อนกลับได้
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              ลบรายการ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 };
 
 export default MealOrdersModal;
