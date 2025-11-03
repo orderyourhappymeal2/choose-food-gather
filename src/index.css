@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 330 77% 86%;
+    --primary: 330 85% 75%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 32 100% 85%;
@@ -34,10 +34,10 @@ All colors MUST be HSL.
 
     --border: 55 85% 90%;
     --input: 0 0% 100%;
-    --ring: 330 77% 86%;
+    --ring: 330 85% 75%;
     
     /* Custom brand colors */
-    --brand-pink: 330 77% 86%;
+    --brand-pink: 330 85% 75%;
     --brand-orange: 32 100% 85%;
     --brand-cream: 55 85% 90%;
     --brand-yellow: 0 100% 98%;
