@@ -393,17 +393,16 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                                     </div>
                                   </TableCell>
                                   <TableCell className="border-r border-brand-pink/30 text-center">
-                                    <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
-                                      {variant.count}
-                                    </Badge>
+                                    <div className="inline-block bg-orange-600/30 border border-orange-600/50 rounded px-3 py-1">
+                                      <span className="font-bold text-orange-700">{variant.count}</span>
+                                    </div>
                                   </TableCell>
                                   <TableCell className="border-r border-brand-pink/30">
                                     {(variant.topping || variant.order_note) && (
                                       <div className="space-y-1 text-sm">
                                         {variant.topping && variant.topping !== "-" && (
                                           <div>
-                                            <span className="font-semibold text-brand-orange">เพิ่ม:</span>
-                                            <span className="ml-1 text-gray-700 dark:text-gray-200">{variant.topping}</span>
+                                            <span className="text-gray-700 dark:text-gray-200">{variant.topping}</span>
                                           </div>
                                         )}
                                         {variant.order_note && (
