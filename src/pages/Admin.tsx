@@ -2206,7 +2206,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Order Modal */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
-        <DialogContent className="w-[98vw] max-w-7xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[95vh] md:w-[95vw] md:h-[90vh] flex flex-col">
+        <DialogContent className="w-[98vw] max-w-[96vw] mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[95vh] md:w-[95vw] md:h-[90vh] flex flex-col">
           <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               รายการอาหารที่ถูกสั่ง - {selectedPlanForOrder?.plan_name}
