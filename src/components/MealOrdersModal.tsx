@@ -358,34 +358,46 @@ const MealOrdersModal = ({ plan }: MealOrdersModalProps) => {
                               <TableRow className="bg-brand-pink/10 hover:bg-brand-pink/10 border-b border-brand-pink/40">
                                 <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-16">ลำดับ</TableHead>
                                 <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-20">รูป</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/60">ชื่ออาหาร</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/60 w-24">จำนวน</TableHead>
-                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/60">เพิ่มเติม</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">ชื่ออาหาร</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30 w-24">จำนวน</TableHead>
+                                <TableHead className="text-gray-700 dark:text-gray-200 font-semibold border-r border-brand-pink/30">เพิ่มเติม</TableHead>
                                 <TableHead className="text-gray-700 dark:text-gray-200 font-semibold">ผู้สั่ง</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {restaurant.food_variants.map((variant, index) => (
-                                <TableRow key={index} className="border-b border-brand-pink/60 hover:bg-brand-pink/5">
-                                  <TableCell className="border-r border-brand-pink/60 text-center">
+                                <TableRow key={index} className="border-b border-brand-pink/30 hover:bg-brand-pink/5">
+                                  <TableCell className="border-r border-brand-pink/30 text-center">
                                     <span className="bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold px-2 py-1 rounded-full text-xs">
                                       {meal.meal_index}.{variant.index}
                                     </span>
                                   </TableCell>
-                                  <TableCell className="border-r border-brand-pink/60">
-...
+                                  <TableCell className="border-r border-brand-pink/30">
+                                    {variant.food_url_pic ? (
+                                      <div className="w-16 h-16 relative overflow-hidden rounded-lg border border-brand-pink/20">
+                                        <img 
+                                          src={variant.food_url_pic} 
+                                          alt={variant.food_name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <UtensilsCrossed className="h-6 w-6 text-gray-400" />
+                                      </div>
+                                    )}
                                   </TableCell>
-                                  <TableCell className="border-r border-brand-pink/60">
+                                  <TableCell className="border-r border-brand-pink/30">
                                     <div className="font-bold text-gray-800 dark:text-gray-100 text-base">
                                       {variant.food_name}
                                     </div>
                                   </TableCell>
-                                  <TableCell className="border-r border-brand-pink/60 text-center">
+                                  <TableCell className="border-r border-brand-pink/30 text-center">
                                     <Badge variant="destructive" className="bg-brand-orange text-white font-bold">
                                       {variant.count}
                                     </Badge>
                                   </TableCell>
-                                  <TableCell className="border-r border-brand-pink/60">
+                                  <TableCell className="border-r border-brand-pink/30">
                                     {(variant.topping || variant.order_note) && (
                                       <div className="space-y-1 text-sm">
                                         {variant.topping && variant.topping !== "-" && (
