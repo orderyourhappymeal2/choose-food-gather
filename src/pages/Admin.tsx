@@ -2206,16 +2206,16 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Order Modal */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
-        <DialogContent className="w-[98vw] max-w-[96vw] mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[95vh] md:w-[95vw] md:h-[90vh] flex flex-col">
-          <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
+        <DialogContent className="w-[98vw] max-w-[96vw] mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg md:w-[95vw] max-h-[95vh] overflow-y-auto">
+          <DialogHeader className="p-4 pb-2 border-b bg-white/90 sticky top-0 z-10">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               รายการอาหารที่ถูกสั่ง - {selectedPlanForOrder?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex flex-col h-full p-2 md:p-4 gap-2 md:gap-4 min-h-0">
+          <div className="p-2 md:p-4 space-y-2 md:space-y-4">
             {/* Filter Container */}
-            <div className="flex-shrink-0">
+            <div>
               {/* Mobile Filter Icons */}
               <div className="md:hidden flex gap-2 mb-4 justify-center">
                 <Popover>
@@ -2368,7 +2368,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             </div>
             
             {/* Orders content area */}
-            <div className="flex-1 min-h-0">
+            <div>
               {isLoadingOrders ? (
                 <div className="flex items-center justify-center h-40">
                   <div className="text-center text-muted-foreground">
@@ -2382,7 +2382,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                   </div>
                 </div>
               ) : (
-                <div className="h-full overflow-auto border border-brand-pink/10 rounded-lg bg-white/30">
+                <div className="border border-brand-pink/10 rounded-lg bg-white/30 overflow-x-auto">
                   <div className="min-w-[1000px]">
                     <Table className="border border-brand-pink/60">
                       <TableHeader>
@@ -2474,7 +2474,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             
             {/* Summary */}
             {!isLoadingOrders && filteredOrders.length > 0 && (
-              <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg flex-shrink-0">
+              <div className="flex justify-between items-center p-3 bg-white/50 rounded-lg">
                 <div className="text-sm text-muted-foreground">
                   แสดง {filteredOrders.length} รายการ จากทั้งหมด {orders.length} รายการ
                 </div>
@@ -2482,7 +2482,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
             )}
           </div>
           
-          <DialogFooter className="p-4 border-t bg-white/90">
+          <DialogFooter className="p-4 border-t bg-white/90 sticky bottom-0 z-10">
             <Button variant="outline" onClick={() => setIsOrderModalOpen(false)} className="w-full sm:w-auto">
               ปิด
             </Button>
