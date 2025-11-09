@@ -221,7 +221,7 @@ const MenuSelection = () => {
     return item.topping
       .split(',')
       .map(t => t.trim())
-      .filter(t => t.length > 0 && t !== "-");
+      .filter(t => t.length > 0 && t !== "-" && t !== "");
   };
 
   const handleConfirm = async () => {
