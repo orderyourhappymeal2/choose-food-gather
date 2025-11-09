@@ -1560,7 +1560,7 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
                         <Settings className="h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
+                    <DropdownMenuContent className="w-56 bg-popover border shadow-lg max-h-[400px] overflow-y-auto" align="end">
                       {filterState === 'waiting' && (
                         <>
                           <DropdownMenuItem onClick={() => handleAddMeal(plan)} className="gap-3 py-2.5 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer">
@@ -3817,7 +3817,7 @@ const Admin = () => {
                                         <Settings className="h-3 w-3" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56 bg-popover border shadow-lg" align="end">
+                                    <DropdownMenuContent className="w-56 bg-popover border shadow-lg max-h-[400px] overflow-y-auto" align="end">
                                       <DropdownMenuItem 
                                         onClick={() => {
                                           setSelectedRestaurant(restaurant);
