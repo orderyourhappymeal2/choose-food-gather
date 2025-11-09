@@ -5061,19 +5061,6 @@ const Admin = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold text-foreground">รายการที่กำลังดำเนินการ</h3>
-                      <div className="border border-brand-pink/20 rounded-lg p-1 bg-white/60">
-                        <Button
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={toggleProgressSort}
-                          className="hover:bg-brand-pink/10"
-                        >
-                          {(() => {
-                            const SortIcon = getSortIcon(progressSortOrder);
-                            return <SortIcon className="h-4 w-4" />;
-                          })()}
-                        </Button>
-                      </div>
                     </div>
                     <div className="space-y-4">
                       <Card className="bg-white/60 border border-brand-pink/10">
