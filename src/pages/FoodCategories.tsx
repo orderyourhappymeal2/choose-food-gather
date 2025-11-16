@@ -255,10 +255,9 @@ const FoodCategories = () => {
                             isPreSelected 
                               ? 'border-green-200 bg-green-50/30' 
                               : selectedFood 
-                                ? 'border-green-200 bg-white cursor-pointer hover:scale-[1.02] hover:shadow-sm' 
-                                : 'border-gray-200 bg-white/50 cursor-pointer hover:scale-[1.02] hover:border-gray-300 hover:shadow-sm'
+                                ? 'border-green-200 bg-white' 
+                                : 'border-gray-200 bg-white/50'
                           }`}
-                          onClick={() => !isPreSelected && handleShopSelect(meal, shop)}
                         >
                           <CardContent className="p-4">
                             <div className="flex items-center gap-4">
@@ -326,13 +325,24 @@ const FoodCategories = () => {
                                            </p>
                                          )}
                                        </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                                     </div>
+                                   </div>
+                                 )}
+                                 
+                                 {/* Select Food Button - Only show when not selected */}
+                                 {!isPreSelected && !selectedFood && (
+                                   <Button 
+                                     onClick={() => handleShopSelect(meal, shop)}
+                                     className="w-full mt-3"
+                                     variant="default"
+                                   >
+                                     เลือกอาหาร
+                                   </Button>
+                                 )}
+                               </div>
+                             </div>
+                           </CardContent>
+                         </Card>
                       </div>
                     )}
                     </CardContent>
