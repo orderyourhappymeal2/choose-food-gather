@@ -328,12 +328,14 @@ const FoodCategories = () => {
                                      </div>
                                    </div>
                                  )}
-                                 
-                                 {/* Select Food Button - Only show when not selected */}
+                               </div>
+                               
+                               {/* Right Column - Select Food Button */}
+                               <div className="flex items-center">
                                  {!isPreSelected && !selectedFood && (
                                    <Button 
                                      onClick={() => handleShopSelect(meal, shop)}
-                                     className="mt-3 ml-auto bg-pink-100 hover:bg-pink-200 text-pink-800 border-pink-200"
+                                     className="bg-pink-100 hover:bg-pink-200 text-pink-800 border-pink-200"
                                      variant="outline"
                                    >
                                      เลือกอาหาร
