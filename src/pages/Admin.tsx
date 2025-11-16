@@ -2695,20 +2695,20 @@ const PlanList = ({ filterState, restaurants = [], refreshRef, admin }: { filter
 
       {/* Meal List Modal */}
       <Dialog open={isMealListModalOpen} onOpenChange={setIsMealListModalOpen}>
-        <DialogContent className="w-[98vw] max-w-5xl mx-auto bg-white/95 backdrop-blur-md border border-brand-pink/20 rounded-lg shadow-lg h-[92vh] flex flex-col">
-          <DialogHeader className="p-4 pb-2 border-b bg-white/90 flex-shrink-0">
+        <DialogContent className="w-[98vw] max-w-5xl mx-auto bg-white border border-brand-pink/20 rounded-lg shadow-lg h-[92vh] flex flex-col">
+          <DialogHeader className="p-4 pb-2 border-b bg-white flex-shrink-0">
             <DialogTitle className="text-lg font-semibold text-foreground text-center">
               สรุปรายการสั่งอาหาร - {selectedPlanForMeal?.plan_name}
             </DialogTitle>
           </DialogHeader>
           
           <div className="flex-1 overflow-hidden px-2 md:px-4 py-2">
-            <div className="h-full border border-brand-pink/10 rounded-lg bg-white/30 p-2 md:p-4 overflow-auto">
+            <div className="h-full border border-brand-pink/10 rounded-lg bg-white p-2 md:p-4 overflow-auto">
               <MealOrdersModal plan={selectedPlanForMeal} />
             </div>
           </div>
           
-          <DialogFooter className="p-4 border-t bg-white/90">
+          <DialogFooter className="p-4 border-t bg-white">
             <Button variant="outline" onClick={() => setIsMealListModalOpen(false)} className="w-full sm:w-auto">
               ปิด
             </Button>
