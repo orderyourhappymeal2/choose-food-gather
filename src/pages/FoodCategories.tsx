@@ -333,7 +333,7 @@ const FoodCategories = () => {
                                  {!isPreSelected && !selectedFood && (
                                    <Button 
                                      onClick={() => handleShopSelect(meal, shop)}
-                                     className="w-full mt-3 bg-pink-100 hover:bg-pink-200 text-pink-800 border-pink-200"
+                                     className="mt-3 ml-auto bg-pink-100 hover:bg-pink-200 text-pink-800 border-pink-200"
                                      variant="outline"
                                    >
                                      เลือกอาหาร
